@@ -1,0 +1,463 @@
+2026-02-01 23:47:58,563 - StudentManager - INFO - ================================================================================
+2026-02-01 23:47:58,564 - StudentManager - INFO - Application Starting
+2026-02-01 23:47:58,567 - StudentManager - INFO - Log file: logs\app_20260201_234758.log
+2026-02-01 23:47:58,567 - StudentManager - INFO - ================================================================================
+2026-02-01 23:47:58,567 - StudentManager - INFO - ================================================================================
+2026-02-01 23:47:58,569 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-01 23:47:58,569 - StudentManager - INFO - ================================================================================
+2026-02-01 23:47:58,570 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-01 23:47:58,570 - StudentManager - INFO - Setting up application...
+2026-02-01 23:47:58,571 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-01 23:47:58,573 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-01 23:47:58,709 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-01 23:47:58,712 - StudentManager - DEBUG - Applying theme...
+2026-02-01 23:47:58,727 - StudentManager - INFO - Theme applied successfully
+2026-02-01 23:47:58,727 - StudentManager - INFO - Application setup complete
+2026-02-01 23:47:58,728 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-01 23:47:58,729 - StudentManager - INFO - Importing main window module...
+2026-02-01 23:48:01,920 - StudentManager - INFO - Main window module imported successfully
+2026-02-01 23:48:01,921 - StudentManager - INFO - Creating main window instance...
+2026-02-01 23:48:01,923 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-01 23:48:01,940 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-01 23:48:01,942 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-01 23:48:01,946 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-01 23:48:01,946 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-01 23:48:03,141 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-01 23:48:03,147 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-01 23:48:03,148 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-01 23:48:03,148 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-01 23:48:03,149 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-01 23:48:03,172 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-01 23:48:03,174 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-01 23:48:03,175 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-01 23:48:03,177 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-01 23:48:03,178 - StudentManager - INFO - Main window created successfully
+2026-02-01 23:48:03,179 - StudentManager - INFO - Showing main window...
+2026-02-01 23:48:03,489 - StudentManager - INFO - Main window displayed successfully
+2026-02-01 23:48:03,491 - StudentManager - INFO - Starting event loop...
+2026-02-01 23:48:19,844 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:19,847 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:19,851 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:19,851 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:19,852 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:19,852 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:19,853 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:19,853 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-01 23:48:19,854 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,290 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:22,291 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,294 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:22,294 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,295 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:22,295 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:22,296 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:22,297 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-01 23:48:22,297 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,809 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:22,810 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,812 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:22,813 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:22,814 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:22,814 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:22,814 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:22,815 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-01 23:48:22,815 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,319 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:23,320 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,323 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:23,324 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,325 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:23,326 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:23,327 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:23,327 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-01 23:48:23,328 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,778 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:23,779 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,782 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:23,783 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:23,783 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:23,784 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-01 23:48:23,784 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:23,785 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1172, in _on_quick_filter
+    self._add_filter_to_tab(current_widget, filter_rule)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1573, in _add_filter_to_tab
+    self._apply_tab_filters(widget)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1542, in _apply_tab_filters
+    self._refresh_rule_state()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1417, in _refresh_rule_state
+    self._rebuild_unmatched_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1518, in _rebuild_unmatched_tab
+    self._rebuild_filtered_tab(union_mask)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1501, in _rebuild_filtered_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-01 23:48:23,788 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:24,896 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:24,898 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:24,901 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:24,901 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:24,902 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:24,902 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:24,903 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:24,904 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:24,904 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,602 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:25,602 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,605 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:25,605 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,606 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:25,606 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:25,607 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:25,608 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:25,608 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,784 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:25,784 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,784 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:25,784 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:25,784 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:25,789 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:25,789 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:25,789 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:25,789 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:32,535 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1223, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:32,537 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:32,539 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:32,539 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:32,540 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:32,541 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:32,541 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:32,542 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1223, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:32,545 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:33,009 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1223, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:33,010 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:33,013 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:33,013 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:33,014 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:33,014 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:33,014 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:33,015 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1223, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:33,016 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:49,650 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:49,651 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:49,653 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:49,654 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:49,654 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:49,655 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:49,655 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:49,656 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:49,656 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,133 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:50,134 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,136 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:50,137 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,137 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:50,138 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:50,139 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:50,140 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:50,140 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,316 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:50,316 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,319 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-01 23:48:50,319 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:50,321 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-01 23:48:50,321 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+2026-02-01 23:48:50,321 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-01 23:48:50,322 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 908, in _on_clear_all_filters
+    self._close_all_filter_tabs()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 985, in _close_all_filter_tabs
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1753, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1555, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+AttributeError: 'ModernFilterPanel' object has no attribute 'clear_all_chips'
+
+2026-02-01 23:48:50,322 - StudentManager - CRITICAL - ================================================================================
+2026-02-01 23:48:51,840 - StudentManager - INFO - Application exited with code: 0
+2026-02-01 23:48:51,841 - StudentManager - INFO - ================================================================================
+2026-02-01 23:48:51,845 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 0
+2026-02-01 23:48:51,846 - StudentManager - INFO - ================================================================================

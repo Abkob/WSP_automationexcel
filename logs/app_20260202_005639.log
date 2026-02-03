@@ -1,0 +1,79 @@
+2026-02-02 00:56:39,341 - StudentManager - INFO - ================================================================================
+2026-02-02 00:56:39,342 - StudentManager - INFO - Application Starting
+2026-02-02 00:56:39,342 - StudentManager - INFO - Log file: logs\app_20260202_005639.log
+2026-02-02 00:56:39,342 - StudentManager - INFO - ================================================================================
+2026-02-02 00:56:39,343 - StudentManager - INFO - ================================================================================
+2026-02-02 00:56:39,344 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-02 00:56:39,404 - StudentManager - INFO - ================================================================================
+2026-02-02 00:56:39,405 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-02 00:56:39,405 - StudentManager - INFO - Setting up application...
+2026-02-02 00:56:39,406 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-02 00:56:39,407 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-02 00:56:39,472 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-02 00:56:39,474 - StudentManager - DEBUG - Applying theme...
+2026-02-02 00:56:39,477 - StudentManager - INFO - Theme applied successfully
+2026-02-02 00:56:39,478 - StudentManager - INFO - Application setup complete
+2026-02-02 00:56:39,478 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-02 00:56:39,479 - StudentManager - INFO - Importing main window module...
+2026-02-02 00:56:42,031 - StudentManager - INFO - Main window module imported successfully
+2026-02-02 00:56:42,031 - StudentManager - INFO - Creating main window instance...
+2026-02-02 00:56:42,033 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-02 00:56:42,034 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-02 00:56:42,034 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-02 00:56:42,035 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-02 00:56:42,036 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-02 00:56:43,057 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-02 00:56:43,064 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-02 00:56:43,065 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-02 00:56:43,066 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-02 00:56:43,067 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-02 00:56:43,120 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-02 00:56:43,122 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-02 00:56:43,123 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-02 00:56:43,124 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-02 00:56:43,126 - StudentManager - INFO - Main window created successfully
+2026-02-02 00:56:43,126 - StudentManager - INFO - Showing main window...
+2026-02-02 00:56:43,675 - StudentManager - INFO - Main window displayed successfully
+2026-02-02 00:56:43,676 - StudentManager - INFO - Starting event loop...
+2026-02-02 00:56:54,082 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 939, in _create_filter_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-02 00:56:54,084 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:56:54,084 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-02 00:56:54,085 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:56:54,085 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-02 00:56:54,086 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-02 00:56:54,086 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-02 00:56:54,087 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 939, in _create_filter_tab
+    proxy.setSearchText(self.search_edit.text())
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-02 00:56:54,087 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:58:40,728 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 939, in _create_filter_tab
+    proxy.setSourceModel(DataFrameModel(snapshot_df))
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+2026-02-02 00:58:40,731 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:58:40,732 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-02 00:58:40,732 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:58:40,732 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-02 00:58:40,732 - StudentManager - CRITICAL - Exception Value: 'MainWindow' object has no attribute 'search_edit'
+2026-02-02 00:58:40,733 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-02 00:58:40,734 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 939, in _create_filter_tab
+    proxy.setSourceModel(DataFrameModel(snapshot_df))
+AttributeError: 'MainWindow' object has no attribute 'search_edit'
+
+2026-02-02 00:58:40,734 - StudentManager - CRITICAL - ================================================================================

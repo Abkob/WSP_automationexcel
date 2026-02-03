@@ -1,0 +1,26 @@
+{
+  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/final_snapshot.xlsx",
+  "tabs": [
+    {
+      "name": "\ud83d\udcca All Students",
+      "filters": [],
+      "filter_mode": "all",
+      "type": "base"
+    },
+    {
+      "name": "STUD_ID: 3",
+      "filters": [
+        {
+          "type": "text",
+          "column": "STUD_ID",
+          "tokens": [
+            "3"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "rule"
+    }
+  ]
+}

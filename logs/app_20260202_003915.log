@@ -1,0 +1,73 @@
+2026-02-02 00:39:15,012 - StudentManager - INFO - ================================================================================
+2026-02-02 00:39:15,013 - StudentManager - INFO - Application Starting
+2026-02-02 00:39:15,013 - StudentManager - INFO - Log file: logs\app_20260202_003915.log
+2026-02-02 00:39:15,014 - StudentManager - INFO - ================================================================================
+2026-02-02 00:39:15,014 - StudentManager - INFO - ================================================================================
+2026-02-02 00:39:15,014 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-02 00:39:15,075 - StudentManager - INFO - ================================================================================
+2026-02-02 00:39:15,075 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-02 00:39:15,076 - StudentManager - INFO - Setting up application...
+2026-02-02 00:39:15,077 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-02 00:39:15,078 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-02 00:39:15,127 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-02 00:39:15,127 - StudentManager - DEBUG - Applying theme...
+2026-02-02 00:39:15,129 - StudentManager - INFO - Theme applied successfully
+2026-02-02 00:39:15,130 - StudentManager - INFO - Application setup complete
+2026-02-02 00:39:15,130 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-02 00:39:15,130 - StudentManager - INFO - Importing main window module...
+2026-02-02 00:39:16,631 - StudentManager - INFO - Main window module imported successfully
+2026-02-02 00:39:16,631 - StudentManager - INFO - Creating main window instance...
+2026-02-02 00:39:16,633 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-02 00:39:16,635 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-02 00:39:16,635 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-02 00:39:16,636 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-02 00:39:16,637 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-02 00:39:17,602 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-02 00:39:17,604 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-02 00:39:17,604 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-02 00:39:17,606 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-02 00:39:17,606 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-02 00:39:17,634 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-02 00:39:17,635 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-02 00:39:17,637 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-02 00:39:17,638 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-02 00:39:17,638 - StudentManager - INFO - Main window created successfully
+2026-02-02 00:39:17,639 - StudentManager - INFO - Showing main window...
+2026-02-02 00:39:17,942 - StudentManager - INFO - Main window displayed successfully
+2026-02-02 00:39:17,943 - StudentManager - INFO - Starting event loop...
+2026-02-02 00:41:12,816 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+AttributeError: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+2026-02-02 00:41:12,819 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:41:12,821 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-02 00:41:12,822 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:41:12,822 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-02 00:41:12,823 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+2026-02-02 00:41:12,823 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-02 00:41:12,824 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+AttributeError: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+
+2026-02-02 00:41:12,825 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:55:20,435 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+AttributeError: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+2026-02-02 00:55:20,435 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:55:20,438 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-02 00:55:20,438 - StudentManager - CRITICAL - ================================================================================
+2026-02-02 00:55:20,438 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-02 00:55:20,438 - StudentManager - CRITICAL - Exception Value: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+2026-02-02 00:55:20,439 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-02 00:55:20,439 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 820, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+AttributeError: 'ModernFilterPanel' object has no attribute 'get_filter_mode'
+
+2026-02-02 00:55:20,440 - StudentManager - CRITICAL - ================================================================================

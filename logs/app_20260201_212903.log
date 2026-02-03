@@ -1,0 +1,51 @@
+2026-02-01 21:29:03,249 - StudentManager - INFO - ================================================================================
+2026-02-01 21:29:03,250 - StudentManager - INFO - Application Starting
+2026-02-01 21:29:03,251 - StudentManager - INFO - Log file: logs\app_20260201_212903.log
+2026-02-01 21:29:03,252 - StudentManager - INFO - ================================================================================
+2026-02-01 21:29:03,252 - StudentManager - INFO - ================================================================================
+2026-02-01 21:29:03,253 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-01 21:29:03,253 - StudentManager - INFO - ================================================================================
+2026-02-01 21:29:03,254 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-01 21:29:03,254 - StudentManager - INFO - Setting up application...
+2026-02-01 21:29:03,255 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-01 21:29:03,256 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-01 21:29:03,305 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-01 21:29:03,306 - StudentManager - DEBUG - Applying theme...
+2026-02-01 21:29:03,310 - StudentManager - INFO - Theme applied successfully
+2026-02-01 21:29:03,310 - StudentManager - INFO - Application setup complete
+2026-02-01 21:29:03,311 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-01 21:29:03,311 - StudentManager - INFO - Importing main window module...
+2026-02-01 21:29:04,711 - StudentManager - INFO - Main window module imported successfully
+2026-02-01 21:29:04,713 - StudentManager - INFO - Creating main window instance...
+2026-02-01 21:29:04,714 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-01 21:29:04,715 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-01 21:29:04,716 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-01 21:29:04,717 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-01 21:29:04,717 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-01 21:29:05,516 - StudentManager.MainWindow - CRITICAL - FATAL: Error during MainWindow.__init__: 'QFrame' object has no attribute 'addWidget'
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 244, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 334, in _setup_ui
+    self.action_bar = ModernActionBar()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_ui.py", line 33, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_ui.py", line 47, in _setup_ui
+    file_group.addWidget(load_btn)
+AttributeError: 'QFrame' object has no attribute 'addWidget'
+2026-02-01 21:29:37,931 - StudentManager - CRITICAL - FATAL: Failed to create MainWindow: 'QFrame' object has no attribute 'addWidget'
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main.py", line 99, in main
+    window = MainWindow()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 244, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 334, in _setup_ui
+    self.action_bar = ModernActionBar()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_ui.py", line 33, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_ui.py", line 47, in _setup_ui
+    file_group.addWidget(load_btn)
+AttributeError: 'QFrame' object has no attribute 'addWidget'
+2026-02-01 21:29:42,405 - StudentManager - INFO - ================================================================================
+2026-02-01 21:29:42,406 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 1
+2026-02-01 21:29:42,408 - StudentManager - INFO - ================================================================================
