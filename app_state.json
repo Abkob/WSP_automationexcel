@@ -8,15 +8,13 @@
       "type": "base"
     },
     {
-      "name": "STUD_ID: 3",
+      "name": "CUM_GPA < 3.0",
       "filters": [
         {
-          "type": "text",
-          "column": "STUD_ID",
-          "tokens": [
-            "3"
-          ],
-          "case_sensitive": false
+          "type": "numeric",
+          "column": "CUM_GPA",
+          "operator": "<",
+          "value": 3.0
         }
       ],
       "filter_mode": "all",

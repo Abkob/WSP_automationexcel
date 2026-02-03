@@ -1,0 +1,330 @@
+2026-02-03 22:08:48,343 - StudentManager - INFO - ================================================================================
+2026-02-03 22:08:48,344 - StudentManager - INFO - Application Starting
+2026-02-03 22:08:48,344 - StudentManager - INFO - Log file: logs\app_20260203_220848.log
+2026-02-03 22:08:48,345 - StudentManager - INFO - ================================================================================
+2026-02-03 22:08:48,345 - StudentManager - INFO - ================================================================================
+2026-02-03 22:08:48,345 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-03 22:08:48,346 - StudentManager - INFO - ================================================================================
+2026-02-03 22:08:48,346 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-03 22:08:48,346 - StudentManager - INFO - Setting up application...
+2026-02-03 22:08:48,347 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-03 22:08:48,348 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-03 22:08:48,369 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-03 22:08:48,370 - StudentManager - DEBUG - Applying theme...
+2026-02-03 22:08:48,370 - StudentManager - INFO - Theme applied successfully
+2026-02-03 22:08:48,370 - StudentManager - INFO - Application setup complete
+2026-02-03 22:08:48,371 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-03 22:08:48,371 - StudentManager - INFO - Importing main window module...
+2026-02-03 22:08:49,210 - StudentManager - INFO - Main window module imported successfully
+2026-02-03 22:08:49,210 - StudentManager - INFO - Creating main window instance...
+2026-02-03 22:08:49,211 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-03 22:08:49,212 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-03 22:08:49,212 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-03 22:08:49,213 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-03 22:08:49,214 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-03 22:08:49,550 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-03 22:08:49,552 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-03 22:08:49,552 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-03 22:08:49,552 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-03 22:08:49,552 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-03 22:08:49,564 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-03 22:08:49,565 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-03 22:08:49,566 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-03 22:08:49,566 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-03 22:08:49,566 - StudentManager - INFO - Main window created successfully
+2026-02-03 22:08:49,567 - StudentManager - INFO - Showing main window...
+2026-02-03 22:08:49,750 - StudentManager - INFO - Main window displayed successfully
+2026-02-03 22:08:49,751 - StudentManager - INFO - Starting event loop...
+2026-02-03 22:08:51,976 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:51,977 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:51,978 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:51,978 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:51,979 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:51,979 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:51,979 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:51,980 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:51,980 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:51,980 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:51,981 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:51,981 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:51,981 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:51,981 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:51,982 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:51,982 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:51,982 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:51,982 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,021 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:52,021 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,022 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:52,022 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,023 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:52,023 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:52,023 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:52,023 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:52,023 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,024 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:52,024 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,025 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:52,025 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:52,025 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:52,026 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:52,026 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:52,027 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:52,027 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,596 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:59,596 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,597 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:59,597 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,598 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:59,598 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:59,598 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:59,598 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:59,599 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,599 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:59,600 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,600 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:08:59,600 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:08:59,601 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:08:59,601 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:08:59,602 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:08:59,603 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:08:59,603 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,098 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:01,099 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,100 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:01,100 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,100 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:01,101 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:01,101 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:01,102 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:01,102 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,102 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:01,102 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,103 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:01,103 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:01,103 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:01,103 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:01,105 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:01,105 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:01,106 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,944 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:03,945 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,946 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:03,946 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,946 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:03,947 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:03,947 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:03,947 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:03,948 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,948 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:03,949 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,949 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:03,950 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:03,950 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:03,950 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:03,951 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:03,951 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:03,951 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,176 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:06,176 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,177 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:06,178 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,178 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:06,179 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:06,179 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:06,179 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:06,180 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,180 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:06,180 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,181 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:06,181 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:06,182 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:06,182 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:06,182 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:06,183 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:06,183 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,251 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:07,252 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,253 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:07,253 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,254 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:07,254 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:07,254 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:07,255 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:07,255 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,255 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:07,256 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,256 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:07,256 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:07,256 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:07,257 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:07,257 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:07,258 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:07,258 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,238 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:09,239 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,240 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:09,240 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,241 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:09,241 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:09,241 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:09,242 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:09,242 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,242 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:09,243 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,243 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 22:09:09,243 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:09:09,243 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-03 22:09:09,245 - StudentManager - CRITICAL - Exception Value: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+2026-02-03 22:09:09,245 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 22:09:09,246 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'
+
+2026-02-03 22:09:09,246 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 22:24:09,965 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1163, in _on_modern_search_changed
+    proxy.setGlobalSearchTerm(text)
+AttributeError: 'SmartSearchProxy' object has no attribute 'setGlobalSearchTerm'

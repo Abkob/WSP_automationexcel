@@ -1,4 +1,4 @@
-"""
+﻿"""
 Custom UI widgets - Clean design without emojis, high contrast.
 """
 
@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QDialog, QDialogButtonBox, QFormLayout, QTableWidget,
     QTableWidgetItem, QHeaderView, QCheckBox, QGroupBox, QRadioButton,
     QButtonGroup, QTextEdit, QDateEdit, QListWidget, QListWidgetItem,
-    QSizePolicy, QApplication, QMenu
+    QSizePolicy, QApplication, QMenu, QSplitter, QToolButton, QStackedWidget
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QDate
 from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
@@ -124,7 +124,7 @@ class FilterChip(QFrame):
                 color: #FFFFFF;
             }}
         """)
-        open_action = menu.addAction("Open Rule Tab")
+        open_action = menu.addAction("Preview Tab")
         open_action.triggered.connect(lambda: self.openTabRequested.emit(self.filter_rule))
         menu.exec_(event.globalPos())
 
@@ -369,8 +369,10 @@ class FilterDialog(QDialog):
         self.result_filter = None
         
         self.setWindowTitle("Add Filter" if existing_filter is None else "Edit Filter")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(650)
+        self.setMinimumWidth(900)
+        self.setMinimumHeight(600)
+        self.resize(1100, 700)
+        self.setSizeGripEnabled(True)
         
         self._setup_ui()
         
@@ -379,152 +381,42 @@ class FilterDialog(QDialog):
     
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(16)
-        
-        # Form for filter configuration
-        form_layout = QFormLayout()
-        form_layout.setSpacing(12)
-        
-        # Column selection
-        self.column_combo = QComboBox()
-        self.column_combo.setStyleSheet(f"""
-            QComboBox {{
-                padding: 8px;
-                font-size: 10pt;
-                color: {AppTheme.TEXT};
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+
+        self.setStyleSheet(f"""
+            QDialog {{
+                background-color: {AppTheme.BACKGROUND};
             }}
-        """)
-        if not self.df.empty:
-            self.column_combo.addItems([str(c) for c in self.df.columns])
-        self.column_combo.currentTextChanged.connect(self._on_column_changed)
-        form_layout.addRow("Column:", self.column_combo)
-        
-        # Filter type selection
-        type_group = QGroupBox("Filter Type")
-        type_group.setStyleSheet(f"QGroupBox {{ font-weight: 600; color: {AppTheme.TEXT}; }}")
-        type_layout = QVBoxLayout(type_group)
-        
-        self.type_button_group = QButtonGroup()
-        self.numeric_radio = QRadioButton("Numeric Threshold")
-        self.text_radio = QRadioButton("Text Contains")
-        self.date_radio = QRadioButton("Date Range")
-        
-        # Style radio buttons
-        radio_style = f"QRadioButton {{ color: {AppTheme.TEXT}; font-size: 10pt; }}"
-        self.numeric_radio.setStyleSheet(radio_style)
-        self.text_radio.setStyleSheet(radio_style)
-        self.date_radio.setStyleSheet(radio_style)
-        
-        self.type_button_group.addButton(self.numeric_radio, 0)
-        self.type_button_group.addButton(self.text_radio, 1)
-        self.type_button_group.addButton(self.date_radio, 2)
-        
-        self.numeric_radio.setChecked(True)
-        self.numeric_radio.toggled.connect(self._on_type_changed)
-        self.text_radio.toggled.connect(self._on_type_changed)
-        self.date_radio.toggled.connect(self._on_type_changed)
-        
-        type_layout.addWidget(self.numeric_radio)
-        type_layout.addWidget(self.text_radio)
-        type_layout.addWidget(self.date_radio)
-        
-        form_layout.addRow(type_group)
-        
-        # Numeric filter options
-        self.numeric_widget = QWidget()
-        numeric_layout = QFormLayout(self.numeric_widget)
-        numeric_layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.operator_combo = QComboBox()
-        self.operator_combo.addItems(NumericFilter.OPERATORS)
-        self.operator_combo.currentTextChanged.connect(self._update_preview)
-        
-        self.value_spin = QDoubleSpinBox()
-        self.value_spin.setRange(-1e12, 1e12)
-        self.value_spin.setDecimals(4)
-        self.value_spin.valueChanged.connect(self._update_preview)
-        
-        numeric_layout.addRow("Operator:", self.operator_combo)
-        numeric_layout.addRow("Value:", self.value_spin)
-        
-        # Text filter options
-        self.text_widget = QWidget()
-        text_layout = QFormLayout(self.text_widget)
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.tokens_edit = QLineEdit()
-        self.tokens_edit.setPlaceholderText("Comma-separated tokens (e.g., CSE, probation, MEPI)")
-        self.tokens_edit.textChanged.connect(self._update_preview)
-        
-        self.case_sensitive_check = QCheckBox("Case sensitive")
-        self.case_sensitive_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
-        self.case_sensitive_check.stateChanged.connect(self._update_preview)
-        
-        text_layout.addRow("Tokens:", self.tokens_edit)
-        text_layout.addRow("", self.case_sensitive_check)
-        
-        # Date filter options
-        self.date_widget = QWidget()
-        date_layout = QFormLayout(self.date_widget)
-        date_layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.start_date_edit = QDateEdit()
-        self.start_date_edit.setCalendarPopup(True)
-        self.start_date_edit.setDate(QDate.currentDate().addMonths(-1))
-        self.start_date_edit.dateChanged.connect(self._update_preview)
-        
-        self.end_date_edit = QDateEdit()
-        self.end_date_edit.setCalendarPopup(True)
-        self.end_date_edit.setDate(QDate.currentDate())
-        self.end_date_edit.dateChanged.connect(self._update_preview)
-        
-        self.use_start_check = QCheckBox("From:")
-        self.use_start_check.setChecked(True)
-        self.use_start_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
-        self.use_start_check.stateChanged.connect(self._update_preview)
-        
-        self.use_end_check = QCheckBox("To:")
-        self.use_end_check.setChecked(True)
-        self.use_end_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
-        self.use_end_check.stateChanged.connect(self._update_preview)
-        
-        start_layout = QHBoxLayout()
-        start_layout.addWidget(self.use_start_check)
-        start_layout.addWidget(self.start_date_edit)
-        
-        end_layout = QHBoxLayout()
-        end_layout.addWidget(self.use_end_check)
-        end_layout.addWidget(self.end_date_edit)
-        
-        date_layout.addRow(start_layout)
-        date_layout.addRow(end_layout)
-        
-        # Add filter type widgets to form
-        form_layout.addRow(self.numeric_widget)
-        form_layout.addRow(self.text_widget)
-        form_layout.addRow(self.date_widget)
-        
-        # Initially hide text and date widgets
-        self.text_widget.hide()
-        self.date_widget.hide()
-        
-        layout.addLayout(form_layout)
-        
-        # Preview section
-        preview_label = QLabel("Preview:")
-        preview_label.setStyleSheet(f"font-weight: 600; margin-top: 10px; color: {AppTheme.TEXT}; font-size: 11pt;")
-        layout.addWidget(preview_label)
-        
-        self.preview_count_label = QLabel("0 rows match")
-        self.preview_count_label.setStyleSheet(f"color: {AppTheme.PRIMARY}; font-weight: 600; font-size: 10pt;")
-        layout.addWidget(self.preview_count_label)
-        
-        self.preview_table = QTableWidget()
-        self.preview_table.setMaximumHeight(200)
-        self.preview_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.preview_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.preview_table.setAlternatingRowColors(True)
-        self.preview_table.setStyleSheet(f"""
+            QFrame#Panel {{
+                background-color: transparent;
+            }}
+            QFrame#Card {{
+                background-color: {AppTheme.SURFACE};
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 8px;
+            }}
+            QLabel#SectionTitle {{
+                color: {AppTheme.TEXT};
+                font-weight: 700;
+                font-size: 10pt;
+            }}
+            QToolButton#TypeToggle {{
+                padding: 6px 10px;
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 6px;
+                background-color: {AppTheme.BACKGROUND};
+                color: {AppTheme.TEXT};
+                font-weight: 600;
+            }}
+            QToolButton#TypeToggle:checked {{
+                background-color: {AppTheme.PRIMARY};
+                color: #FFFFFF;
+                border-color: {AppTheme.PRIMARY};
+            }}
+            QToolButton#TypeToggle:disabled {{
+                color: {AppTheme.TEXT_SECONDARY};
+            }}
             QTableWidget {{
                 background-color: {AppTheme.BACKGROUND};
                 alternate-background-color: {AppTheme.GRAY_50};
@@ -534,14 +426,6 @@ class FilterDialog(QDialog):
                 border-radius: 4px;
                 selection-background-color: {AppTheme.PRIMARY_LIGHT};
                 selection-color: {AppTheme.TEXT};
-            }}
-            QTableWidget::item {{
-                padding: 4px 8px;
-                border: none;
-            }}
-            QTableWidget::item:selected {{
-                background-color: {AppTheme.PRIMARY_LIGHT};
-                color: {AppTheme.TEXT};
             }}
             QHeaderView::section {{
                 background-color: {AppTheme.SURFACE};
@@ -557,8 +441,251 @@ class FilterDialog(QDialog):
                 border-right: none;
             }}
         """)
-        layout.addWidget(self.preview_table)
-        
+
+        header = QFrame()
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(8, 4, 8, 4)
+        header_layout.setSpacing(4)
+
+        title_text = "Create Filter" if self.existing_filter is None else "Edit Filter"
+        title = QLabel(title_text)
+        title_font = QFont("Segoe UI", 14, QFont.Bold)
+        title.setFont(title_font)
+        title.setStyleSheet(f"color: {AppTheme.TEXT};")
+        header_layout.addWidget(title)
+
+        subtitle = QLabel("Build a rule and preview matching rows in real time.")
+        subtitle.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt;")
+        subtitle.setWordWrap(True)
+        header_layout.addWidget(subtitle)
+
+        layout.addWidget(header)
+
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.setChildrenCollapsible(False)
+        splitter.setHandleWidth(6)
+        layout.addWidget(splitter, 1)
+
+        # Left panel - configuration
+        left_panel = QFrame()
+        left_panel.setObjectName("Panel")
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(12)
+
+        column_card = QFrame()
+        column_card.setObjectName("Card")
+        column_layout = QFormLayout(column_card)
+        column_layout.setContentsMargins(12, 12, 12, 12)
+        column_layout.setSpacing(8)
+
+        self.column_combo = QComboBox()
+        self.column_combo.setStyleSheet(f"""
+            QComboBox {{
+                padding: 8px;
+                font-size: 10pt;
+                color: {AppTheme.TEXT};
+            }}
+        """)
+        if not self.df.empty:
+            self.column_combo.addItems([str(c) for c in self.df.columns])
+        self.column_combo.currentTextChanged.connect(self._on_column_changed)
+        column_layout.addRow("Column:", self.column_combo)
+        left_layout.addWidget(column_card)
+
+        type_card = QFrame()
+        type_card.setObjectName("Card")
+        type_layout = QVBoxLayout(type_card)
+        type_layout.setContentsMargins(12, 12, 12, 12)
+        type_layout.setSpacing(10)
+
+        type_title = QLabel("Filter Type")
+        type_title.setObjectName("SectionTitle")
+        type_layout.addWidget(type_title)
+
+        type_buttons = QHBoxLayout()
+        type_buttons.setSpacing(6)
+
+        self.type_button_group = QButtonGroup()
+
+        self.numeric_radio = QToolButton()
+        self.numeric_radio.setText("Numeric")
+        self.numeric_radio.setCheckable(True)
+        self.numeric_radio.setObjectName("TypeToggle")
+        self.type_button_group.addButton(self.numeric_radio, 0)
+        self.numeric_radio.toggled.connect(self._on_type_changed)
+
+        self.text_radio = QToolButton()
+        self.text_radio.setText("Text")
+        self.text_radio.setCheckable(True)
+        self.text_radio.setObjectName("TypeToggle")
+        self.type_button_group.addButton(self.text_radio, 1)
+        self.text_radio.toggled.connect(self._on_type_changed)
+
+        self.date_radio = QToolButton()
+        self.date_radio.setText("Date")
+        self.date_radio.setCheckable(True)
+        self.date_radio.setObjectName("TypeToggle")
+        self.type_button_group.addButton(self.date_radio, 2)
+        self.date_radio.toggled.connect(self._on_type_changed)
+
+        self.numeric_radio.setChecked(True)
+
+        type_buttons.addWidget(self.numeric_radio)
+        type_buttons.addWidget(self.text_radio)
+        type_buttons.addWidget(self.date_radio)
+        type_buttons.addStretch()
+        type_layout.addLayout(type_buttons)
+
+        self.type_stack = QStackedWidget()
+
+        # Numeric filter options
+        self.numeric_widget = QWidget()
+        numeric_layout = QFormLayout(self.numeric_widget)
+        numeric_layout.setContentsMargins(0, 0, 0, 0)
+        numeric_layout.setSpacing(6)
+
+        self.operator_combo = QComboBox()
+        self.operator_combo.addItems(NumericFilter.OPERATORS)
+        self.operator_combo.currentTextChanged.connect(self._update_preview)
+
+        self.value_spin = QDoubleSpinBox()
+        self.value_spin.setRange(-1e12, 1e12)
+        self.value_spin.setDecimals(4)
+        self.value_spin.valueChanged.connect(self._update_preview)
+
+        numeric_layout.addRow("Operator:", self.operator_combo)
+        numeric_layout.addRow("Value:", self.value_spin)
+
+        # Text filter options
+        self.text_widget = QWidget()
+        text_layout = QFormLayout(self.text_widget)
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(6)
+
+        self.tokens_edit = QLineEdit()
+        self.tokens_edit.setPlaceholderText("Comma-separated tokens (e.g., CSE, probation)")
+        self.tokens_edit.textChanged.connect(self._update_preview)
+
+        self.case_sensitive_check = QCheckBox("Case sensitive")
+        self.case_sensitive_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
+        self.case_sensitive_check.stateChanged.connect(self._update_preview)
+
+        text_layout.addRow("Tokens:", self.tokens_edit)
+        text_layout.addRow("", self.case_sensitive_check)
+
+        # Date filter options
+        self.date_widget = QWidget()
+        date_layout = QFormLayout(self.date_widget)
+        date_layout.setContentsMargins(0, 0, 0, 0)
+        date_layout.setSpacing(6)
+
+        self.start_date_edit = QDateEdit()
+        self.start_date_edit.setCalendarPopup(True)
+        self.start_date_edit.setDate(QDate.currentDate().addMonths(-1))
+        self.start_date_edit.dateChanged.connect(self._update_preview)
+
+        self.end_date_edit = QDateEdit()
+        self.end_date_edit.setCalendarPopup(True)
+        self.end_date_edit.setDate(QDate.currentDate())
+        self.end_date_edit.dateChanged.connect(self._update_preview)
+
+        self.use_start_check = QCheckBox("From:")
+        self.use_start_check.setChecked(True)
+        self.use_start_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
+        self.use_start_check.stateChanged.connect(self._update_preview)
+
+        self.use_end_check = QCheckBox("To:")
+        self.use_end_check.setChecked(True)
+        self.use_end_check.setStyleSheet(f"QCheckBox {{ color: {AppTheme.TEXT}; }}")
+        self.use_end_check.stateChanged.connect(self._update_preview)
+
+        start_layout = QHBoxLayout()
+        start_layout.addWidget(self.use_start_check)
+        start_layout.addWidget(self.start_date_edit)
+
+        end_layout = QHBoxLayout()
+        end_layout.addWidget(self.use_end_check)
+        end_layout.addWidget(self.end_date_edit)
+
+        date_layout.addRow(start_layout)
+        date_layout.addRow(end_layout)
+
+        self.type_stack.addWidget(self.numeric_widget)
+        self.type_stack.addWidget(self.text_widget)
+        self.type_stack.addWidget(self.date_widget)
+
+        type_layout.addWidget(self.type_stack)
+        left_layout.addWidget(type_card, 1)
+
+        summary_card = QFrame()
+        summary_card.setObjectName("Card")
+        summary_layout = QVBoxLayout(summary_card)
+        summary_layout.setContentsMargins(12, 12, 12, 12)
+        summary_layout.setSpacing(6)
+
+        summary_title = QLabel("Summary")
+        summary_title.setObjectName("SectionTitle")
+        summary_layout.addWidget(summary_title)
+
+        self.summary_label = QLabel("Set a column and filter values to preview the rule.")
+        self.summary_label.setWordWrap(True)
+        self.summary_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY};")
+        summary_layout.addWidget(self.summary_label)
+
+        left_layout.addWidget(summary_card)
+        left_layout.addStretch()
+
+        splitter.addWidget(left_panel)
+
+        # Right panel - preview
+        preview_panel = QFrame()
+        preview_panel.setObjectName("Panel")
+        preview_layout = QVBoxLayout(preview_panel)
+        preview_layout.setContentsMargins(0, 0, 0, 0)
+        preview_layout.setSpacing(8)
+
+        preview_header = QHBoxLayout()
+        preview_title = QLabel("Preview")
+        preview_title.setObjectName("SectionTitle")
+        preview_header.addWidget(preview_title)
+        preview_header.addStretch()
+
+        self.preview_count_label = QLabel("0 rows match")
+        self.preview_count_label.setStyleSheet(f"color: {AppTheme.PRIMARY}; font-weight: 600; font-size: 10pt;")
+        preview_header.addWidget(self.preview_count_label)
+        preview_layout.addLayout(preview_header)
+
+        preview_controls = QHBoxLayout()
+        rows_label = QLabel("Rows:")
+        rows_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt;")
+        preview_controls.addWidget(rows_label)
+
+        self.preview_limit_spin = QSpinBox()
+        self.preview_limit_spin.setRange(1, 200)
+        self.preview_limit_spin.setValue(10)
+        self.preview_limit_spin.setFixedWidth(70)
+        self.preview_limit_spin.valueChanged.connect(self._update_preview)
+        preview_controls.addWidget(self.preview_limit_spin)
+        preview_controls.addStretch()
+        preview_layout.addLayout(preview_controls)
+
+        self.preview_table = QTableWidget()
+        self.preview_table.setMinimumHeight(260)
+        self.preview_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.preview_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.preview_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.preview_table.setAlternatingRowColors(True)
+        self.preview_table.setSortingEnabled(True)
+        self.preview_table.setWordWrap(False)
+        self.preview_table.verticalHeader().setVisible(False)
+        preview_layout.addWidget(self.preview_table, 1)
+
+        splitter.addWidget(preview_panel)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([360, 640])
+
         # Buttons
         button_box = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
@@ -566,10 +693,11 @@ class FilterDialog(QDialog):
         button_box.accepted.connect(self._on_accept)
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
-        
+
         # Initial preview
+        self._on_type_changed()
         self._update_preview()
-    
+
     def _on_column_changed(self):
         """Update available options when column changes."""
         column = self.column_combo.currentText()
@@ -598,31 +726,38 @@ class FilterDialog(QDialog):
     def _on_type_changed(self):
         """Show/hide appropriate widgets when filter type changes."""
         if self.numeric_radio.isChecked():
-            self.numeric_widget.show()
-            self.text_widget.hide()
-            self.date_widget.hide()
+            self.type_stack.setCurrentWidget(self.numeric_widget)
         elif self.text_radio.isChecked():
-            self.numeric_widget.hide()
-            self.text_widget.show()
-            self.date_widget.hide()
+            self.type_stack.setCurrentWidget(self.text_widget)
         elif self.date_radio.isChecked():
-            self.numeric_widget.hide()
-            self.text_widget.hide()
-            self.date_widget.show()
+            self.type_stack.setCurrentWidget(self.date_widget)
         
         self._update_preview()
     
     def _update_preview(self):
         """Update the preview table with matching rows."""
         if self.df.empty:
+            self.preview_table.setRowCount(0)
+            self.preview_table.setColumnCount(0)
+            self.preview_count_label.setText("No data loaded")
+            if hasattr(self, "summary_label"):
+                self.summary_label.setText("Load data to preview matching rows.")
             return
         
         try:
             temp_filter = self._create_filter()
             if temp_filter is None:
+                if hasattr(self, "summary_label"):
+                    self.summary_label.setText("Complete the fields to build a rule.")
+                self.preview_table.setRowCount(0)
+                self.preview_table.setColumnCount(0)
+                self.preview_count_label.setText("0 rows match")
                 return
         except Exception:
             return
+
+        if hasattr(self, "summary_label"):
+            self.summary_label.setText(str(temp_filter))
         
         column = self.column_combo.currentText()
         if column not in self.df.columns:
@@ -636,10 +771,17 @@ class FilterDialog(QDialog):
         count = len(matching_rows)
         self.preview_count_label.setText(f"{count} row{'s' if count != 1 else ''} match")
         
-        preview_rows = matching_rows[:10]
+        limit = 10
+        if hasattr(self, "preview_limit_spin"):
+            try:
+                limit = max(1, int(self.preview_limit_spin.value()))
+            except Exception:
+                limit = 10
+        preview_rows = matching_rows[:limit]
         self.preview_table.clear()
         
         if preview_rows:
+            self.preview_table.setSortingEnabled(False)
             self.preview_table.setRowCount(len(preview_rows))
             self.preview_table.setColumnCount(len(self.df.columns))
             self.preview_table.setHorizontalHeaderLabels([str(c) for c in self.df.columns])
@@ -657,6 +799,10 @@ class FilterDialog(QDialog):
             
             self.preview_table.resizeColumnsToContents()
             self.preview_table.horizontalHeader().setStretchLastSection(True)
+            self.preview_table.setSortingEnabled(True)
+        else:
+            self.preview_table.setRowCount(0)
+            self.preview_table.setColumnCount(0)
     
     def _create_filter(self) -> Optional[FilterRule]:
         """Create a FilterRule from current dialog settings."""

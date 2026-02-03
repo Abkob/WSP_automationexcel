@@ -311,11 +311,16 @@ class MainWindow(QMainWindow):
         content_splitter = QSplitter(Qt.Horizontal)
         content_splitter.setChildrenCollapsible(False)
         content_splitter.setHandleWidth(6)
+        self.content_splitter = content_splitter
 
         # === LEFT: MODERN FILTER PANEL ===
         self.filter_panel = ModernFilterPanel()
         self.filter_panel.setMinimumWidth(280)
         self.filter_panel.setMaximumWidth(360)
+        self._filter_panel_min_width = 280
+        self._filter_panel_max_width = 360
+        self._filter_panel_collapsed = False
+        self._filter_panel_sizes = None
         self.filter_panel.setStyleSheet(f"""
             ModernFilterPanel {{
                 background-color: {AppTheme.SURFACE};
@@ -558,6 +563,7 @@ class MainWindow(QMainWindow):
         self.filter_panel.allFiltersCleared.connect(self._on_clear_all_filters)
         self.filter_panel.filterModeChanged.connect(self._on_filter_mode_changed)
         self.filter_panel.ruleTabRequested.connect(self._on_open_rule_tab)
+        self.filter_panel.collapseToggled.connect(self._on_filter_panel_collapse_toggled)
         self.filter_panel.add_btn.clicked.connect(self._on_add_filter)
 
         # === TABLE VIEW ===
@@ -823,7 +829,11 @@ class MainWindow(QMainWindow):
                 return
 
             if getattr(current_widget, "tab_kind", None) == "base":
-                self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+                self._create_filter_tab(
+                    [filter_rule],
+                    filter_mode=self.filter_panel.get_filter_mode(),
+                    switch_to=False
+                )
             else:
                 self._add_filter_to_tab(current_widget, filter_rule)
     
@@ -849,7 +859,11 @@ class MainWindow(QMainWindow):
                 return
 
             if getattr(current_widget, "tab_kind", None) == "base":
-                self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+                self._create_filter_tab(
+                    [filter_rule],
+                    filter_mode=self.filter_panel.get_filter_mode(),
+                    switch_to=False
+                )
             else:
                 self._add_filter_to_tab(current_widget, filter_rule)
     
@@ -866,6 +880,12 @@ class MainWindow(QMainWindow):
         current_widget = self._get_current_tab_widget()
         if current_widget is None:
             return
+        if getattr(current_widget, "tab_kind", None) == "base":
+            rule_widget = self._find_rule_tab_for_filter(filter_rule)
+            if rule_widget is not None:
+                self._remove_filter_from_tab(rule_widget, filter_rule)
+                self._sync_filter_panel_for_tab(current_widget)
+                return
         self._remove_filter_from_tab(current_widget, filter_rule)
 
     def _on_filter_edited(self, filter_rule, _new_filter):
@@ -882,17 +902,23 @@ class MainWindow(QMainWindow):
                 current_widget = self._get_current_tab_widget()
                 if current_widget is None:
                     return
-                filters, mode = self._ensure_tab_filter_state(current_widget)
+                target_widget = current_widget
+                if getattr(current_widget, "tab_kind", None) == "base":
+                    rule_widget = self._find_rule_tab_for_filter(filter_rule)
+                    if rule_widget is not None:
+                        target_widget = rule_widget
+
+                filters, mode = self._ensure_tab_filter_state(target_widget)
                 for i, existing in enumerate(filters):
                     if existing == filter_rule:
                         filters[i] = new_filter
                         break
-                current_widget.tab_filters = filters
-                if getattr(current_widget, "tab_kind", None) == "rule":
-                    self._rebuild_rule_tab(current_widget)
+                target_widget.tab_filters = filters
+                if getattr(target_widget, "tab_kind", None) == "rule":
+                    self._rebuild_rule_tab(target_widget)
                     self._refresh_rule_state()
                 else:
-                    self._apply_tab_filters(current_widget)
+                    self._apply_tab_filters(target_widget)
                 self._sync_filter_panel_for_tab(current_widget)
                 self._update_column_navigator()
                 self._update_ui_state()
@@ -912,7 +938,11 @@ class MainWindow(QMainWindow):
         """Open a dedicated tab for a specific filter rule (right-click menu)."""
         if filter_rule is None:
             return
-        # Create a dedicated tab for this single rule
+        # Show existing preview tab or create it if missing
+        existing_widget = self._find_rule_tab_for_filter(filter_rule)
+        if existing_widget is not None:
+            self._show_rule_tab(existing_widget)
+            return
         self._create_filter_tab([filter_rule], filter_mode="all", switch_to=True)
 
     def _create_filter_tab(self, filter_rules, insert_index: Optional[int] = None,
@@ -964,7 +994,10 @@ class MainWindow(QMainWindow):
             switch_to=switch_to
         )
         if switch_to:
+            self._show_rule_tab(table_view)
             self._sync_filter_panel_for_tab(table_view)
+        else:
+            self._hide_rule_tab(table_view)
         self._update_column_navigator()
         self._update_ui_state()
         if refresh_rules:
@@ -996,10 +1029,8 @@ class MainWindow(QMainWindow):
         if tab_kind == "filtered":
             return
         if tab_kind == "rule":
-            self.tab_widget.removeTab(index)
             if widget:
-                widget.deleteLater()
-            self._refresh_rule_state()
+                self._hide_rule_tab(widget)
             self._save_state()
         else:
             # Custom or file tab: just close the view.
@@ -1109,7 +1140,7 @@ class MainWindow(QMainWindow):
                     list(preset.filters),
                     tab_name=preset.name,
                     filter_mode="all",
-                    switch_to=True
+                    switch_to=False
                 )
             else:
                 self._clear_filters_for_tab(current_widget)
@@ -1332,6 +1363,28 @@ class MainWindow(QMainWindow):
     def _get_current_tab_widget(self):
         return self.tab_widget.widget(self.tab_widget.currentIndex())
 
+    def _set_tab_visible(self, index: int, visible: bool):
+        tab_bar = self.tab_widget.tabBar()
+        if hasattr(tab_bar, "setTabVisible"):
+            tab_bar.setTabVisible(index, visible)
+        else:
+            tab_bar.setTabEnabled(index, visible)
+
+    def _show_rule_tab(self, widget):
+        index = self.tab_widget.indexOf(widget)
+        if index < 0:
+            return
+        self._set_tab_visible(index, True)
+        self.tab_widget.setCurrentIndex(index)
+
+    def _hide_rule_tab(self, widget):
+        index = self.tab_widget.indexOf(widget)
+        if index < 0:
+            return
+        self._set_tab_visible(index, False)
+        if self.tab_widget.currentIndex() == index:
+            self.tab_widget.setCurrentIndex(0)
+
     def _iter_rule_tabs(self):
         for i in range(self.tab_widget.count()):
             widget = self.tab_widget.widget(i)
@@ -1345,6 +1398,31 @@ class MainWindow(QMainWindow):
             if filters:
                 rules.append((filters, mode))
         return rules
+
+    def _find_rule_tab_for_filter(self, filter_rule):
+        """Return the rule tab widget that owns the given filter rule."""
+        for _, widget in self._iter_rule_tabs():
+            filters, _ = self._ensure_tab_filter_state(widget)
+            if filter_rule in filters:
+                return widget
+        return None
+
+    def _get_active_rule_filters(self):
+        """Return rule filters whose rule tabs have at least one matching row."""
+        active_filters: List[FilterRule] = []
+        for _, widget in self._iter_rule_tabs():
+            filters, _ = self._ensure_tab_filter_state(widget)
+            if not filters:
+                continue
+            proxy = widget.model() if hasattr(widget, "model") else None
+            source_model = proxy.sourceModel() if proxy and hasattr(proxy, "sourceModel") else None
+            try:
+                row_count = source_model.rowCount() if source_model is not None else 0
+            except Exception:
+                row_count = 0
+            if row_count > 0:
+                active_filters.extend(filters)
+        return active_filters
 
     def _row_matches_filters(self, row, filters, mode: str) -> bool:
         if not filters:
@@ -1552,6 +1630,21 @@ class MainWindow(QMainWindow):
 
     def _sync_filter_panel_for_tab(self, widget):
         self.filter_panel.clear_all_chips()
+        if widget is None:
+            return
+
+        tab_kind = getattr(widget, "tab_kind", None)
+        if tab_kind == "base":
+            base_filters, mode = self._ensure_tab_filter_state(widget)
+            display_filters = list(base_filters)
+            for filter_rule in self._get_active_rule_filters():
+                if filter_rule not in display_filters:
+                    display_filters.append(filter_rule)
+            for filter_rule in display_filters:
+                self.filter_panel.add_filter_chip(filter_rule)
+            self.filter_panel.set_filter_mode(mode)
+            return
+
         filters, mode = self._ensure_tab_filter_state(widget)
         for filter_rule in filters:
             self.filter_panel.add_filter_chip(filter_rule)
@@ -1681,6 +1774,7 @@ class MainWindow(QMainWindow):
 
     def _wire_table_view(self, table_view: StyledTableView, allow_filters: bool = True):
         table_view.cellEditRequested.connect(self._on_edit_cell)
+        table_view.allow_column_filters = allow_filters
         if allow_filters:
             table_view.columnFilterRequested.connect(self._on_add_filter_for_column)
 
@@ -1742,6 +1836,36 @@ class MainWindow(QMainWindow):
             if button is not None:
                 button.setEnabled(enabled)
 
+    def _set_filter_panel_collapsed(self, collapsed: bool):
+        if collapsed == getattr(self, "_filter_panel_collapsed", False):
+            return
+        self._filter_panel_collapsed = collapsed
+
+        if not hasattr(self, "filter_panel") or not hasattr(self, "content_splitter"):
+            return
+
+        self.filter_panel.set_collapsed(collapsed)
+
+        if collapsed:
+            self._filter_panel_sizes = self.content_splitter.sizes()
+            self.filter_panel.setMinimumWidth(50)
+            self.filter_panel.setMaximumWidth(50)
+            total = sum(self.content_splitter.sizes()) or self.width()
+            self.content_splitter.setSizes([50, max(1, total - 50)])
+        else:
+            self.filter_panel.setMinimumWidth(self._filter_panel_min_width)
+            self.filter_panel.setMaximumWidth(self._filter_panel_max_width)
+            sizes = self._filter_panel_sizes
+            if sizes and len(sizes) >= 2:
+                self.content_splitter.setSizes(sizes)
+            else:
+                total = sum(self.content_splitter.sizes()) or self.width()
+                left = self._filter_panel_min_width
+                self.content_splitter.setSizes([left, max(1, total - left)])
+
+    def _on_filter_panel_collapse_toggled(self, collapsed: bool):
+        self._set_filter_panel_collapsed(collapsed)
+
     def _sync_active_tab_context(self):
         """Update UI elements based on the active tab's model."""
         current_model = self._get_current_model() or self.model
@@ -1752,6 +1876,10 @@ class MainWindow(QMainWindow):
         self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
 
         if current_widget is not None:
+            # Default: show action/mode controls for non-filtered tabs
+            self.filter_panel.set_action_controls_visible(True)
+            self.filter_panel.set_mode_visible(True)
+            self.filter_panel.set_collapse_available(True)
             if tab_kind == "base":
                 self.filter_panel.set_context("Rules", "Add a filter to create a rule tab")
                 self.filter_panel.set_mode_enabled(False)
@@ -1772,6 +1900,12 @@ class MainWindow(QMainWindow):
                 self.filter_panel.set_context("Filtered", "Rows matching active rules")
                 self.filter_panel.set_mode_enabled(False)
                 self.filter_panel.add_btn.setText("Add Filter")
+                self.filter_panel.set_action_controls_visible(False)
+                self.filter_panel.set_mode_visible(False)
+                self.filter_panel.set_collapse_available(True)
+
+            if getattr(self, "_filter_panel_collapsed", False):
+                self.filter_panel.set_collapsed(True)
         self._update_search_columns(current_model)
         self._apply_search_to_all_tabs()
         self._update_column_navigator(current_model)

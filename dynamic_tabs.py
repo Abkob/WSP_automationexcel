@@ -6,7 +6,7 @@ Concept:
 - Each filter creates a new tab automatically
 - Tab shows filter name (e.g., "GPA >= 3.5", "Status: Active")
 - Can view multiple filter results simultaneously
-- Close tab = remove filter
+- Close preview tab hides it (rule stays active)
 - Rename tabs for better organization
 """
 
@@ -144,15 +144,16 @@ class DynamicTabWidget(QTabWidget):
         tab_kind = getattr(widget, "tab_kind", None)
         if tab_kind == "filtered":
             return
+        if tab_kind == "rule":
+            # Hide preview; keep rule active.
+            self.tabClosed.emit(index)
+            return
         
         # Confirm close
         tab_name = self.tabText(index)
         from PyQt5.QtWidgets import QMessageBox
         
-        if tab_kind == "rule":
-            message = f"Remove the '{tab_name}' tab?\n\nThis will remove the associated rule."
-        else:
-            message = f"Close the '{tab_name}' tab?"
+        message = f"Close the '{tab_name}' tab?"
         
         reply = QMessageBox.question(
             self,
@@ -210,7 +211,8 @@ class DynamicTabWidget(QTabWidget):
             menu.addSeparator()
 
             # Close action
-            close_action = menu.addAction("Close Tab")
+            close_label = "Hide Preview" if tab_kind == "rule" else "Close Tab"
+            close_action = menu.addAction(close_label)
             close_action.triggered.connect(lambda: self._on_tab_close_requested(index))
         
         # Show menu

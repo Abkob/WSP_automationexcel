@@ -24,6 +24,7 @@ class StyledTableView(QTableView):
     
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.allow_column_filters = True
         self._setup_ui()
         self._setup_context_menu()
     
@@ -143,11 +144,11 @@ class StyledTableView(QTableView):
             }}
         """)
         
-        add_filter = QAction(f"Add Filter to '{col_name}'", self)
-        add_filter.triggered.connect(lambda: self.columnFilterRequested.emit(col_name))
-        menu.addAction(add_filter)
-        
-        menu.addSeparator()
+        if self.allow_column_filters:
+            add_filter = QAction(f"Add Filter to '{col_name}'", self)
+            add_filter.triggered.connect(lambda: self.columnFilterRequested.emit(col_name))
+            menu.addAction(add_filter)
+            menu.addSeparator()
         
         sort_asc = QAction("Sort Ascending", self)
         sort_asc.triggered.connect(lambda: self.sortByColumn(logical_index, Qt.AscendingOrder))

@@ -1,0 +1,51 @@
+2026-02-03 22:29:48,124 - StudentManager - INFO - ================================================================================
+2026-02-03 22:29:48,124 - StudentManager - INFO - Application Starting
+2026-02-03 22:29:48,125 - StudentManager - INFO - Log file: logs\app_20260203_222948.log
+2026-02-03 22:29:48,125 - StudentManager - INFO - ================================================================================
+2026-02-03 22:29:48,125 - StudentManager - INFO - ================================================================================
+2026-02-03 22:29:48,125 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-03 22:29:48,131 - StudentManager - INFO - ================================================================================
+2026-02-03 22:29:48,131 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-03 22:29:48,131 - StudentManager - INFO - Setting up application...
+2026-02-03 22:29:48,131 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-03 22:29:48,132 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-03 22:29:48,154 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-03 22:29:48,154 - StudentManager - DEBUG - Applying theme...
+2026-02-03 22:29:48,155 - StudentManager - INFO - Theme applied successfully
+2026-02-03 22:29:48,155 - StudentManager - INFO - Application setup complete
+2026-02-03 22:29:48,156 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-03 22:29:48,156 - StudentManager - INFO - Importing main window module...
+2026-02-03 22:29:48,907 - StudentManager - INFO - Main window module imported successfully
+2026-02-03 22:29:48,908 - StudentManager - INFO - Creating main window instance...
+2026-02-03 22:29:48,908 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-03 22:29:48,909 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-03 22:29:48,909 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-03 22:29:48,910 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-03 22:29:48,910 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-03 22:29:48,914 - StudentManager.MainWindow - CRITICAL - FATAL: Error during MainWindow.__init__: name 'control_bar' is not defined
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 244, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 317, in _setup_ui
+    self.filter_panel = ModernFilterPanel()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 190, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 306, in _setup_ui
+    control_bar.setStyleSheet(f"""
+NameError: name 'control_bar' is not defined
+2026-02-03 22:29:48,916 - StudentManager - CRITICAL - FATAL: Failed to create MainWindow: name 'control_bar' is not defined
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main.py", line 99, in main
+    window = MainWindow()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 244, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 317, in _setup_ui
+    self.filter_panel = ModernFilterPanel()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 190, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 306, in _setup_ui
+    control_bar.setStyleSheet(f"""
+NameError: name 'control_bar' is not defined
+2026-02-03 22:29:53,579 - StudentManager - INFO - ================================================================================
+2026-02-03 22:29:53,579 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 1
+2026-02-03 22:29:53,580 - StudentManager - INFO - ================================================================================

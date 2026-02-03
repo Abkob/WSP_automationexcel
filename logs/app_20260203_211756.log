@@ -1,0 +1,211 @@
+2026-02-03 21:17:56,007 - StudentManager - INFO - ================================================================================
+2026-02-03 21:17:56,008 - StudentManager - INFO - Application Starting
+2026-02-03 21:17:56,010 - StudentManager - INFO - Log file: logs\app_20260203_211756.log
+2026-02-03 21:17:56,010 - StudentManager - INFO - ================================================================================
+2026-02-03 21:17:56,010 - StudentManager - INFO - ================================================================================
+2026-02-03 21:17:56,010 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-03 21:17:56,011 - StudentManager - INFO - ================================================================================
+2026-02-03 21:17:56,012 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-03 21:17:56,012 - StudentManager - INFO - Setting up application...
+2026-02-03 21:17:56,012 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-03 21:17:56,014 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-03 21:17:56,089 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-03 21:17:56,090 - StudentManager - DEBUG - Applying theme...
+2026-02-03 21:17:56,098 - StudentManager - INFO - Theme applied successfully
+2026-02-03 21:17:56,098 - StudentManager - INFO - Application setup complete
+2026-02-03 21:17:56,098 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-03 21:17:56,098 - StudentManager - INFO - Importing main window module...
+2026-02-03 21:17:58,138 - StudentManager - INFO - Main window module imported successfully
+2026-02-03 21:17:58,139 - StudentManager - INFO - Creating main window instance...
+2026-02-03 21:17:58,139 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-03 21:17:58,150 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-03 21:17:58,152 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-03 21:17:58,156 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-03 21:17:58,156 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-03 21:17:58,770 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-03 21:17:58,773 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-03 21:17:58,774 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-03 21:17:58,774 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-03 21:17:58,775 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-03 21:17:58,788 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-03 21:17:58,790 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-03 21:17:58,793 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-03 21:17:58,794 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-03 21:17:58,794 - StudentManager - INFO - Main window created successfully
+2026-02-03 21:17:58,795 - StudentManager - INFO - Showing main window...
+2026-02-03 21:17:59,009 - StudentManager - INFO - Main window displayed successfully
+2026-02-03 21:17:59,009 - StudentManager - INFO - Starting event loop...
+2026-02-03 21:18:33,280 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:33,285 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:33,286 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 21:18:33,287 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:33,287 - StudentManager - CRITICAL - Exception Type: RuntimeError
+2026-02-03 21:18:33,287 - StudentManager - CRITICAL - Exception Value: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:33,287 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 21:18:33,287 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+
+2026-02-03 21:18:33,288 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:33,288 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 826, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 967, in _create_filter_tab
+    self._sync_filter_panel_for_tab(table_view)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:33,289 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:33,289 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 21:18:33,289 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:33,290 - StudentManager - CRITICAL - Exception Type: RuntimeError
+2026-02-03 21:18:33,290 - StudentManager - CRITICAL - Exception Value: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:33,290 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 21:18:33,290 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 826, in _on_add_filter
+    self._create_filter_tab([filter_rule], filter_mode=self.filter_panel.get_filter_mode())
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 967, in _create_filter_tab
+    self._sync_filter_panel_for_tab(table_view)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+
+2026-02-03 21:18:33,291 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:58,287 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:58,288 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:58,290 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 21:18:58,291 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:18:58,291 - StudentManager - CRITICAL - Exception Type: RuntimeError
+2026-02-03 21:18:58,291 - StudentManager - CRITICAL - Exception Value: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:18:58,292 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 21:18:58,292 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+
+2026-02-03 21:18:58,293 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:08,328 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:19:08,329 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:08,331 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 21:19:08,331 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:08,331 - StudentManager - CRITICAL - Exception Type: RuntimeError
+2026-02-03 21:19:08,332 - StudentManager - CRITICAL - Exception Value: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:19:08,332 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 21:19:08,332 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+
+2026-02-03 21:19:08,334 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:18,269 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:19:18,271 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:18,273 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-03 21:19:18,273 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:19:18,273 - StudentManager - CRITICAL - Exception Type: RuntimeError
+2026-02-03 21:19:18,274 - StudentManager - CRITICAL - Exception Value: wrapped C/C++ object of type QLabel has been deleted
+2026-02-03 21:19:18,274 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-03 21:19:18,275 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1222, in _on_tab_changed
+    self._sync_active_tab_context()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1752, in _sync_active_tab_context
+    self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 1554, in _sync_filter_panel_for_tab
+    self.filter_panel.clear_all_chips()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 443, in clear_all_chips
+    self.clear_all_filters()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\modern_filter_panel.py", line 395, in clear_all_filters
+    self.empty_label.show()
+RuntimeError: wrapped C/C++ object of type QLabel has been deleted
+
+2026-02-03 21:19:18,275 - StudentManager - CRITICAL - ================================================================================
+2026-02-03 21:29:16,372 - StudentManager - INFO - Application exited with code: 0
+2026-02-03 21:29:16,372 - StudentManager - INFO - ================================================================================
+2026-02-03 21:29:16,374 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 0
+2026-02-03 21:29:16,375 - StudentManager - INFO - ================================================================================

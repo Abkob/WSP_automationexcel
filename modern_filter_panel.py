@@ -5,7 +5,7 @@ Streamlined for 2-3 click workflow
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QComboBox, QMenu
+    QScrollArea, QFrame, QComboBox, QMenu, QToolButton
 )
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -162,7 +162,7 @@ class ModernFilterChip(QFrame):
         edit_action = menu.addAction("✏️ Edit Rule")
         edit_action.triggered.connect(lambda: self.editClicked.emit(self.filter_rule))
 
-        tab_action = menu.addAction("📂 Open in New Tab")
+        tab_action = menu.addAction("Preview Tab")
         tab_action.triggered.connect(lambda: self.tabRequested.emit(self.filter_rule))
 
         menu.addSeparator()
@@ -182,6 +182,7 @@ class ModernFilterPanel(QWidget):
     allFiltersCleared = pyqtSignal()
     filterModeChanged = pyqtSignal(str)
     ruleTabRequested = pyqtSignal(object)
+    collapseToggled = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -195,34 +196,67 @@ class ModernFilterPanel(QWidget):
         layout.setSpacing(0)
 
         # Header
-        header = QFrame()
-        header.setObjectName("FilterPanelHeader")
-        header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(16, 16, 16, 12)
+        self.header = QFrame()
+        self.header.setObjectName("FilterPanelHeader")
+        header_layout = QVBoxLayout(self.header)
+        header_layout.setContentsMargins(12, 12, 12, 10)
         header_layout.setSpacing(8)
 
-        # Title
-        title = QLabel("⚙️ Filter Rules")
-        title.setStyleSheet(f"color: {AppTheme.TEXT}; font-size: 13pt; font-weight: 700;")
-        header_layout.addWidget(title)
+        # Title row
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setSpacing(8)
+
+        self.title_label = QLabel("⚙️ Filter Rules")
+        self.title_label.setStyleSheet(f"color: {AppTheme.TEXT}; font-size: 13pt; font-weight: 700;")
+        title_row.addWidget(self.title_label, 1)
+
+        self.collapse_btn = QToolButton()
+        self.collapse_btn.setObjectName("FilterPanelCollapse")
+        self.collapse_btn.setCheckable(False)  # Use click, not toggle
+        self.collapse_btn.setText("◀")
+        self.collapse_btn.setToolTip("Collapse panel")
+        self.collapse_btn.setFixedSize(28, 28)
+        self.collapse_btn.setStyleSheet(f"""
+            QToolButton {{
+                border: 1px solid {AppTheme.BORDER};
+                background-color: {AppTheme.SURFACE};
+                color: {AppTheme.TEXT};
+                border-radius: 4px;
+                padding: 0px;
+                font-weight: 700;
+                font-size: 12pt;
+            }}
+            QToolButton:hover {{
+                background-color: {AppTheme.PRIMARY};
+                color: #FFFFFF;
+                border-color: {AppTheme.PRIMARY};
+            }}
+        """)
+        self.collapse_btn.clicked.connect(self._on_collapse_clicked)
+        self.collapse_btn.setVisible(False)
+        self._is_collapsed = False
+        title_row.addWidget(self.collapse_btn, 0, Qt.AlignRight)
+
+        header_layout.addLayout(title_row)
 
         # Subtitle
-        subtitle = QLabel("Apply rules to filter data")
-        subtitle.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt;")
-        subtitle.setWordWrap(True)
-        header_layout.addWidget(subtitle)
+        self.subtitle_label = QLabel("Apply rules to filter data")
+        self.subtitle_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt;")
+        self.subtitle_label.setWordWrap(True)
+        header_layout.addWidget(self.subtitle_label)
 
-        header.setStyleSheet(f"""
+        self.header.setStyleSheet(f"""
             #FilterPanelHeader {{
                 background-color: {AppTheme.PRIMARY_LIGHT};
                 border-bottom: 2px solid {AppTheme.PRIMARY};
             }}
         """)
-        layout.addWidget(header)
+        layout.addWidget(self.header)
 
         # Control bar
-        control_bar = QFrame()
-        control_layout = QHBoxLayout(control_bar)
+        self.control_bar = QFrame()
+        control_layout = QHBoxLayout(self.control_bar)
         control_layout.setContentsMargins(12, 10, 12, 10)
         control_layout.setSpacing(8)
 
@@ -269,23 +303,23 @@ class ModernFilterPanel(QWidget):
         self.clear_btn.clicked.connect(self.allFiltersCleared.emit)
         control_layout.addWidget(self.clear_btn)
 
-        control_bar.setStyleSheet(f"""
+        self.control_bar.setStyleSheet(f"""
             QFrame {{
                 background-color: {AppTheme.SURFACE};
                 border-bottom: 1px solid {AppTheme.BORDER};
             }}
         """)
-        layout.addWidget(control_bar)
+        layout.addWidget(self.control_bar)
 
         # Mode selector
-        mode_bar = QFrame()
-        mode_layout = QHBoxLayout(mode_bar)
+        self.mode_bar = QFrame()
+        mode_layout = QHBoxLayout(self.mode_bar)
         mode_layout.setContentsMargins(12, 8, 12, 8)
         mode_layout.setSpacing(8)
 
-        mode_label = QLabel("Combine:")
-        mode_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt; font-weight: 600;")
-        mode_layout.addWidget(mode_label)
+        self.mode_label = QLabel("Combine:")
+        self.mode_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt; font-weight: 600;")
+        mode_layout.addWidget(self.mode_label)
 
         self.mode_combo = QComboBox()
         self.mode_combo.addItem("ALL (AND)", "all")
@@ -304,13 +338,13 @@ class ModernFilterPanel(QWidget):
         self.mode_combo.currentIndexChanged.connect(self._on_mode_changed)
         mode_layout.addWidget(self.mode_combo, 1)
 
-        mode_bar.setStyleSheet(f"""
+        self.mode_bar.setStyleSheet(f"""
             QFrame {{
                 background-color: {AppTheme.BACKGROUND};
                 border-bottom: 1px solid {AppTheme.BORDER};
             }}
         """)
-        layout.addWidget(mode_bar)
+        layout.addWidget(self.mode_bar)
 
         # Filters scroll area
         self.scroll_area = QScrollArea()
@@ -386,10 +420,13 @@ class ModernFilterPanel(QWidget):
 
     def clear_all_filters(self):
         """Clear all filter chips."""
-        while self.filters_layout.count() > 0:
-            item = self.filters_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+        for i in range(self.filters_layout.count() - 1, -1, -1):
+            item = self.filters_layout.itemAt(i)
+            widget = item.widget() if item else None
+            if widget is None or widget is self.empty_label:
+                continue
+            self.filters_layout.takeAt(i)
+            widget.deleteLater()
 
         self.active_filters.clear()
         self.empty_label.show()
@@ -437,6 +474,64 @@ class ModernFilterPanel(QWidget):
     def set_filter_mode(self, mode: str):
         """Set filter mode (alias for compatibility)."""
         self.set_mode(mode)
+
+    def set_mode_enabled(self, enabled: bool):
+        """Enable/disable mode controls (alias for compatibility)."""
+        self.mode_combo.setEnabled(enabled)
+        if hasattr(self, "mode_label"):
+            self.mode_label.setEnabled(enabled)
+
+    def set_action_controls_visible(self, visible: bool):
+        """Show/hide add/clear controls."""
+        if hasattr(self, "control_bar"):
+            self.control_bar.setVisible(visible)
+
+    def set_mode_visible(self, visible: bool):
+        """Show/hide mode controls."""
+        if hasattr(self, "mode_bar"):
+            self.mode_bar.setVisible(visible)
+
+    def set_collapse_available(self, visible: bool):
+        """Show/hide collapse control."""
+        if hasattr(self, "collapse_btn"):
+            self.collapse_btn.setVisible(visible)
+
+    def set_collapsed(self, collapsed: bool):
+        """Collapse/expand the panel body."""
+        self._is_collapsed = collapsed
+        if hasattr(self, "collapse_btn"):
+            self.collapse_btn.setText("▶" if collapsed else "◀")
+            self.collapse_btn.setToolTip("Expand panel" if collapsed else "Collapse panel")
+
+        # Hide title when collapsed so only the expand button shows
+        if hasattr(self, "title_label"):
+            self.title_label.setVisible(not collapsed)
+
+        for widget in [
+            getattr(self, "subtitle_label", None),
+            getattr(self, "control_bar", None),
+            getattr(self, "mode_bar", None),
+            getattr(self, "scroll_area", None),
+            getattr(self, "stats_label", None),
+        ]:
+            if widget is not None:
+                widget.setVisible(not collapsed)
+
+    def _on_collapse_clicked(self):
+        """Handle collapse toggle."""
+        new_state = not getattr(self, "_is_collapsed", False)
+        self.collapseToggled.emit(new_state)
+
+    def set_context(self, title: str, subtitle: str):
+        """Update header context (alias for compatibility)."""
+        if hasattr(self, "title_label") and title is not None:
+            self.title_label.setText(title)
+        if hasattr(self, "subtitle_label") and subtitle is not None:
+            self.subtitle_label.setText(subtitle)
+
+    def add_filter_chip(self, filter_rule: FilterRule):
+        """Add a filter chip (alias for compatibility)."""
+        self.add_filter(filter_rule)
 
     def clear_all_chips(self):
         """Clear all filter chips (alias for compatibility)."""
