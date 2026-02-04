@@ -1,5 +1,5 @@
 {
-  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/final_snapshot.xlsx",
+  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/archives/snapshot_2026-02-03_23-05-15.xlsx",
   "tabs": [
     {
       "name": "\ud83d\udcca All Students",
@@ -8,30 +8,11 @@
       "type": "base"
     },
     {
-      "name": "CUM_GPA < 3.0",
+      "name": "Accepted",
       "filters": [
-        {
-          "type": "numeric",
-          "column": "CUM_GPA",
-          "operator": "<",
-          "value": 3.0
-        }
-      ],
-      "filter_mode": "all",
-      "type": "rule"
-    },
-    {
-      "name": "Rejected",
-      "filters": [
-        {
-          "type": "numeric",
-          "column": "CUM_GPA",
-          "operator": "<",
-          "value": 3.0
-        },
         {
           "type": "text",
-          "column": "DEANS_WARNING",
+          "column": "PROBATION",
           "tokens": [
             "y"
           ],
@@ -46,9 +27,24 @@
       "filters": [
         {
           "type": "text",
-          "column": "WSP_WRITTEN_LANGUAGES",
+          "column": "WSP_PREVIOUS_TYPE_OF_WORK",
           "tokens": [
-            "en"
+            "y"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "rule"
+    },
+    {
+      "name": "DEANS_WARNING: y",
+      "filters": [
+        {
+          "type": "text",
+          "column": "DEANS_WARNING",
+          "tokens": [
+            "y"
           ],
           "case_sensitive": false
         }

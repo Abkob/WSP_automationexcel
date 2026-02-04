@@ -1,0 +1,127 @@
+2026-02-04 19:39:49,064 - StudentManager - INFO - ================================================================================
+2026-02-04 19:39:49,065 - StudentManager - INFO - Application Starting
+2026-02-04 19:39:49,066 - StudentManager - INFO - Log file: logs\app_20260204_193949.log
+2026-02-04 19:39:49,066 - StudentManager - INFO - ================================================================================
+2026-02-04 19:39:49,066 - StudentManager - INFO - ================================================================================
+2026-02-04 19:39:49,067 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-04 19:39:49,068 - StudentManager - INFO - ================================================================================
+2026-02-04 19:39:49,068 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-04 19:39:49,069 - StudentManager - INFO - Setting up application...
+2026-02-04 19:39:49,069 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-04 19:39:49,071 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-04 19:39:49,140 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-04 19:39:49,142 - StudentManager - DEBUG - Applying theme...
+2026-02-04 19:39:49,148 - StudentManager - INFO - Theme applied successfully
+2026-02-04 19:39:49,148 - StudentManager - INFO - Application setup complete
+2026-02-04 19:39:49,148 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-04 19:39:49,148 - StudentManager - INFO - Importing main window module...
+2026-02-04 19:39:51,057 - StudentManager - INFO - Main window module imported successfully
+2026-02-04 19:39:51,057 - StudentManager - INFO - Creating main window instance...
+2026-02-04 19:39:51,058 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-04 19:39:51,067 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-04 19:39:51,068 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-04 19:39:51,070 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-04 19:39:51,071 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-04 19:39:51,562 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-04 19:39:51,566 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-04 19:39:51,567 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-04 19:39:51,567 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-04 19:39:51,568 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-04 19:39:51,582 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-04 19:39:51,582 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-04 19:39:51,588 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-04 19:39:51,589 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-04 19:39:51,590 - StudentManager - INFO - Main window created successfully
+2026-02-04 19:39:51,590 - StudentManager - INFO - Showing main window...
+2026-02-04 19:39:51,764 - StudentManager - INFO - Main window displayed successfully
+2026-02-04 19:39:51,764 - StudentManager - INFO - Starting event loop...
+2026-02-04 19:40:10,311 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:40:10,315 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:40:10,316 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:40:10,316 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:40:10,317 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:40:10,317 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:40:10,317 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:40:10,318 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+
+2026-02-04 19:40:10,318 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:40:42,274 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:40:42,275 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:40:42,276 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:40:42,276 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:40:42,276 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:40:42,277 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:40:42,277 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:40:42,278 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+
+2026-02-04 19:40:42,278 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:42:46,309 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:42:46,315 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:42:46,317 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:42:46,317 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:42:46,317 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:42:46,317 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:42:46,318 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:42:46,318 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+
+2026-02-04 19:42:46,318 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:09,902 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:43:09,903 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:09,904 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:43:09,904 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:09,904 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:43:09,905 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:43:09,905 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:43:09,905 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+
+2026-02-04 19:43:09,906 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:34,292 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:43:34,293 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:34,294 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:43:34,295 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:43:34,295 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:43:34,295 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'type_stack'
+2026-02-04 19:43:34,296 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:43:34,296 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 729, in _on_type_changed
+    self.type_stack.setCurrentWidget(self.numeric_widget)
+AttributeError: 'FilterDialog' object has no attribute 'type_stack'
+
+2026-02-04 19:43:34,296 - StudentManager - CRITICAL - ================================================================================

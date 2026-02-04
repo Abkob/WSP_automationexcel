@@ -320,6 +320,8 @@ class MainWindow(QMainWindow):
         self._filter_panel_min_width = 280
         self._filter_panel_max_width = 360
         self._filter_panel_collapsed = False
+        self._filter_panel_user_collapsed = False
+        self._filter_panel_auto_collapsed = False
         self._filter_panel_sizes = None
         self.filter_panel.setStyleSheet(f"""
             ModernFilterPanel {{
@@ -1472,6 +1474,16 @@ class MainWindow(QMainWindow):
             union_mask = np.logical_or(union_mask, rule_mask)
         return union_mask
 
+    def _set_proxy_source_dataframe(self, proxy: SmartSearchProxy, df: pd.DataFrame):
+        """Update a proxy's source data without swapping model objects when possible."""
+        if not isinstance(proxy, SmartSearchProxy):
+            return
+        source_model = proxy.sourceModel()
+        if isinstance(source_model, DataFrameModel):
+            source_model.set_dataframe(df)
+        else:
+            proxy.setSourceModel(DataFrameModel(df))
+
     def _refresh_rule_state(self):
         """Recompute main-tab highlights and filtered tab based on rules."""
         df = self.model.dataframe()
@@ -1507,21 +1519,21 @@ class MainWindow(QMainWindow):
         if not isinstance(proxy, SmartSearchProxy):
             return
 
-        new_model = DataFrameModel(snapshot_df)
-        proxy.setSourceModel(new_model)
+        self._set_proxy_source_dataframe(proxy, snapshot_df)
         proxy.setExtraFilters([])
 
         # Preserve current search settings
         proxy.setSearchText(self.search_edit.text())
         search_col = self.search_column_combo.currentText()
-        if search_col != "Global" and self._model_has_column(new_model, search_col):
+        source_model = proxy.sourceModel()
+        if search_col != "Global" and self._model_has_column(source_model, search_col):
             proxy.setSearchColumn(search_col)
         else:
             proxy.setSearchColumn(None)
 
         if widget is self._get_current_tab_widget():
-            self._update_search_columns(new_model)
-            self._update_column_navigator(new_model)
+            self._update_search_columns(source_model)
+            self._update_column_navigator(source_model)
             self._update_ui_state()
 
     def _rebuild_all_rule_tabs(self):
@@ -1572,18 +1584,18 @@ class MainWindow(QMainWindow):
 
         proxy = widget.model() if hasattr(widget, "model") else None
         if isinstance(proxy, SmartSearchProxy):
-            new_model = DataFrameModel(snapshot_df)
-            proxy.setSourceModel(new_model)
+            self._set_proxy_source_dataframe(proxy, snapshot_df)
             proxy.setExtraFilters([])
             proxy.setSearchText(self.search_edit.text())
             search_col = self.search_column_combo.currentText()
-            if search_col != "Global" and self._model_has_column(new_model, search_col):
+            source_model = proxy.sourceModel()
+            if search_col != "Global" and self._model_has_column(source_model, search_col):
                 proxy.setSearchColumn(search_col)
             else:
                 proxy.setSearchColumn(None)
             if widget is self._get_current_tab_widget():
-                self._update_search_columns(new_model)
-                self._update_column_navigator(new_model)
+                self._update_search_columns(source_model)
+                self._update_column_navigator(source_model)
                 self._update_ui_state()
 
         # Update tab tooltip with count
@@ -1864,6 +1876,18 @@ class MainWindow(QMainWindow):
                 self.content_splitter.setSizes([left, max(1, total - left)])
 
     def _on_filter_panel_collapse_toggled(self, collapsed: bool):
+        current_widget = self._get_current_tab_widget()
+        tab_kind = getattr(current_widget, "tab_kind", None) if current_widget is not None else None
+
+        if tab_kind == "filtered":
+            # Allow temporary expand/collapse on the filtered tab, but keep
+            # auto-collapse behavior when returning to non-filtered tabs.
+            self._set_filter_panel_collapsed(collapsed)
+            self._filter_panel_auto_collapsed = True
+            return
+
+        self._filter_panel_user_collapsed = collapsed
+        self._filter_panel_auto_collapsed = False
         self._set_filter_panel_collapsed(collapsed)
 
     def _sync_active_tab_context(self):
@@ -1871,6 +1895,14 @@ class MainWindow(QMainWindow):
         current_model = self._get_current_model() or self.model
         current_widget = self._get_current_tab_widget()
         tab_kind = getattr(current_widget, "tab_kind", None) if current_widget is not None else None
+
+        if tab_kind == "filtered":
+            self._filter_panel_auto_collapsed = True
+            self._set_filter_panel_collapsed(True)
+        elif getattr(self, "_filter_panel_auto_collapsed", False):
+            self._filter_panel_auto_collapsed = False
+            self._set_filter_panel_collapsed(getattr(self, "_filter_panel_user_collapsed", False))
+
         filters_enabled = current_widget is not None and tab_kind != "filtered"
         self._set_filter_ui_enabled(filters_enabled)
         self._sync_filter_panel_for_tab(current_widget if filters_enabled else None)

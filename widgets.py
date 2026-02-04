@@ -529,8 +529,6 @@ class FilterDialog(QDialog):
         self.type_button_group.addButton(self.date_radio, 2)
         self.date_radio.toggled.connect(self._on_type_changed)
 
-        self.numeric_radio.setChecked(True)
-
         type_buttons.addWidget(self.numeric_radio)
         type_buttons.addWidget(self.text_radio)
         type_buttons.addWidget(self.date_radio)
@@ -695,6 +693,7 @@ class FilterDialog(QDialog):
         layout.addWidget(button_box)
 
         # Initial preview
+        self.numeric_radio.setChecked(True)
         self._on_type_changed()
         self._update_preview()
 
@@ -725,6 +724,9 @@ class FilterDialog(QDialog):
     
     def _on_type_changed(self):
         """Show/hide appropriate widgets when filter type changes."""
+        if not hasattr(self, "type_stack"):
+            return
+
         if self.numeric_radio.isChecked():
             self.type_stack.setCurrentWidget(self.numeric_widget)
         elif self.text_radio.isChecked():
@@ -736,6 +738,9 @@ class FilterDialog(QDialog):
     
     def _update_preview(self):
         """Update the preview table with matching rows."""
+        if not hasattr(self, "preview_table") or not hasattr(self, "preview_count_label"):
+            return
+
         if self.df.empty:
             self.preview_table.setRowCount(0)
             self.preview_table.setColumnCount(0)

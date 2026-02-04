@@ -1,0 +1,173 @@
+2026-02-04 19:52:05,599 - StudentManager - INFO - ================================================================================
+2026-02-04 19:52:05,600 - StudentManager - INFO - Application Starting
+2026-02-04 19:52:05,600 - StudentManager - INFO - Log file: logs\app_20260204_195205.log
+2026-02-04 19:52:05,600 - StudentManager - INFO - ================================================================================
+2026-02-04 19:52:05,601 - StudentManager - INFO - ================================================================================
+2026-02-04 19:52:05,601 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-04 19:52:05,602 - StudentManager - INFO - ================================================================================
+2026-02-04 19:52:05,602 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-04 19:52:05,602 - StudentManager - INFO - Setting up application...
+2026-02-04 19:52:05,602 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-04 19:52:05,603 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-04 19:52:05,624 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-04 19:52:05,625 - StudentManager - DEBUG - Applying theme...
+2026-02-04 19:52:05,626 - StudentManager - INFO - Theme applied successfully
+2026-02-04 19:52:05,626 - StudentManager - INFO - Application setup complete
+2026-02-04 19:52:05,626 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-04 19:52:05,627 - StudentManager - INFO - Importing main window module...
+2026-02-04 19:52:06,434 - StudentManager - INFO - Main window module imported successfully
+2026-02-04 19:52:06,434 - StudentManager - INFO - Creating main window instance...
+2026-02-04 19:52:06,436 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-04 19:52:06,436 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-04 19:52:06,437 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-04 19:52:06,437 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-04 19:52:06,438 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-04 19:52:06,840 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-04 19:52:06,842 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-04 19:52:06,843 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-04 19:52:06,843 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-04 19:52:06,843 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-04 19:52:06,855 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-04 19:52:06,856 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-04 19:52:06,857 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-04 19:52:06,857 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-04 19:52:06,858 - StudentManager - INFO - Main window created successfully
+2026-02-04 19:52:06,858 - StudentManager - INFO - Showing main window...
+2026-02-04 19:52:07,046 - StudentManager - INFO - Main window displayed successfully
+2026-02-04 19:52:07,047 - StudentManager - INFO - Starting event loop...
+2026-02-04 19:52:25,789 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    self.preview_count_label.setText(f"{count} row{'s' if count != 1 else ''} match")
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:52:25,790 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:52:25,791 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:52:25,791 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:52:25,791 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:52:25,791 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:52:25,792 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:52:25,792 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    self.preview_count_label.setText(f"{count} row{'s' if count != 1 else ''} match")
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:52:25,792 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:53:47,864 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:53:47,865 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:53:47,884 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:53:47,884 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:53:47,885 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:53:47,885 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:53:47,885 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:53:47,886 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:53:47,886 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:54:13,696 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:54:13,697 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:54:13,698 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:54:13,699 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:54:13,699 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:54:13,699 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:54:13,699 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:54:13,700 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:54:13,700 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:14,054 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:57:14,054 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:14,055 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:57:14,055 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:14,055 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:57:14,056 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:57:14,056 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:57:14,057 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:57:14,057 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:50,269 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:57:50,270 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:50,271 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:57:50,271 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:57:50,271 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:57:50,271 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:57:50,272 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:57:50,272 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:57:50,272 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:58:11,766 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:58:11,767 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:58:11,769 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 19:58:11,769 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:58:11,769 - StudentManager - CRITICAL - Exception Type: AttributeError
+2026-02-04 19:58:11,770 - StudentManager - CRITICAL - Exception Value: 'FilterDialog' object has no attribute 'preview_count_label'
+2026-02-04 19:58:11,770 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 19:58:11,770 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 774, in _update_preview
+    matching_rows.append(idx)
+AttributeError: 'FilterDialog' object has no attribute 'preview_count_label'
+
+2026-02-04 19:58:11,771 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 19:59:17,457 - StudentManager - INFO - Application exited with code: 0
+2026-02-04 19:59:17,459 - StudentManager - INFO - ================================================================================
+2026-02-04 19:59:17,466 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 0
+2026-02-04 19:59:17,466 - StudentManager - INFO - ================================================================================

@@ -1,0 +1,17 @@
+2026-02-04 20:07:55,857 - StudentManager - INFO - ================================================================================
+2026-02-04 20:07:55,857 - StudentManager - INFO - Application Starting
+2026-02-04 20:07:55,857 - StudentManager - INFO - Log file: logs\app_20260204_200755.log
+2026-02-04 20:07:55,858 - StudentManager - INFO - ================================================================================
+2026-02-04 20:07:55,858 - StudentManager - INFO - ================================================================================
+2026-02-04 20:07:55,858 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-04 20:07:55,858 - StudentManager - INFO - ================================================================================
+2026-02-04 20:07:55,859 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-04 20:07:55,859 - StudentManager - INFO - Setting up application...
+2026-02-04 20:07:55,859 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-04 20:07:55,860 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-04 20:07:55,880 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-04 20:07:55,880 - StudentManager - DEBUG - Applying theme...
+2026-02-04 20:07:55,881 - StudentManager - INFO - Theme applied successfully
+2026-02-04 20:07:55,881 - StudentManager - INFO - Application setup complete
+2026-02-04 20:07:55,881 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-04 20:07:55,882 - StudentManager - INFO - Importing main window module...

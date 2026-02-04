@@ -188,6 +188,8 @@ class QuickFilterButton(QToolButton):
 
     def _update_style(self):
         checked = self.isChecked()
+        hover_bg = self.base_color.lighter(110).name() if checked else AppTheme.GRAY_100
+        hover_text = "#FFFFFF" if checked else AppTheme.TEXT
         self.setStyleSheet(f"""
             QToolButton {{
                 background-color: {self.base_color.name() if checked else AppTheme.SURFACE};
@@ -199,8 +201,8 @@ class QuickFilterButton(QToolButton):
                 font-weight: 600;
             }}
             QToolButton:hover {{
-                background-color: {self.base_color.lighter(110).name()};
-                color: #FFFFFF;
+                background-color: {hover_bg};
+                color: {hover_text};
             }}
         """)
 
@@ -220,7 +222,7 @@ class EnhancedColumnNavigator(QWidget):
         self.columns: List[str] = []
         self.column_types: Dict[str, str] = {}
         self.filtered_columns: Set[str] = set()
-        self._type_filters: Set[str] = {"numeric", "date", "text"}  # All enabled by default
+        self._active_type_filter: Optional[str] = None
         self._show_filtered_only = False
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -277,21 +279,21 @@ class EnhancedColumnNavigator(QWidget):
         type_layout.setSpacing(4)
 
         self.btn_numeric = QuickFilterButton("123", QColor(AppTheme.PRIMARY))
-        self.btn_numeric.setToolTip("Numeric columns")
-        self.btn_numeric.setChecked(True)
-        self.btn_numeric.toggled.connect(lambda: self._on_type_filter("numeric"))
+        self.btn_numeric.setToolTip("Show numeric columns")
+        self.btn_numeric.setChecked(False)
+        self.btn_numeric.clicked.connect(lambda checked: self._on_type_filter_clicked("numeric", checked))
         type_layout.addWidget(self.btn_numeric)
 
         self.btn_date = QuickFilterButton("Date", QColor(AppTheme.INFO))
-        self.btn_date.setToolTip("Date columns")
-        self.btn_date.setChecked(True)
-        self.btn_date.toggled.connect(lambda: self._on_type_filter("date"))
+        self.btn_date.setToolTip("Show date columns")
+        self.btn_date.setChecked(False)
+        self.btn_date.clicked.connect(lambda checked: self._on_type_filter_clicked("date", checked))
         type_layout.addWidget(self.btn_date)
 
         self.btn_text = QuickFilterButton("Abc", QColor(AppTheme.SUCCESS))
-        self.btn_text.setToolTip("Text columns")
-        self.btn_text.setChecked(True)
-        self.btn_text.toggled.connect(lambda: self._on_type_filter("text"))
+        self.btn_text.setToolTip("Show text columns")
+        self.btn_text.setChecked(False)
+        self.btn_text.clicked.connect(lambda checked: self._on_type_filter_clicked("text", checked))
         type_layout.addWidget(self.btn_text)
 
         # Filtered only toggle
@@ -425,7 +427,7 @@ class EnhancedColumnNavigator(QWidget):
             is_filtered = col in self.filtered_columns
 
             # Type filter
-            if col_type not in self._type_filters:
+            if self._active_type_filter and col_type != self._active_type_filter:
                 continue
 
             # Filtered only filter
@@ -463,26 +465,33 @@ class EnhancedColumnNavigator(QWidget):
         # Update info
         total = len(self.columns)
         showing = len(filtered_cols)
+        type_text = "all types" if not self._active_type_filter else f"{self._active_type_filter} only"
         if showing < total:
-            self.info_label.setText(f"Showing {showing} of {total} columns")
+            self.info_label.setText(f"Showing {showing} of {total} columns ({type_text})")
         else:
-            self.info_label.setText(f"{total} columns total")
+            self.info_label.setText(f"{total} columns total ({type_text})")
 
-    def _on_type_filter(self, col_type: str):
-        """Handle type filter toggle."""
+    def _on_type_filter_clicked(self, col_type: str, checked: bool):
+        """Handle single-type quick filter toggle."""
+        if checked:
+            self._active_type_filter = col_type
+        elif self._active_type_filter == col_type:
+            self._active_type_filter = None
+
+        self._sync_type_filter_buttons()
+        self._update_display()
+
+    def _sync_type_filter_buttons(self):
+        """Keep quick filter buttons in exclusive selected state."""
         btn_map = {
             "numeric": self.btn_numeric,
             "date": self.btn_date,
             "text": self.btn_text
         }
-
-        btn = btn_map.get(col_type)
-        if btn and btn.isChecked():
-            self._type_filters.add(col_type)
-        else:
-            self._type_filters.discard(col_type)
-
-        self._update_display()
+        for key, btn in btn_map.items():
+            btn.blockSignals(True)
+            btn.setChecked(self._active_type_filter == key)
+            btn.blockSignals(False)
 
     def _on_filtered_toggle(self, checked: bool):
         """Handle filtered-only toggle."""
@@ -532,7 +541,7 @@ class EnhancedColumnNavigator(QWidget):
             col_type = self.column_types.get(col, "text")
             is_filtered = col in self.filtered_columns
 
-            if col_type not in self._type_filters:
+            if self._active_type_filter and col_type != self._active_type_filter:
                 continue
             if self._show_filtered_only and not is_filtered:
                 continue
