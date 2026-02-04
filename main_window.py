@@ -398,9 +398,9 @@ class MainWindow(QMainWindow):
 
         content_layout.addWidget(self.tab_widget, 1)
 
-        # Enhanced Column Navigator (compact version)
+        # Enhanced Column Navigator (compact slider)
         self.column_navigator = EnhancedColumnNavigator()
-        self.column_navigator.setMaximumHeight(120)
+        self.column_navigator.setMaximumHeight(90)
         content_layout.addWidget(self.column_navigator)
 
         content_splitter.addWidget(content_widget)

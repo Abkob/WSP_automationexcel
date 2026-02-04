@@ -19,6 +19,42 @@
       ],
       "filter_mode": "all",
       "type": "rule"
+    },
+    {
+      "name": "Rejected",
+      "filters": [
+        {
+          "type": "numeric",
+          "column": "CUM_GPA",
+          "operator": "<",
+          "value": 3.0
+        },
+        {
+          "type": "text",
+          "column": "DEANS_WARNING",
+          "tokens": [
+            "y"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "custom"
+    },
+    {
+      "name": "WSP_WRITTEN_LANGUAGES: en",
+      "filters": [
+        {
+          "type": "text",
+          "column": "WSP_WRITTEN_LANGUAGES",
+          "tokens": [
+            "en"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "rule"
     }
   ]
 }
