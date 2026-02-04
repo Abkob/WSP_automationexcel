@@ -27,9 +27,20 @@ class SmartSearchProxy(QSortFilterProxyModel):
     def setSearchText(self, text: str):
         self.search_text = text.strip()
         self.invalidateFilter()
-    
+
     def setSearchColumn(self, column_name: Optional[str]):
         self.search_column = column_name
+        self.invalidateFilter()
+
+    # Backward-compatible aliases used by the modern search bar handler.
+    def setGlobalSearchTerm(self, text: str):
+        self.search_text = text.strip()
+        self.search_column = None
+        self.invalidateFilter()
+
+    def setColumnSearchTerm(self, column_name: Optional[str], text: str):
+        self.search_text = text.strip()
+        self.search_column = None if not column_name or column_name == "Global" else column_name
         self.invalidateFilter()
     
     def setFilterMode(self, mode: str):
