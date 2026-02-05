@@ -21,6 +21,7 @@ class StyledTableView(QTableView):
     
     cellEditRequested = pyqtSignal(object)
     columnFilterRequested = pyqtSignal(str)
+    columnFilterClearRequested = pyqtSignal(str)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -148,6 +149,10 @@ class StyledTableView(QTableView):
             add_filter = QAction(f"Add Filter to '{col_name}'", self)
             add_filter.triggered.connect(lambda: self.columnFilterRequested.emit(col_name))
             menu.addAction(add_filter)
+
+            clear_filter = QAction(f"Remove Filters from '{col_name}'", self)
+            clear_filter.triggered.connect(lambda: self.columnFilterClearRequested.emit(col_name))
+            menu.addAction(clear_filter)
             menu.addSeparator()
         
         sort_asc = QAction("Sort Ascending", self)
@@ -163,7 +168,22 @@ class StyledTableView(QTableView):
         hide_col = QAction("Hide Column", self)
         hide_col.triggered.connect(lambda: self._hide_column(logical_index))
         menu.addAction(hide_col)
-        
+
+        hidden_columns = [i for i in range(model.columnCount()) if self.isColumnHidden(i)]
+        if hidden_columns:
+            menu.addSeparator()
+
+            unhide_all = QAction("Unhide All Columns", self)
+            unhide_all.triggered.connect(self._unhide_all_columns)
+            menu.addAction(unhide_all)
+
+            for hidden_idx in hidden_columns:
+                hidden_name = model.headerData(hidden_idx, Qt.Horizontal, Qt.DisplayRole)
+                hidden_name = str(hidden_name).replace("[F] ", "")
+                unhide_one = QAction(f"Unhide '{hidden_name}'", self)
+                unhide_one.triggered.connect(lambda checked=False, idx=hidden_idx: self._unhide_column(idx))
+                menu.addAction(unhide_one)
+
         autosize = QAction("Auto-size Column", self)
         autosize.triggered.connect(lambda: self.resizeColumnToContents(logical_index))
         menu.addAction(autosize)
@@ -194,6 +214,18 @@ class StyledTableView(QTableView):
     def _hide_column(self, logical_index):
         """Hide a column."""
         self.setColumnHidden(logical_index, True)
+
+    def _unhide_column(self, logical_index):
+        """Unhide a specific column."""
+        self.setColumnHidden(logical_index, False)
+
+    def _unhide_all_columns(self):
+        """Unhide all columns."""
+        model = self.model()
+        if model is None:
+            return
+        for col in range(model.columnCount()):
+            self.setColumnHidden(col, False)
 
 
 class SecondaryTableWindow(QMainWindow):

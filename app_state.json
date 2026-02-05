@@ -1,35 +1,21 @@
 {
-  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/archives/snapshot_2026-02-03_23-05-15.xlsx",
+  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/final_snapshot.xlsx",
+  "filtered_tab_mode": "matched",
   "tabs": [
     {
-      "name": "\ud83d\udcca All Students",
+      "name": "All Students",
       "filters": [],
       "filter_mode": "all",
       "type": "base"
     },
     {
-      "name": "Accepted",
+      "name": "STUD_NAME: 0",
       "filters": [
         {
           "type": "text",
-          "column": "PROBATION",
+          "column": "STUD_NAME",
           "tokens": [
-            "y"
-          ],
-          "case_sensitive": false
-        }
-      ],
-      "filter_mode": "all",
-      "type": "custom"
-    },
-    {
-      "name": "WSP_WRITTEN_LANGUAGES: en",
-      "filters": [
-        {
-          "type": "text",
-          "column": "WSP_PREVIOUS_TYPE_OF_WORK",
-          "tokens": [
-            "y"
+            "0"
           ],
           "case_sensitive": false
         }
@@ -38,13 +24,51 @@
       "type": "rule"
     },
     {
-      "name": "DEANS_WARNING: y",
+      "name": "Accepted",
       "filters": [
         {
           "type": "text",
-          "column": "DEANS_WARNING",
+          "column": "STUD_ID",
           "tokens": [
-            "y"
+            "100"
+          ],
+          "case_sensitive": false
+        },
+        {
+          "type": "text",
+          "column": "CLAS_DESC",
+          "tokens": [
+            "junior"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "custom"
+    },
+    {
+      "name": "CLAS_DESC: junior",
+      "filters": [
+        {
+          "type": "text",
+          "column": "CLAS_DESC",
+          "tokens": [
+            "junior"
+          ],
+          "case_sensitive": false
+        }
+      ],
+      "filter_mode": "all",
+      "type": "rule"
+    },
+    {
+      "name": "STUD_EMAIL: a",
+      "filters": [
+        {
+          "type": "text",
+          "column": "STUD_EMAIL",
+          "tokens": [
+            "a"
           ],
           "case_sensitive": false
         }

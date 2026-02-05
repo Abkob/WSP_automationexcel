@@ -1,0 +1,28 @@
+2026-02-05 11:45:53,461 - StudentManager - INFO - ================================================================================
+2026-02-05 11:45:53,461 - StudentManager - INFO - Application Starting
+2026-02-05 11:45:53,462 - StudentManager - INFO - Log file: logs\app_20260205_114553.log
+2026-02-05 11:45:53,462 - StudentManager - INFO - ================================================================================
+2026-02-05 11:45:53,462 - StudentManager - INFO - ================================================================================
+2026-02-05 11:45:53,462 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-05 11:45:53,463 - StudentManager - INFO - ================================================================================
+2026-02-05 11:45:53,463 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-05 11:45:53,463 - StudentManager - INFO - Setting up application...
+2026-02-05 11:45:53,463 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-05 11:45:53,464 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-05 11:45:53,504 - StudentManager - DEBUG - Resolving fonts for platform: win32
+2026-02-05 11:45:53,507 - StudentManager - INFO - Font families selected: UI='Proxima Nova Rg', UI Medium='Proxima Nova Lt', UI Bold='Proxima Nova Th', Arabic='Dubai'
+2026-02-05 11:45:53,507 - StudentManager - DEBUG - Applying theme...
+2026-02-05 11:45:53,508 - StudentManager - INFO - Theme applied successfully
+2026-02-05 11:45:53,508 - StudentManager - INFO - Application setup complete
+2026-02-05 11:45:53,509 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-05 11:45:53,509 - StudentManager - INFO - Importing main window module...
+2026-02-05 11:45:54,062 - StudentManager - CRITICAL - FATAL: Failed to import MainWindow: cannot import name 'Smar' from 'proxies' (C:\Users\Amarus\Jan-Feb2026\WSP\ver5\proxies.py)
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main.py", line 188, in main
+    from main_window import MainWindow
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 28, in <module>
+    from proxies import Smar
+ImportError: cannot import name 'Smar' from 'proxies' (C:\Users\Amarus\Jan-Feb2026\WSP\ver5\proxies.py)
+2026-02-05 11:46:03,064 - StudentManager - INFO - ================================================================================
+2026-02-05 11:46:03,065 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 1
+2026-02-05 11:46:03,065 - StudentManager - INFO - ================================================================================

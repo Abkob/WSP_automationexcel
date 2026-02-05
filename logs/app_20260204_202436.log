@@ -1,0 +1,921 @@
+2026-02-04 20:24:36,901 - StudentManager - INFO - ================================================================================
+2026-02-04 20:24:36,902 - StudentManager - INFO - Application Starting
+2026-02-04 20:24:36,903 - StudentManager - INFO - Log file: logs\app_20260204_202436.log
+2026-02-04 20:24:36,903 - StudentManager - INFO - ================================================================================
+2026-02-04 20:24:36,903 - StudentManager - INFO - ================================================================================
+2026-02-04 20:24:36,903 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-04 20:24:36,903 - StudentManager - INFO - ================================================================================
+2026-02-04 20:24:36,904 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-04 20:24:36,904 - StudentManager - INFO - Setting up application...
+2026-02-04 20:24:36,904 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-04 20:24:36,905 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-04 20:24:36,926 - StudentManager - DEBUG - Setting font for platform: win32
+2026-02-04 20:24:36,926 - StudentManager - DEBUG - Applying theme...
+2026-02-04 20:24:36,927 - StudentManager - INFO - Theme applied successfully
+2026-02-04 20:24:36,927 - StudentManager - INFO - Application setup complete
+2026-02-04 20:24:36,927 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-04 20:24:36,928 - StudentManager - INFO - Importing main window module...
+2026-02-04 20:24:37,654 - StudentManager - INFO - Main window module imported successfully
+2026-02-04 20:24:37,655 - StudentManager - INFO - Creating main window instance...
+2026-02-04 20:24:37,656 - StudentManager.MainWindow - INFO - Initializing MainWindow...
+2026-02-04 20:24:37,656 - StudentManager.MainWindow - DEBUG - Setting window properties...
+2026-02-04 20:24:37,656 - StudentManager.MainWindow - DEBUG - Initializing data structures...
+2026-02-04 20:24:37,658 - StudentManager.MainWindow - INFO - Setting up models...
+2026-02-04 20:24:37,659 - StudentManager.MainWindow - INFO - Setting up UI...
+2026-02-04 20:24:38,008 - StudentManager.MainWindow - INFO - Setting up menus...
+2026-02-04 20:24:38,009 - StudentManager.MainWindow - INFO - Setting up connections...
+2026-02-04 20:24:38,009 - StudentManager.MainWindow - INFO - Setting up observers...
+2026-02-04 20:24:38,010 - StudentManager.MainWindow - INFO - Setting up drag & drop...
+2026-02-04 20:24:38,010 - StudentManager.MainWindow - DEBUG - Applying stylesheet...
+2026-02-04 20:24:38,021 - StudentManager.MainWindow - INFO - Loading saved state...
+2026-02-04 20:24:38,022 - StudentManager.MainWindow - DEBUG - Scheduling auto-load...
+2026-02-04 20:24:38,022 - StudentManager.MainWindow - INFO - Updating initial UI state...
+2026-02-04 20:24:38,023 - StudentManager.MainWindow - INFO - MainWindow initialization complete!
+2026-02-04 20:24:38,023 - StudentManager - INFO - Main window created successfully
+2026-02-04 20:24:38,024 - StudentManager - INFO - Showing main window...
+2026-02-04 20:24:38,218 - StudentManager - INFO - Main window displayed successfully
+2026-02-04 20:24:38,219 - StudentManager - INFO - Starting event loop...
+2026-02-04 20:25:25,260 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:25,326 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:25,328 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:25,328 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:25,329 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:25,329 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:25,329 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:25,329 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:25,330 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:25,331 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:25,333 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:25,333 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:25,333 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:25,334 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:25,334 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:25,334 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:25,335 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:25,335 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,732 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:27,733 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,734 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:27,735 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,735 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:27,735 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:27,735 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:27,735 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:27,736 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,737 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:27,738 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,738 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:27,739 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:27,739 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:27,739 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:27,739 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:27,740 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:27,740 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,226 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:28,226 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,227 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:28,227 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,228 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:28,228 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:28,228 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:28,228 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:28,230 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,232 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:25:28,232 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,233 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:25:28,233 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:25:28,234 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:25:28,234 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:25:28,234 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:25:28,236 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:25:28,236 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,796 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:00,796 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,799 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:00,800 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,800 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:00,801 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:00,801 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:00,802 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:00,802 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,804 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:00,805 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,806 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:00,806 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:00,807 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:00,807 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:00,807 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:00,807 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:00,808 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,689 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:01,690 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,692 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:01,692 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,692 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:01,693 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:01,694 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:01,694 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:01,695 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,699 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:01,699 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,700 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:01,700 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:01,701 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:01,701 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:01,701 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:01,702 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:01,702 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,135 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:02,136 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,136 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:02,137 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,137 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:02,138 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:02,139 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:02,139 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:02,140 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,142 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:26:02,143 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,144 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:26:02,144 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:26:02,144 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:26:02,145 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:26:02,145 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:26:02,146 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    value = self.df.iloc[df_idx][col_name]
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:26:02,146 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,040 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,041 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,043 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,044 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,044 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,044 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,044 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,045 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,045 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,048 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,049 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,050 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,051 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,051 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,051 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,052 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,053 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,053 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,643 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,644 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,646 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,646 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,646 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,646 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,647 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,647 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,648 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,651 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,651 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,652 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,652 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,652 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,653 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,653 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,654 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,654 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,826 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,827 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,828 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,829 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,829 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,829 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,830 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,831 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,831 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,834 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,834 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,835 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,835 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,836 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,836 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,836 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,836 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,838 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,981 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,982 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,983 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,983 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,984 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,984 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,985 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,985 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,986 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,989 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,990 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,991 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:17,991 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:17,991 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:17,992 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:17,992 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:17,993 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:17,993 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,117 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:18,118 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,119 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:18,119 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,120 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:18,120 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:18,121 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:18,121 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:18,121 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,123 - StudentManager - CRITICAL - Uncaught exception
+Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+2026-02-04 20:28:18,124 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,124 - StudentManager - CRITICAL - CRASH DETAILS:
+2026-02-04 20:28:18,124 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:18,125 - StudentManager - CRITICAL - Exception Type: IndexError
+2026-02-04 20:28:18,125 - StudentManager - CRITICAL - Exception Value: single positional indexer is out-of-bounds
+2026-02-04 20:28:18,125 - StudentManager - CRITICAL - 
+Full Traceback:
+2026-02-04 20:28:18,126 - StudentManager - CRITICAL - Traceback (most recent call last):
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\main_window.py", line 822, in _on_add_filter
+    dialog = FilterDialog(current_model.dataframe(), parent=self)
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 377, in __init__
+    self._setup_ui()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 697, in _setup_ui
+    self._on_type_changed()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 737, in _on_type_changed
+    self._update_preview()
+  File "C:\Users\Amarus\Jan-Feb2026\WSP\ver5\widgets.py", line 796, in _update_preview
+    self.preview_table.setColumnCount(len(self.df.columns))
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1192, in __getitem__
+    return self._getitem_axis(maybe_callable, axis=axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1753, in _getitem_axis
+    self._validate_integer(key, axis)
+  File "C:\Users\Amarus\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\indexing.py", line 1686, in _validate_integer
+    raise IndexError("single positional indexer is out-of-bounds")
+IndexError: single positional indexer is out-of-bounds
+
+2026-02-04 20:28:18,126 - StudentManager - CRITICAL - ================================================================================
+2026-02-04 20:28:19,191 - StudentManager - INFO - Application exited with code: 0
+2026-02-04 20:28:19,192 - StudentManager - INFO - ================================================================================
+2026-02-04 20:28:19,194 - StudentManager - INFO - APPLICATION SHUTDOWN - Exit code: 0
+2026-02-04 20:28:19,195 - StudentManager - INFO - ================================================================================

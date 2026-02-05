@@ -1,25 +1,45 @@
 """
-Modern UI Components - Streamlined, clean, professional
-Focus on 2-3 click workflows with visual clarity
+Modern UI components for the main window.
 """
 
 import logging
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QToolButton, QFrame, QComboBox, QLineEdit, QMenu, QAction,
-    QButtonGroup, QScrollArea
-)
-from PyQt5.QtCore import Qt, pyqtSignal, QSize
-from PyQt5.QtGui import QFont, QIcon
-from styles import AppTheme
-from typing import Optional, List
+import os
+from typing import List, Optional
 
-# Setup logger for this module
-logger = logging.getLogger('StudentManager.ModernUI')
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QToolButton,
+    QVBoxLayout,
+)
+
+from styles import AppTheme
+
+logger = logging.getLogger("StudentManager.ModernUI")
+
+
+def _load_scaled_logo(filename: str, max_width: int, max_height: int) -> Optional[QPixmap]:
+    """Load and scale a logo asset if available."""
+    path = AppTheme.asset_path(filename)
+    if not os.path.exists(path):
+        return None
+
+    pixmap = QPixmap(path)
+    if pixmap.isNull():
+        return None
+
+    return pixmap.scaled(max_width, max_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
 
 class ModernActionBar(QFrame):
-    """Streamlined action bar with icon buttons and smart grouping."""
+    """Top action bar with grouped actions."""
 
     loadRequested = pyqtSignal()
     saveRequested = pyqtSignal()
@@ -33,98 +53,101 @@ class ModernActionBar(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        """Create clean, organized action bar."""
         self.setObjectName("ModernActionBar")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(12)
+        layout.setContentsMargins(6, 6, 6, 6)
+        layout.setSpacing(8)
 
-        # === FILE OPERATIONS ===
-        load_btn = self._create_action_button("📁 Load", "Load data file (Ctrl+O)")
+        load_btn = self._create_action_button("Load Data", "Load data file (Ctrl+O)", primary=True)
         load_btn.clicked.connect(self.loadRequested.emit)
         layout.addWidget(load_btn)
 
-        save_btn = self._create_action_button("💾 Save", "Save current view (Ctrl+S)")
+        save_btn = self._create_action_button("Save View", "Save current view (Ctrl+S)")
         save_btn.clicked.connect(self.saveRequested.emit)
         layout.addWidget(save_btn)
 
-        # Export dropdown
-        export_btn = self._create_action_button("📤 Export", "Export data to Excel")
+        export_btn = self._create_action_button("Export", "Export data to Excel")
         export_menu = QMenu(self)
-        export_menu.addAction("📊 All Data", lambda: self.exportRequested.emit("all"))
-        export_menu.addAction("📋 Current Tab", lambda: self.exportRequested.emit("current"))
-        export_menu.addAction("🎯 Filtered Only", lambda: self.exportRequested.emit("filtered"))
+        export_menu.addAction("All Data", lambda: self.exportRequested.emit("all"))
+        export_menu.addAction("Current Tab", lambda: self.exportRequested.emit("current"))
+        export_menu.addAction("Filtered Rows", lambda: self.exportRequested.emit("filtered"))
         export_btn.setMenu(export_menu)
         export_btn.setPopupMode(QToolButton.InstantPopup)
         layout.addWidget(export_btn)
 
-        # Separator
         layout.addWidget(self._create_separator())
 
-        # === VIEW OPERATIONS ===
-        new_tab_btn = self._create_action_button("➕ New Tab", "Create a new custom view")
+        new_tab_btn = self._create_action_button("New Tab", "Create a new custom view")
         new_tab_btn.clicked.connect(self.newTabRequested.emit)
         layout.addWidget(new_tab_btn)
 
-        archives_btn = self._create_action_button("📚 Archives", "Browse archived data")
+        archives_btn = self._create_action_button("Archives", "Browse archived data")
         archives_btn.clicked.connect(self.archivesRequested.emit)
         layout.addWidget(archives_btn)
 
         layout.addStretch()
 
-        # === HELP ===
-        help_btn = self._create_action_button("❓", "Keyboard shortcuts")
-        help_btn.setFixedWidth(40)
+        help_btn = self._create_action_button("Help", "Keyboard shortcuts")
+        help_btn.setFixedWidth(74)
         help_btn.clicked.connect(self.shortcutsRequested.emit)
         layout.addWidget(help_btn)
 
-        # Styling
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             #ModernActionBar {{
-                background-color: {AppTheme.SURFACE};
-                border: 1px solid {AppTheme.GRAY_300};
-                border-radius: 6px;
+                background-color: {AppTheme.BACKGROUND};
+                border: 1px solid {AppTheme.GRAY_200};
+                border-radius: 8px;
             }}
             QToolButton {{
                 background-color: {AppTheme.BACKGROUND};
                 color: {AppTheme.TEXT};
-                border: 1px solid {AppTheme.GRAY_300};
-                border-radius: 4px;
-                padding: 6px 12px;
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 7px;
+                padding: 7px 12px;
                 font-weight: 500;
                 font-size: 9pt;
             }}
-            QToolButton:hover {{
+            QToolButton[primary="true"] {{
                 background-color: {AppTheme.PRIMARY};
+                color: #FFFFFF;
                 border-color: {AppTheme.PRIMARY};
+            }}
+            QToolButton:hover {{
+                background-color: {AppTheme.PRIMARY_LIGHT};
+                border-color: {AppTheme.PRIMARY};
+                color: {AppTheme.PRIMARY_DARK};
+            }}
+            QToolButton[primary="true"]:hover {{
+                background-color: {AppTheme.PRIMARY_DARK};
+                border-color: {AppTheme.PRIMARY_DARK};
                 color: #FFFFFF;
             }}
             QToolButton:pressed {{
-                background-color: {AppTheme.PRIMARY_DARK};
-                color: #FFFFFF;
+                background-color: {AppTheme.GRAY_100};
             }}
-        """)
+            """
+        )
 
-    def _create_action_button(self, text: str, tooltip: str = "") -> QToolButton:
-        """Create a modern action button."""
+    def _create_action_button(self, text: str, tooltip: str = "", primary: bool = False) -> QToolButton:
         btn = QToolButton()
         btn.setText(text)
         btn.setToolTip(tooltip)
         btn.setToolButtonStyle(Qt.ToolButtonTextOnly)
+        btn.setProperty("primary", "true" if primary else "false")
         return btn
 
     def _create_separator(self) -> QFrame:
-        """Create a vertical separator."""
         separator = QFrame()
         separator.setFrameShape(QFrame.VLine)
-        separator.setFrameShadow(QFrame.Sunken)
+        separator.setFrameShadow(QFrame.Plain)
         separator.setStyleSheet(f"background-color: {AppTheme.BORDER};")
-        separator.setFixedWidth(2)
+        separator.setFixedWidth(1)
         return separator
 
 
 class QuickFilterBar(QFrame):
-    """Quick filter bar with instant filter buttons - 1-click filtering."""
+    """Optional quick filter actions."""
 
     quickFilterRequested = pyqtSignal(str, str, object)  # column, operator, value
     clearRequested = pyqtSignal()
@@ -134,23 +157,20 @@ class QuickFilterBar(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        """Create quick filter interface."""
         self.setObjectName("QuickFilterBar")
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 8, 12, 8)
         layout.setSpacing(8)
 
-        # Title
-        title = QLabel("⚡ Quick Filters:")
+        title = QLabel("Quick Filters")
         title.setStyleSheet(f"color: {AppTheme.TEXT}; font-weight: 700; font-size: 10pt;")
         layout.addWidget(title)
 
-        # Quick filter chips
-        self.gpa_high_btn = self._create_filter_chip("GPA ≥ 3.5", AppTheme.SUCCESS)
+        self.gpa_high_btn = self._create_filter_chip("GPA >= 3.5", AppTheme.SUCCESS)
         self.gpa_high_btn.clicked.connect(lambda: self.quickFilterRequested.emit("GPA", ">=", 3.5))
         layout.addWidget(self.gpa_high_btn)
 
-        self.gpa_medium_btn = self._create_filter_chip("GPA 2.5-3.5", AppTheme.INFO)
+        self.gpa_medium_btn = self._create_filter_chip("GPA 2.5 - 3.5", AppTheme.INFO)
         self.gpa_medium_btn.clicked.connect(lambda: self.quickFilterRequested.emit("GPA", "range", (2.5, 3.5)))
         layout.addWidget(self.gpa_medium_btn)
 
@@ -170,9 +190,9 @@ class QuickFilterBar(QFrame):
 
         layout.addStretch()
 
-        # Clear all button
-        clear_btn = QPushButton("✕ Clear All")
-        clear_btn.setStyleSheet(f"""
+        clear_btn = QPushButton("Clear")
+        clear_btn.setStyleSheet(
+            f"""
             QPushButton {{
                 background-color: transparent;
                 color: {AppTheme.ERROR};
@@ -185,29 +205,31 @@ class QuickFilterBar(QFrame):
                 background-color: {AppTheme.ERROR};
                 color: #FFFFFF;
             }}
-        """)
+            """
+        )
         clear_btn.clicked.connect(self.clearRequested.emit)
         layout.addWidget(clear_btn)
 
-        # Styling
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             #QuickFilterBar {{
                 background-color: {AppTheme.SURFACE};
-                border: 2px solid {AppTheme.BORDER};
+                border: 1px solid {AppTheme.BORDER};
                 border-radius: 8px;
             }}
-        """)
+            """
+        )
 
     def _create_filter_chip(self, text: str, color: str) -> QPushButton:
-        """Create a quick filter chip button."""
         btn = QPushButton(text)
-        btn.setStyleSheet(f"""
+        btn.setStyleSheet(
+            f"""
             QPushButton {{
-                background-color: {color}20;
+                background-color: {color}22;
                 color: {color};
-                border: 2px solid {color};
+                border: 1px solid {color};
                 border-radius: 6px;
-                padding: 6px 14px;
+                padding: 6px 10px;
                 font-weight: 700;
                 font-size: 9pt;
             }}
@@ -215,118 +237,175 @@ class QuickFilterBar(QFrame):
                 background-color: {color};
                 color: #FFFFFF;
             }}
-        """)
+            """
+        )
         return btn
 
     def _create_separator(self) -> QFrame:
-        """Create a vertical separator."""
         separator = QFrame()
         separator.setFrameShape(QFrame.VLine)
-        separator.setFrameShadow(QFrame.Sunken)
+        separator.setFrameShadow(QFrame.Plain)
         separator.setStyleSheet(f"background-color: {AppTheme.BORDER};")
-        separator.setFixedWidth(2)
+        separator.setFixedWidth(1)
         return separator
 
 
 class CompactHeader(QFrame):
-    """Compact header with key stats - no wasted space."""
+    """Branded header with logo mark and key dataset stats."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._setup_ui()
 
     def _setup_ui(self):
-        """Create compact header."""
         self.setObjectName("CompactHeader")
+
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 12, 16, 12)
-        layout.setSpacing(20)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(14)
 
-        # App title - smaller, cleaner
-        title_layout = QVBoxLayout()
-        title_layout.setSpacing(2)
+        branding_wrapper = QHBoxLayout()
+        branding_wrapper.setContentsMargins(0, 0, 0, 0)
+        branding_wrapper.setSpacing(10)
 
-        self.title = QLabel("Student Manager")
-        self.title.setStyleSheet(f"color: {AppTheme.TEXT}; font-size: 14pt; font-weight: 700;")
-        title_layout.addWidget(self.title)
+        mark_label = QLabel()
+        mark_logo = _load_scaled_logo("logo.png", 32, 32)
+        if mark_logo is not None:
+            mark_label.setPixmap(mark_logo)
+            mark_label.setFixedSize(mark_logo.size())
+        else:
+            mark_label.setText("SM")
+            mark_label.setStyleSheet(f"font-size: 11pt; color: {AppTheme.PRIMARY}; font-weight: 800;")
+        branding_wrapper.addWidget(mark_label, 0, Qt.AlignVCenter)
 
-        self.subtitle = QLabel("Filter, analyze, export")
-        self.subtitle.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 8pt;")
-        title_layout.addWidget(self.subtitle)
+        lockup_layout = QVBoxLayout()
+        lockup_layout.setContentsMargins(0, 0, 0, 0)
+        lockup_layout.setSpacing(2)
 
-        layout.addLayout(title_layout)
+        self.title_label = QLabel("Student Admissions Manager")
+        self.title_label.setStyleSheet(
+            f"color: {AppTheme.PRIMARY_DARK}; font-size: 12.5pt; font-weight: 600; font-family: {AppTheme.FONT_UI_BOLD};"
+        )
+        lockup_layout.addWidget(self.title_label)
 
+        subtitle = QLabel("Analytics Workspace")
+        subtitle.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 8.5pt; font-weight: 400;")
+        lockup_layout.addWidget(subtitle)
+
+        branding_wrapper.addLayout(lockup_layout)
+        layout.addLayout(branding_wrapper)
         layout.addStretch()
 
-        # Stats - clean pills
-        self.row_count_label = self._create_stat_pill("0", "students")
+        self.row_count_label, self._row_count_value, self._row_count_text = self._create_stat_pill("0", "students")
         layout.addWidget(self.row_count_label)
 
-        self.filter_count_label = self._create_stat_pill("0", "filters")
+        self.filter_count_label, self._filter_count_value, self._filter_count_text = self._create_stat_pill("0", "filters")
         layout.addWidget(self.filter_count_label)
 
-        self.file_label = QLabel("No file")
-        self.file_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt; font-weight: 600;")
+        self.file_label = QLabel("File: none")
+        self.file_label.setObjectName("HeaderFileLabel")
         layout.addWidget(self.file_label)
 
-        # Styling
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             #CompactHeader {{
-                background-color: {AppTheme.SURFACE};
-                border-bottom: 1px solid {AppTheme.GRAY_300};
+                background-color: {AppTheme.BACKGROUND};
+                border-bottom: 1px solid {AppTheme.GRAY_200};
             }}
-        """)
+            QLabel#HeaderFileLabel {{
+                color: {AppTheme.TEXT_SECONDARY};
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 7px;
+                background-color: {AppTheme.BACKGROUND};
+                padding: 7px 10px;
+                font-size: 8.5pt;
+                font-weight: 400;
+                min-width: 140px;
+            }}
+            """
+        )
 
-    def _create_stat_pill(self, value: str, label: str) -> QWidget:
-        """Create a stat pill widget."""
-        container = QWidget()
+    def _create_stat_pill(self, value: str, label: str):
+        container = QFrame()
+        container.setObjectName("StatPill")
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(12, 6, 12, 6)
-        layout.setSpacing(2)
+        layout.setContentsMargins(10, 4, 10, 4)
+        layout.setSpacing(1)
         layout.setAlignment(Qt.AlignCenter)
 
         value_label = QLabel(value)
-        value_label.setStyleSheet(f"color: {AppTheme.PRIMARY}; font-size: 16pt; font-weight: 700;")
+        value_label.setObjectName("StatValue")
         value_label.setAlignment(Qt.AlignCenter)
 
         text_label = QLabel(label)
-        text_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 8pt;")
+        text_label.setObjectName("StatText")
         text_label.setAlignment(Qt.AlignCenter)
 
         layout.addWidget(value_label)
         layout.addWidget(text_label)
 
-        container.setStyleSheet(f"""
-            QWidget {{
-                background-color: {AppTheme.BACKGROUND};
-                border: 1px solid {AppTheme.GRAY_300};
-                border-radius: 6px;
+        self._set_stat_pill_active(container, active=False)
+        return container, value_label, text_label
+
+    def _set_stat_pill_active(self, pill: QFrame, active: bool):
+        border = AppTheme.PRIMARY if active else AppTheme.GRAY_300
+        bg = AppTheme.BACKGROUND
+        value_color = AppTheme.PRIMARY_DARK if active else AppTheme.TEXT
+        pill.setStyleSheet(
+            f"""
+            QFrame#StatPill {{
+                background-color: {bg};
+                border: 1px solid {border};
+                border-radius: 7px;
+                min-width: 76px;
             }}
-        """)
+            QLabel#StatValue {{
+                color: {value_color};
+                font-size: 10.5pt;
+                font-weight: 600;
+                border: none;
+                background: transparent;
+            }}
+            QLabel#StatText {{
+                color: {AppTheme.TEXT_SECONDARY};
+                font-size: 7.5pt;
+                font-weight: 400;
+                border: none;
+                background: transparent;
+                letter-spacing: 0.2px;
+            }}
+            """
+        )
 
-        return container
+    def update_row_count(self, visible_count: int, total_count: Optional[int] = None):
+        visible_count = max(0, int(visible_count))
+        total = visible_count if total_count is None else max(0, int(total_count))
 
-    def update_row_count(self, count: int):
-        """Update row count display."""
-        pill = self.row_count_label
-        value_label = pill.findChild(QLabel)
-        if value_label:
-            value_label.setText(f"{count:,}")
+        self._row_count_value.setText(f"{visible_count:,}")
+        self._row_count_text.setText("student" if total == 1 else "students")
+
+        filtered = total > 0 and visible_count < total
+        self._set_stat_pill_active(self.row_count_label, active=filtered)
+        if filtered:
+            self.row_count_label.setToolTip(f"Showing {visible_count:,} of {total:,}")
+        else:
+            self.row_count_label.setToolTip(f"{total:,} students")
 
     def update_filter_count(self, count: int):
-        """Update filter count display."""
-        pill = self.filter_count_label
-        value_label = pill.findChild(QLabel)
-        if value_label:
-            value_label.setText(f"{count}")
+        count = max(0, int(count))
+        self._filter_count_value.setText(f"{count}")
+        self._filter_count_text.setText("filter" if count == 1 else "filters")
+        self._set_stat_pill_active(self.filter_count_label, active=(count > 0))
+        self.filter_count_label.setToolTip(f"{count} active {'filter' if count == 1 else 'filters'}")
 
     def update_file_name(self, filename: str):
-        """Update file name display."""
-        self.file_label.setText(filename or "No file")
+        clean_name = filename or "none"
+        self.file_label.setText(f"File: {clean_name}")
+        self.file_label.setToolTip(clean_name)
 
 
 class ModernSearchBar(QFrame):
-    """Clean, integrated search bar."""
+    """Search bar with text input and optional column scope."""
 
     searchChanged = pyqtSignal(str, str)  # text, column
 
@@ -335,72 +414,73 @@ class ModernSearchBar(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        """Create modern search interface."""
         self.setObjectName("ModernSearchBar")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 10, 16, 10)
-        layout.setSpacing(12)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(8)
 
-        # Search icon (emoji)
-        icon_label = QLabel("🔍")
-        icon_label.setStyleSheet("font-size: 14pt;")
-        layout.addWidget(icon_label)
+        label = QLabel("Search")
+        label.setStyleSheet(f"font-weight: 500; color: {AppTheme.TEXT};")
+        layout.addWidget(label)
 
-        # Search input
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search students by name, ID, status...")
+        self.search_input.setPlaceholderText("Find by name, ID, status, major...")
         self.search_input.setClearButtonEnabled(True)
-        self.search_input.setMinimumHeight(40)
+        self.search_input.setMinimumHeight(34)
         self.search_input.textChanged.connect(self._on_search_changed)
         layout.addWidget(self.search_input, 1)
 
-        # Column selector
-        in_label = QLabel("in")
-        in_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-weight: 600;")
-        layout.addWidget(in_label)
+        scope_label = QLabel("Scope")
+        scope_label.setStyleSheet(f"font-weight: 400; color: {AppTheme.TEXT_SECONDARY};")
+        layout.addWidget(scope_label)
 
         self.column_combo = QComboBox()
-        self.column_combo.addItem("🌐 All Columns", "Global")
-        self.column_combo.setMinimumWidth(160)
+        self.column_combo.addItem("All columns", "Global")
+        self.column_combo.setMinimumWidth(170)
         self.column_combo.currentIndexChanged.connect(self._on_search_changed)
         layout.addWidget(self.column_combo)
 
-        # Styling
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             #ModernSearchBar {{
                 background-color: {AppTheme.BACKGROUND};
-                border: 1px solid {AppTheme.GRAY_300};
-                border-radius: 6px;
+                border: 1px solid {AppTheme.GRAY_200};
+                border-radius: 8px;
             }}
             QLineEdit {{
-                border: none;
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 7px;
+                background-color: {AppTheme.BACKGROUND};
+                color: {AppTheme.TEXT};
+                padding: 6px 10px;
                 font-size: 10pt;
-                background-color: transparent;
-                padding: 4px;
+            }}
+            QLineEdit:focus {{
+                border: 1px solid {AppTheme.PRIMARY};
             }}
             QComboBox {{
-                border: 1px solid {AppTheme.GRAY_300};
-                border-radius: 4px;
-                padding: 6px 8px;
+                border: 1px solid {AppTheme.BORDER};
+                border-radius: 7px;
+                padding: 6px 10px;
                 background-color: {AppTheme.BACKGROUND};
+                color: {AppTheme.TEXT};
+                font-weight: 500;
             }}
-        """)
+            """
+        )
 
     def _on_search_changed(self):
-        """Emit search changed signal."""
         text = self.search_input.text()
         column = self.column_combo.currentData() or "Global"
         self.searchChanged.emit(text, column)
 
     def update_columns(self, columns: List[str]):
-        """Update available columns."""
         current = self.column_combo.currentData()
         self.column_combo.clear()
-        self.column_combo.addItem("🌐 All Columns", "Global")
+        self.column_combo.addItem("All columns", "Global")
         for col in columns:
-            self.column_combo.addItem(f"📍 {col}", col)
+            self.column_combo.addItem(col, col)
 
-        # Restore selection if possible
         for i in range(self.column_combo.count()):
             if self.column_combo.itemData(i) == current:
                 self.column_combo.setCurrentIndex(i)

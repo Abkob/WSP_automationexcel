@@ -449,7 +449,9 @@ class FilterDialog(QDialog):
 
         title_text = "Create Filter" if self.existing_filter is None else "Edit Filter"
         title = QLabel(title_text)
-        title_font = QFont("Segoe UI", 14, QFont.Bold)
+        title_font = QFont(QApplication.font())
+        title_font.setPointSize(max(12, title_font.pointSize() + 3))
+        title_font.setWeight(QFont.Bold)
         title.setFont(title_font)
         title.setStyleSheet(f"color: {AppTheme.TEXT};")
         header_layout.addWidget(title)
@@ -767,11 +769,16 @@ class FilterDialog(QDialog):
         column = self.column_combo.currentText()
         if column not in self.df.columns:
             return
+        column_idx = self.df.columns.get_loc(column)
         
         matching_rows = []
-        for idx, row in self.df.iterrows():
-            if temp_filter.matches(row[column]):
-                matching_rows.append(idx)
+        for row_pos in range(len(self.df)):
+            try:
+                value = self.df.iat[row_pos, column_idx]
+            except Exception:
+                continue
+            if temp_filter.matches(value):
+                matching_rows.append(row_pos)
         
         count = len(matching_rows)
         self.preview_count_label.setText(f"{count} row{'s' if count != 1 else ''} match")
@@ -793,7 +800,10 @@ class FilterDialog(QDialog):
             
             for table_row, df_idx in enumerate(preview_rows):
                 for col_idx, col_name in enumerate(self.df.columns):
-                    value = self.df.iloc[df_idx][col_name]
+                    try:
+                        value = self.df.iat[df_idx, col_idx]
+                    except Exception:
+                        value = ""
                     item = QTableWidgetItem(str(value))
                     
                     if col_name == column:

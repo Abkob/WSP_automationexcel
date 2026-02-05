@@ -1,0 +1,12 @@
+2026-02-04 22:20:12,962 - StudentManager - INFO - ================================================================================
+2026-02-04 22:20:12,963 - StudentManager - INFO - Application Starting
+2026-02-04 22:20:12,963 - StudentManager - INFO - Log file: logs\app_20260204_222012.log
+2026-02-04 22:20:12,963 - StudentManager - INFO - ================================================================================
+2026-02-04 22:20:12,963 - StudentManager - INFO - Setting up application...
+2026-02-04 22:20:12,963 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-04 22:20:12,964 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-04 22:20:13,066 - StudentManager - DEBUG - Resolving fonts for platform: win32
+2026-02-04 22:20:13,067 - StudentManager - INFO - Font families selected: UI='Segoe UI', Arabic='Dubai'
+2026-02-04 22:20:13,067 - StudentManager - DEBUG - Applying theme...
+2026-02-04 22:20:13,069 - StudentManager - INFO - Theme applied successfully
+2026-02-04 22:20:13,069 - StudentManager - INFO - Application setup complete

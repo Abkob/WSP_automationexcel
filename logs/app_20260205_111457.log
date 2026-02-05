@@ -1,0 +1,12 @@
+2026-02-05 11:14:57,513 - StudentManager - INFO - ================================================================================
+2026-02-05 11:14:57,514 - StudentManager - INFO - Application Starting
+2026-02-05 11:14:57,514 - StudentManager - INFO - Log file: logs\app_20260205_111457.log
+2026-02-05 11:14:57,514 - StudentManager - INFO - ================================================================================
+2026-02-05 11:14:57,514 - StudentManager - INFO - Setting up application...
+2026-02-05 11:14:57,514 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-05 11:14:57,515 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-05 11:14:57,556 - StudentManager - DEBUG - Resolving fonts for platform: win32
+2026-02-05 11:14:57,559 - StudentManager - INFO - Font families selected: UI='Proxima Nova Rg', UI Medium='Proxima Nova Lt', UI Bold='Proxima Nova Th', Arabic='Dubai'
+2026-02-05 11:14:57,559 - StudentManager - DEBUG - Applying theme...
+2026-02-05 11:14:57,560 - StudentManager - INFO - Theme applied successfully
+2026-02-05 11:14:57,560 - StudentManager - INFO - Application setup complete

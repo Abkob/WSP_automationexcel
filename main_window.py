@@ -25,7 +25,7 @@ import numpy as np
 from typing import Optional, Dict, List
 
 from models import DataFrameModel, FilterManager, NumericFilter, TextFilter, DateFilter, FilterRule
-from proxies import SmartSearchProxy
+from proxies import SmartSearchProxy                     
 from views import StyledTableView, SecondaryTableWindow, ArchiveBrowserDialog
 from widgets import FilterPanel, FilterDialog
 from enhanced_column_navigator import EnhancedColumnNavigator
@@ -226,8 +226,11 @@ class MainWindow(QMainWindow):
             super().__init__()
 
             self.logger.debug("Setting window properties...")
-            self.setWindowTitle("Student Admissions Manager v2.0")
+            self.setWindowTitle("Student Admissions Manager")
             self.resize(1600, 1000)
+            logo_icon_path = AppTheme.asset_path("logo.png")
+            if os.path.exists(logo_icon_path):
+                self.setWindowIcon(QIcon(logo_icon_path))
 
             # Data
             self.logger.debug("Initializing data structures...")
@@ -235,6 +238,7 @@ class MainWindow(QMainWindow):
             self.current_file_path = None
             self.child_windows = []
             self._extra_models: List[DataFrameModel] = []
+            self._filtered_tab_show_matches = True
 
             # Setup
             self.logger.info("Setting up models...")
@@ -315,27 +319,28 @@ class MainWindow(QMainWindow):
 
         # === LEFT: MODERN FILTER PANEL ===
         self.filter_panel = ModernFilterPanel()
-        self.filter_panel.setMinimumWidth(280)
-        self.filter_panel.setMaximumWidth(360)
-        self._filter_panel_min_width = 280
-        self._filter_panel_max_width = 360
+        self.filter_panel.setMinimumWidth(260)
+        self.filter_panel.setMaximumWidth(16777215)
+        self._filter_panel_min_width = 260
+        self._filter_panel_max_width = 520
         self._filter_panel_collapsed = False
         self._filter_panel_user_collapsed = False
         self._filter_panel_auto_collapsed = False
         self._filter_panel_sizes = None
         self.filter_panel.setStyleSheet(f"""
             ModernFilterPanel {{
-                background-color: {AppTheme.SURFACE};
-                border-right: 1px solid {AppTheme.GRAY_300};
+                background-color: {AppTheme.BACKGROUND};
+                border-right: 1px solid {AppTheme.GRAY_200};
             }}
         """)
         content_splitter.addWidget(self.filter_panel)
+        self.filter_panel.widthSuggested.connect(self._on_filter_panel_width_suggested)
 
         # === CENTER: MAIN CONTENT ===
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
-        content_layout.setContentsMargins(12, 12, 12, 12)
-        content_layout.setSpacing(12)
+        content_layout.setContentsMargins(10, 10, 10, 10)
+        content_layout.setSpacing(10)
 
         # === MODERN ACTION BAR ===
         self.action_bar = ModernActionBar()
@@ -349,27 +354,27 @@ class MainWindow(QMainWindow):
         self.tab_widget = DynamicTabWidget()
         self.tab_widget.setStyleSheet(f"""
             QTabWidget::pane {{
-                border: 1px solid {AppTheme.GRAY_300};
-                border-top: 2px solid {AppTheme.PRIMARY};
+                border: 1px solid {AppTheme.GRAY_200};
                 background-color: {AppTheme.BACKGROUND};
+                border-radius: 8px;
             }}
             QTabBar::tab {{
-                background-color: {AppTheme.SURFACE};
+                background-color: {AppTheme.GRAY_100};
                 color: {AppTheme.TEXT_SECONDARY};
                 border: 1px solid {AppTheme.GRAY_300};
                 border-bottom: none;
-                border-top-left-radius: 4px;
-                border-top-right-radius: 4px;
-                padding: 8px 16px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                padding: 7px 14px;
                 margin-right: 2px;
-                font-weight: 500;
+                font-weight: 600;
                 font-size: 9pt;
                 min-width: 100px;
             }}
             QTabBar::tab:selected {{
                 background-color: {AppTheme.BACKGROUND};
                 color: {AppTheme.PRIMARY};
-                font-weight: 600;
+                font-weight: 700;
                 border: 1px solid {AppTheme.GRAY_300};
                 border-top: 2px solid {AppTheme.PRIMARY};
                 border-bottom: 1px solid {AppTheme.BACKGROUND};
@@ -378,13 +383,10 @@ class MainWindow(QMainWindow):
                 background-color: {AppTheme.PRIMARY_LIGHT};
                 color: {AppTheme.TEXT};
             }}
-            QTabBar::tab:!selected {{
-                margin-top: 2px;
-            }}
         """)
         # Create "All Students" base tab (always present)
         
-        # Create "📊 All Students" base tab (always present)
+        # Create "All Students" base tab (always present)
         self.table_all = StyledTableView()
         self.proxy_all = SmartSearchProxy()
         self.proxy_all.setSourceModel(self.model)
@@ -393,7 +395,7 @@ class MainWindow(QMainWindow):
         self.table_all.tab_kind = "base"
         self.table_all.tab_filters = []
         self.table_all.tab_filter_mode = "all"
-        self.tab_widget.addTab(self.table_all, "📊 All Students")
+        self.tab_widget.addTab(self.table_all, "All Students")
 
         # Make "All Students" tab not closable
         self.tab_widget.tabBar().setTabButton(0, self.tab_widget.tabBar().RightSide, None)
@@ -522,6 +524,15 @@ class MainWindow(QMainWindow):
         close_all_tabs_action = QAction("Close All Rule Tabs", self)
         close_all_tabs_action.triggered.connect(self._close_all_filter_tabs)
         tabs_menu.addAction(close_all_tabs_action)
+
+        tabs_menu.addSeparator()
+
+        filtered_mode_action = QAction("Filtered Tab Shows Matching Rows", self)
+        filtered_mode_action.setCheckable(True)
+        filtered_mode_action.setChecked(getattr(self, "_filtered_tab_show_matches", True))
+        filtered_mode_action.toggled.connect(self._on_filtered_tab_mode_toggled)
+        tabs_menu.addAction(filtered_mode_action)
+        self.filtered_tab_mode_action = filtered_mode_action
         
         # Tools Menu
         tools_menu = menubar.addMenu("Tools")
@@ -836,6 +847,8 @@ class MainWindow(QMainWindow):
                     filter_mode=self.filter_panel.get_filter_mode(),
                     switch_to=False
                 )
+                self._refresh_rule_state()
+                self._sync_filter_panel_for_tab(self._get_current_tab_widget())
             else:
                 self._add_filter_to_tab(current_widget, filter_rule)
     
@@ -866,8 +879,51 @@ class MainWindow(QMainWindow):
                     filter_mode=self.filter_panel.get_filter_mode(),
                     switch_to=False
                 )
+                self._refresh_rule_state()
+                self._sync_filter_panel_for_tab(self._get_current_tab_widget())
             else:
                 self._add_filter_to_tab(current_widget, filter_rule)
+
+    def _on_clear_filters_for_column(self, column_name: str):
+        """Remove all filters for a column in the active context."""
+        if not column_name:
+            return
+
+        current_widget = self._get_current_tab_widget()
+        if current_widget is None:
+            return
+
+        removed_count = 0
+        tab_kind = getattr(current_widget, "tab_kind", None)
+
+        if tab_kind in ["base", "filtered"]:
+            # On the main/filtered views, column filters are defined by rule tabs.
+            for _, rule_widget in list(self._iter_rule_tabs()):
+                filters, _ = self._ensure_tab_filter_state(rule_widget)
+                matching = [f for f in list(filters) if getattr(f, "column", None) == column_name]
+                for filter_rule in matching:
+                    self._remove_filter_from_tab(rule_widget, filter_rule)
+                    removed_count += 1
+
+            # Keep behavior consistent if base tab has direct filters.
+            base_filters, _ = self._ensure_tab_filter_state(self.table_all)
+            base_matching = [f for f in list(base_filters) if getattr(f, "column", None) == column_name]
+            for filter_rule in base_matching:
+                self._remove_filter_from_tab(self.table_all, filter_rule)
+                removed_count += 1
+        else:
+            filters, _ = self._ensure_tab_filter_state(current_widget)
+            matching = [f for f in list(filters) if getattr(f, "column", None) == column_name]
+            for filter_rule in matching:
+                self._remove_filter_from_tab(current_widget, filter_rule)
+                removed_count += 1
+
+        if removed_count == 0:
+            QMessageBox.information(self, "No Filters", f"No filters found for column '{column_name}'.")
+            return
+
+        plural = "s" if removed_count != 1 else ""
+        self.status_bar.showMessage(f"Removed {removed_count} filter{plural} from '{column_name}'", 3000)
     
     def _on_filter_added(self, filter_rule):
         """Handle filter added signal from panel."""
@@ -1035,12 +1091,11 @@ class MainWindow(QMainWindow):
                 self._hide_rule_tab(widget)
             self._save_state()
         else:
-            # Custom or file tab: just close the view.
-            if getattr(widget, "tab_kind", None) == "file":
-                proxy = widget.model() if widget else None
-                source_model = proxy.sourceModel() if proxy and hasattr(proxy, "sourceModel") else None
-                if source_model in self._extra_models:
-                    self._extra_models.remove(source_model)
+            # Custom/file snapshot tabs use independent models; drop references on close.
+            proxy = widget.model() if widget else None
+            source_model = proxy.sourceModel() if proxy and hasattr(proxy, "sourceModel") else None
+            if source_model in self._extra_models:
+                self._extra_models.remove(source_model)
             self.tab_widget.removeTab(index)
             if widget:
                 widget.deleteLater()
@@ -1051,45 +1106,19 @@ class MainWindow(QMainWindow):
         self._save_state()
 
     def _on_duplicate_tab(self, index):
-        """Duplicate a tab's current view."""
+        """Duplicate a tab as an independent snapshot (rule highlights still apply)."""
         proxy = self._get_tab_proxy(index)
         if proxy is None:
             return
-        
-        source_model = proxy.sourceModel()
-        if source_model is None:
-            return
-        
-        source_widget = self.tab_widget.widget(index)
-        source_kind = getattr(source_widget, "tab_kind", "custom")
-        
-        table_view = StyledTableView()
-        new_proxy = SmartSearchProxy()
-        new_proxy.setSourceModel(source_model)
-        new_proxy.setFilterMode(proxy.filter_mode)
-        new_proxy.setExtraFilters(list(proxy.extra_filters))
-        new_proxy.setExtraFilterMode(getattr(proxy, "extra_filter_mode", "all"))
-        new_proxy.setSearchText(proxy.search_text)
-        new_proxy.setSearchColumn(proxy.search_column)
-        
-        table_view.setModel(new_proxy)
-        self._wire_table_view(table_view, allow_filters=(source_model is self.model and source_kind != "file"))
-        
-        if source_kind == "rule":
-            table_view.tab_kind = "custom"
-        else:
-            table_view.tab_kind = source_kind
-            if source_kind == "file":
-                table_view.file_path = getattr(source_widget, "file_path", None)
-        table_view.tab_filters = list(getattr(source_widget, "tab_filters", []))
-        table_view.tab_filter_mode = getattr(source_widget, "tab_filter_mode", "all")
-        
+
         current_name = self._strip_tab_count(self.tab_widget.tabText(index))
         new_name = f"{current_name} Copy"
-        
-        new_index = self.tab_widget.addTab(table_view, new_name)
-        self.tab_widget.setCurrentIndex(new_index)
-        self._save_state()
+
+        new_index = self._create_custom_tab(new_name, source_proxy=proxy)
+        if new_index is not None:
+            self.tab_widget.setCurrentIndex(new_index)
+            self.status_bar.showMessage("Created independent snapshot copy", 3000)
+            self._save_state()
 
     def _on_export_tab(self, index):
         """Export data for a specific tab."""
@@ -1099,7 +1128,7 @@ class MainWindow(QMainWindow):
         self._on_export(mode="current_tab")
     
     def _on_new_custom_tab(self):
-        """Create a new custom tab."""
+        """Create a new independent snapshot tab."""
         dialog = NewTabDialog(self)
         if dialog.exec_():
             name = dialog.get_tab_name()
@@ -1107,6 +1136,7 @@ class MainWindow(QMainWindow):
                 index = self._create_custom_tab(name)
                 if index is not None:
                     self.tab_widget.setCurrentIndex(index)
+                    self.status_bar.showMessage("Created independent snapshot tab", 3000)
                     self._save_state()
     
     def _on_close_current_tab(self):
@@ -1429,11 +1459,21 @@ class MainWindow(QMainWindow):
     def _row_matches_filters(self, row, filters, mode: str) -> bool:
         if not filters:
             return False
+
+        applicable = []
+        for filter_rule in filters:
+            col = getattr(filter_rule, "column", None)
+            if col is None:
+                continue
+            if col in row.index:
+                applicable.append(filter_rule)
+
+        if not applicable:
+            return False
+
         if mode == "any":
-            for filter_rule in filters:
-                col = getattr(filter_rule, "column", None)
-                if col is None or col not in row.index:
-                    continue
+            for filter_rule in applicable:
+                col = filter_rule.column
                 try:
                     if filter_rule.matches(row[col]):
                         return True
@@ -1442,10 +1482,8 @@ class MainWindow(QMainWindow):
             return False
 
         # Default AND
-        for filter_rule in filters:
-            col = getattr(filter_rule, "column", None)
-            if col is None or col not in row.index:
-                return False
+        for filter_rule in applicable:
+            col = filter_rule.column
             try:
                 if not filter_rule.matches(row[col]):
                     return False
@@ -1483,6 +1521,41 @@ class MainWindow(QMainWindow):
             source_model.set_dataframe(df)
         else:
             proxy.setSourceModel(DataFrameModel(df))
+
+    def _apply_tab_highlights(self, widget):
+        """Apply tab-specific filter highlights to custom/file tabs."""
+        if widget is None:
+            return
+        tab_kind = getattr(widget, "tab_kind", None)
+        if tab_kind not in ["custom", "file"]:
+            return
+        proxy = widget.model() if hasattr(widget, "model") else None
+        source_model = proxy.sourceModel() if proxy and hasattr(proxy, "sourceModel") else None
+        if not isinstance(source_model, DataFrameModel):
+            return
+        df = source_model.dataframe()
+        if df is None or df.empty:
+            source_model.set_highlight_mask(None)
+            source_model.filter_manager.clear_all()
+            return
+
+        filters, mode = self._ensure_tab_filter_state(widget)
+        if not filters:
+            source_model.set_highlight_mask(None)
+            source_model.filter_manager.clear_all()
+            return
+
+        applicable = [f for f in filters if getattr(f, "column", None) in df.columns]
+        if not applicable:
+            source_model.set_highlight_mask(None)
+            source_model.filter_manager.clear_all()
+            return
+
+        mask = self._build_mask_for_filters(df, applicable, mode)
+        source_model.set_highlight_mask(mask)
+        source_model.filter_manager.clear_all()
+        for filter_rule in applicable:
+            source_model.filter_manager.add_filter(filter_rule)
 
     def _refresh_rule_state(self):
         """Recompute main-tab highlights and filtered tab based on rules."""
@@ -1540,8 +1613,17 @@ class MainWindow(QMainWindow):
         for _, widget in self._iter_rule_tabs():
             self._rebuild_rule_tab(widget)
 
+    def _on_filtered_tab_mode_toggled(self, checked: bool):
+        """Toggle whether the filtered tab shows matching or non-matching rows."""
+        self._filtered_tab_show_matches = bool(checked)
+        mode_text = "matching" if self._filtered_tab_show_matches else "non-matching"
+        self.status_bar.showMessage(f"Filtered tab now shows {mode_text} rows", 3000)
+        self._refresh_rule_state()
+        self._sync_active_tab_context()
+        self._save_state()
+
     def _ensure_filtered_tab(self):
-        """Ensure the Filtered tab exists (shows rows matching active rules)."""
+        """Ensure the Filtered tab exists."""
         for i in range(self.tab_widget.count()):
             widget = self.tab_widget.widget(i)
             if getattr(widget, "tab_kind", None) == "filtered":
@@ -1567,7 +1649,7 @@ class MainWindow(QMainWindow):
         return self._ensure_filtered_tab()
 
     def _rebuild_filtered_tab(self, union_mask: np.ndarray):
-        """Rebuild the Filtered tab with rows matching active rules."""
+        """Rebuild the Filtered tab with matching or non-matching rows."""
         index, widget = self._ensure_filtered_tab()
         df = self.model.dataframe()
         if df.empty:
@@ -1575,12 +1657,9 @@ class MainWindow(QMainWindow):
         else:
             if union_mask is None or len(union_mask) != len(df):
                 snapshot_df = df.iloc[0:0].copy()
-            elif union_mask.any():
-                # CHANGED: Show matched rows (union_mask) not unmatched (~union_mask)
-                snapshot_df = df[union_mask].copy()
             else:
-                # No matches - show empty
-                snapshot_df = df.iloc[0:0].copy()
+                target_mask = union_mask if self._filtered_tab_show_matches else np.logical_not(union_mask)
+                snapshot_df = df[target_mask].copy() if target_mask.any() else df.iloc[0:0].copy()
 
         proxy = widget.model() if hasattr(widget, "model") else None
         if isinstance(proxy, SmartSearchProxy):
@@ -1600,7 +1679,8 @@ class MainWindow(QMainWindow):
 
         # Update tab tooltip with count
         count = len(snapshot_df)
-        self.tab_widget.setTabToolTip(index, f"{count} rows matching active rules")
+        detail = "matching active rules" if self._filtered_tab_show_matches else "not matching active rules"
+        self.tab_widget.setTabToolTip(index, f"{count} rows {detail}")
 
     def _rebuild_unmatched_tab(self, union_mask: np.ndarray):
         """Legacy method - redirects to filtered tab."""
@@ -1639,6 +1719,7 @@ class MainWindow(QMainWindow):
             filters, mode = self._ensure_tab_filter_state(widget)
             proxy.setExtraFilters(filters)
             proxy.setExtraFilterMode(mode)
+        self._apply_tab_highlights(widget)
 
     def _sync_filter_panel_for_tab(self, widget):
         self.filter_panel.clear_all_chips()
@@ -1649,9 +1730,11 @@ class MainWindow(QMainWindow):
         if tab_kind == "base":
             base_filters, mode = self._ensure_tab_filter_state(widget)
             display_filters = list(base_filters)
-            for filter_rule in self._get_active_rule_filters():
-                if filter_rule not in display_filters:
-                    display_filters.append(filter_rule)
+            for _, rule_widget in self._iter_rule_tabs():
+                rule_filters, _ = self._ensure_tab_filter_state(rule_widget)
+                for filter_rule in rule_filters:
+                    if filter_rule not in display_filters:
+                        display_filters.append(filter_rule)
             for filter_rule in display_filters:
                 self.filter_panel.add_filter_chip(filter_rule)
             self.filter_panel.set_filter_mode(mode)
@@ -1789,6 +1872,7 @@ class MainWindow(QMainWindow):
         table_view.allow_column_filters = allow_filters
         if allow_filters:
             table_view.columnFilterRequested.connect(self._on_add_filter_for_column)
+            table_view.columnFilterClearRequested.connect(self._on_clear_filters_for_column)
 
     def _dataframe_for_proxy(self, proxy: SmartSearchProxy, full_source: bool = False) -> pd.DataFrame:
         source_model = proxy.sourceModel()
@@ -1866,7 +1950,7 @@ class MainWindow(QMainWindow):
             self.content_splitter.setSizes([50, max(1, total - 50)])
         else:
             self.filter_panel.setMinimumWidth(self._filter_panel_min_width)
-            self.filter_panel.setMaximumWidth(self._filter_panel_max_width)
+            self.filter_panel.setMaximumWidth(16777215)
             sizes = self._filter_panel_sizes
             if sizes and len(sizes) >= 2:
                 self.content_splitter.setSizes(sizes)
@@ -1914,7 +1998,7 @@ class MainWindow(QMainWindow):
             self.filter_panel.set_collapse_available(True)
             if tab_kind == "base":
                 self.filter_panel.set_context("Rules", "Add a filter to create a rule tab")
-                self.filter_panel.set_mode_enabled(False)
+                self.filter_panel.set_mode_enabled(True)
                 self.filter_panel.add_btn.setText("Create Rule")
             elif tab_kind == "rule":
                 self.filter_panel.set_context("Rule Filters", "Define what this rule captures")
@@ -1929,7 +2013,12 @@ class MainWindow(QMainWindow):
                 self.filter_panel.set_mode_enabled(True)
                 self.filter_panel.add_btn.setText("Add Filter")
             elif tab_kind == "filtered":
-                self.filter_panel.set_context("Filtered", "Rows matching active rules")
+                filtered_subtitle = (
+                    "Rows matching active rules"
+                    if self._filtered_tab_show_matches
+                    else "Rows not matching active rules"
+                )
+                self.filter_panel.set_context("Filtered", filtered_subtitle)
                 self.filter_panel.set_mode_enabled(False)
                 self.filter_panel.add_btn.setText("Add Filter")
                 self.filter_panel.set_action_controls_visible(False)
@@ -1962,26 +2051,43 @@ class MainWindow(QMainWindow):
         self._update_tab_counts()
         self._update_ui_state()
 
-    def _create_custom_tab(self, name: str, insert_index: Optional[int] = None) -> Optional[int]:
+    def _on_filter_panel_width_suggested(self, suggested_width: int):
+        if getattr(self, "_filter_panel_collapsed", False):
+            return
+        if getattr(self, "_filter_panel_user_collapsed", False):
+            return
+        suggested = max(self._filter_panel_min_width, min(suggested_width, self._filter_panel_max_width))
+        self._filter_panel_min_width = suggested
+        total = sum(self.content_splitter.sizes()) or self.width()
+        if total <= 0:
+            return
+        self.content_splitter.setSizes([suggested, max(1, total - suggested)])
+
+    def _create_custom_tab(self, name: str, insert_index: Optional[int] = None,
+                           source_proxy: Optional[SmartSearchProxy] = None) -> Optional[int]:
         if not name:
             return None
-        
+
+        # New custom tabs are independent snapshots of the current view.
+        source_proxy = source_proxy or self._get_current_proxy()
+        if source_proxy is not None:
+            snapshot_df = self._dataframe_for_proxy(source_proxy).copy().reset_index(drop=True)
+        else:
+            snapshot_df = self.model.dataframe().copy().reset_index(drop=True)
+
         table_view = StyledTableView()
+        new_model = DataFrameModel(snapshot_df)
         proxy = SmartSearchProxy()
-        proxy.setSourceModel(self.model)
+        proxy.setSourceModel(new_model)
         proxy.setFilterMode("all")
-        
-        # Apply current search settings
-        proxy.setSearchText(self.search_edit.text())
-        search_col = self.search_column_combo.currentText()
-        if search_col != "Global" and self._model_has_column(self.model, search_col):
-            proxy.setSearchColumn(search_col)
-        
+
         table_view.setModel(proxy)
         self._wire_table_view(table_view, allow_filters=True)
         table_view.tab_kind = "custom"
         table_view.tab_filters = []
         table_view.tab_filter_mode = "all"
+
+        self._extra_models.append(new_model)
         
         if insert_index is not None and 0 <= insert_index <= self.tab_widget.count():
             return self.tab_widget.insertTab(insert_index, table_view, name)
@@ -2190,7 +2296,7 @@ class MainWindow(QMainWindow):
         visible_rows = current_proxy.rowCount() if current_proxy else total_rows
 
         # Update modern header
-        self.header.update_row_count(visible_rows if visible_rows != total_rows else total_rows)
+        self.header.update_row_count(visible_rows, total_rows)
 
         # Update filter count in header
         current_widget = self._get_current_tab_widget()
@@ -2265,6 +2371,7 @@ class MainWindow(QMainWindow):
         
         state = {
             'last_file': self.current_file_path,
+            'filtered_tab_mode': 'matched' if self._filtered_tab_show_matches else 'unmatched',
             'tabs': []
         }
         
@@ -2307,6 +2414,14 @@ class MainWindow(QMainWindow):
         try:
             with open('app_state.json', 'r') as f:
                 state = json.load(f)
+
+            filtered_mode = state.get('filtered_tab_mode', 'matched')
+            self._filtered_tab_show_matches = (filtered_mode != 'unmatched')
+            mode_action = getattr(self, "filtered_tab_mode_action", None)
+            if mode_action is not None:
+                mode_action.blockSignals(True)
+                mode_action.setChecked(self._filtered_tab_show_matches)
+                mode_action.blockSignals(False)
             
             # Legacy filters (pre per-tab)
             self._pending_filters = []
