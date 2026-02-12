@@ -106,35 +106,59 @@ def load_dataframe_from_file(filepath: str, sheet_name: Optional[str] = None) ->
 
 
 def add_date_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Add or update the Date Added column."""
+    """Stamp new rows with the current time, preserving existing timestamps.
+
+    Only rows whose Date Added value is missing/empty get the current time.
+    Rows that already carry a timestamp are left untouched.
+    """
     df = df.copy()
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    df[DATE_COL_NAME] = now
+    if DATE_COL_NAME not in df.columns:
+        df[DATE_COL_NAME] = now
+    else:
+        mask = df[DATE_COL_NAME].isna() | (df[DATE_COL_NAME].astype(str).str.strip() == "")
+        df.loc[mask, DATE_COL_NAME] = now
     return df
 
 
-def merge_dataframes(existing_df: pd.DataFrame, new_df: pd.DataFrame) -> Tuple[pd.DataFrame, bool, str]:
-    """Merge new DataFrame with existing one."""
+def merge_dataframes(
+    existing_df: pd.DataFrame,
+    new_df: pd.DataFrame,
+    key_columns: Optional[list] = None,
+) -> Tuple[pd.DataFrame, bool, str]:
+    """Merge new DataFrame into existing one.
+
+    Parameters
+    ----------
+    existing_df : Current dataset.
+    new_df : Incoming dataset (must have the same columns, ignoring Date Added).
+    key_columns : Column(s) used to detect duplicates.  When a new row has the
+        same key as an existing row the new row wins (``keep="last"``).
+        If *None* or empty, rows are simply appended with no dedup.
+    """
     existing_base = [c for c in existing_df.columns if c != DATE_COL_NAME]
     new_base = [c for c in new_df.columns if c != DATE_COL_NAME]
-    
+
     if set(existing_base) != set(new_base):
         missing_in_new = set(existing_base) - set(new_base)
         extra_in_new = set(new_base) - set(existing_base)
-        
-        msg = "Column mismatch:\n"
+        parts = []
         if missing_in_new:
-            msg += f"Missing: {', '.join(missing_in_new)}\n"
+            parts.append(f"Missing: {', '.join(sorted(missing_in_new))}")
         if extra_in_new:
-            msg += f"Extra: {', '.join(extra_in_new)}\n"
-        
-        return existing_df, False, msg
-    
-    new_df = new_df[existing_base + [DATE_COL_NAME]]
+            parts.append(f"Extra: {', '.join(sorted(extra_in_new))}")
+        return existing_df, False, "Column mismatch:\n" + "\n".join(parts)
+
+    # Align column order
+    col_order = existing_base + ([DATE_COL_NAME] if DATE_COL_NAME in new_df.columns else [])
+    new_df = new_df[col_order]
+
     merged = pd.concat([existing_df, new_df], ignore_index=True)
-    merged = merged.drop_duplicates(subset=existing_base, keep="last")
+
+    if key_columns:
+        merged = merged.drop_duplicates(subset=key_columns, keep="last")
+
     merged = merged.reset_index(drop=True)
-    
     return merged, True, "Successfully merged"
 
 

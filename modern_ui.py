@@ -42,6 +42,7 @@ class ModernActionBar(QFrame):
     """Top action bar with grouped actions."""
 
     loadRequested = pyqtSignal()
+    addFileRequested = pyqtSignal()
     saveRequested = pyqtSignal()
     exportRequested = pyqtSignal(str)  # mode: all/current/filtered
     archivesRequested = pyqtSignal()
@@ -61,6 +62,10 @@ class ModernActionBar(QFrame):
         load_btn = self._create_action_button("Load Data", "Load data file (Ctrl+O)", primary=True)
         load_btn.clicked.connect(self.loadRequested.emit)
         layout.addWidget(load_btn)
+
+        self.add_file_btn = self._create_action_button("Add File", "Add & merge a compatible file")
+        self.add_file_btn.clicked.connect(self.addFileRequested.emit)
+        layout.addWidget(self.add_file_btn)
 
         save_btn = self._create_action_button("Save View", "Save current view (Ctrl+S)")
         save_btn.clicked.connect(self.saveRequested.emit)

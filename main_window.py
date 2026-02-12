@@ -16,7 +16,8 @@ from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QSplitter,
     QLineEdit, QComboBox, QLabel, QAction, QMenu, QToolButton,
     QMessageBox, QInputDialog, QFileDialog, QStatusBar,
-    QApplication, QDialog, QDialogButtonBox, QRadioButton, QAbstractItemView
+    QApplication, QDialog, QDialogButtonBox, QRadioButton, QAbstractItemView,
+    QListWidget, QListWidgetItem, QGroupBox, QScrollArea, QCheckBox
 )
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon, QKeySequence
@@ -44,174 +45,207 @@ from modern_filter_panel import ModernFilterPanel
 
 
 class MergeDialog(QDialog):
-    """Smart dialog for handling data merge/replace operations."""
-    
-    def __init__(self, existing_count: int, new_count: int, filepath: str, parent=None):
+    """Dialog for handling data merge/replace operations with key-column selection."""
+
+    _CARD_STYLE = """
+        QWidget {
+            background-color: #F3F4F6;
+            border: 2px solid #D1D5DB;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        QWidget:hover { background-color: #E5E7EB; }
+    """
+
+    def __init__(
+        self,
+        existing_count: int,
+        new_count: int,
+        filepath: str,
+        columns: list,
+        parent=None,
+    ):
         super().__init__(parent)
         self.existing_count = existing_count
         self.new_count = new_count
         self.filepath = filepath
+        self.columns = columns  # data columns (excluding Date Added)
         self.result_action = None
-        
+
         self.setWindowTitle("Data Already Loaded")
-        self.setMinimumWidth(550)
+        self.setMinimumWidth(580)
         self._setup_ui()
-    
+
+    # ── UI ─────────────────────────────────────────────────────────────────
+
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(16)
+        layout.setSpacing(12)
         layout.setContentsMargins(20, 20, 20, 20)
-        
-        # Title
+
+        # Title + info
         title = QLabel("<b>You have data already loaded</b>")
         title.setStyleSheet("font-size: 13pt; color: #111827;")
         layout.addWidget(title)
-        
-        # Info
-        info = QLabel(f"""
-            <p style='color: #6B7280;'>
-            Current data: <b>{self.existing_count:,}</b> students<br>
-            New file: <b>{self.new_count:,}</b> students<br>
-            File: <i>{os.path.basename(self.filepath)}</i>
-            </p>
-        """)
+
+        info = QLabel(
+            f"<p style='color:#6B7280;'>"
+            f"Current data: <b>{self.existing_count:,}</b> students<br>"
+            f"New file: <b>{self.new_count:,}</b> students<br>"
+            f"File: <i>{os.path.basename(self.filepath)}</i></p>"
+        )
         layout.addWidget(info)
-        
-        # Separator
-        separator = QLabel()
-        separator.setStyleSheet("border-bottom: 2px solid #E5E7EB;")
-        separator.setFixedHeight(1)
-        layout.addWidget(separator)
-        
-        # Options label
+
+        sep = QFrame()
+        sep.setFrameShape(QFrame.HLine)
+        sep.setStyleSheet("color: #E5E7EB;")
+        layout.addWidget(sep)
+
         options_label = QLabel("<b>What would you like to do?</b>")
         options_label.setStyleSheet("font-size: 11pt; color: #111827;")
         layout.addWidget(options_label)
-        
-        # Option 1: Merge
+
+        # ── Option cards ──────────────────────────────────────────────────
+
+        # MERGE
         self.merge_radio = QRadioButton()
         self.merge_radio.setChecked(True)
-        merge_layout = QVBoxLayout()
-        merge_title = QLabel("<b>MERGE</b> - Combine datasets")
-        merge_title.setStyleSheet("color: #111827; font-size: 11pt;")
-        merge_desc = QLabel(f"Add new students and update duplicates<br><span style='color: #6B7280;'>-> Results in approximately {self.existing_count + self.new_count:,} students</span>")
-        merge_desc.setStyleSheet("color: #374151;")
-        merge_layout.addWidget(merge_title)
-        merge_layout.addWidget(merge_desc)
-        
-        merge_widget = QWidget()
-        merge_widget_layout = QHBoxLayout(merge_widget)
-        merge_widget_layout.setContentsMargins(0, 0, 0, 0)
-        merge_widget_layout.addWidget(self.merge_radio)
-        merge_widget_layout.addLayout(merge_layout)
-        merge_widget_layout.addStretch()
-        
-        merge_container = QWidget()
-        merge_container.setStyleSheet("""
-            QWidget {
-                background-color: #F3F4F6;
-                border: 2px solid #D1D5DB;
-                border-radius: 8px;
-                padding: 12px;
-            }
-            QWidget:hover {
-                background-color: #E5E7EB;
-            }
-        """)
-        merge_container_layout = QVBoxLayout(merge_container)
-        merge_container_layout.setContentsMargins(12, 12, 12, 12)
-        merge_container_layout.addWidget(merge_widget)
-        layout.addWidget(merge_container)
-        
-        # Option 2: Replace
+        self.merge_radio.toggled.connect(self._on_merge_toggled)
+        layout.addWidget(
+            self._make_card(
+                self.merge_radio,
+                "<b>MERGE</b> - Combine datasets",
+                "Add new entries and update duplicates by key column",
+            )
+        )
+
+        # Key-column picker (visible only when MERGE is selected)
+        self._key_group = QGroupBox("Dedup key column (identifies unique entries)")
+        self._key_group.setStyleSheet(
+            "QGroupBox { font-weight: 600; font-size: 9pt; color: #374151;"
+            "            border: 1px solid #D1D5DB; border-radius: 6px;"
+            "            margin-top: 6px; padding: 10px 8px 8px 8px; }"
+            "QGroupBox::title { subcontrol-origin: margin;"
+            "                    left: 10px; padding: 0 4px; }"
+        )
+        key_layout = QVBoxLayout(self._key_group)
+        key_layout.setSpacing(4)
+        key_layout.setContentsMargins(8, 16, 8, 8)
+
+        self._key_combo = QComboBox()
+        self._key_combo.addItems(self.columns)
+        # Auto-select the best candidate
+        self._key_combo.setCurrentIndex(self._guess_key_index())
+        self._key_combo.setStyleSheet(
+            "QComboBox { padding: 4px 8px; border: 1px solid #D1D5DB;"
+            "            border-radius: 4px; font-size: 9pt; }"
+        )
+        key_layout.addWidget(self._key_combo)
+
+        self._key_hint = QLabel("")
+        self._key_hint.setStyleSheet("color: #6B7280; font-size: 8pt;")
+        self._key_hint.setWordWrap(True)
+        key_layout.addWidget(self._key_hint)
+        self._key_combo.currentTextChanged.connect(self._update_key_hint)
+        self._update_key_hint(self._key_combo.currentText())
+
+        layout.addWidget(self._key_group)
+
+        # REPLACE
         self.replace_radio = QRadioButton()
-        replace_layout = QVBoxLayout()
-        replace_title = QLabel("<b>REPLACE</b> - Start fresh")
-        replace_title.setStyleSheet("color: #111827; font-size: 11pt;")
-        replace_desc = QLabel(f"Clear existing data and load new file<br><span style='color: #6B7280;'>-> Results in {self.new_count:,} students</span>")
-        replace_desc.setStyleSheet("color: #374151;")
-        replace_layout.addWidget(replace_title)
-        replace_layout.addWidget(replace_desc)
-        
-        replace_widget = QWidget()
-        replace_widget_layout = QHBoxLayout(replace_widget)
-        replace_widget_layout.setContentsMargins(0, 0, 0, 0)
-        replace_widget_layout.addWidget(self.replace_radio)
-        replace_widget_layout.addLayout(replace_layout)
-        replace_widget_layout.addStretch()
-        
-        replace_container = QWidget()
-        replace_container.setStyleSheet("""
-            QWidget {
-                background-color: #F3F4F6;
-                border: 2px solid #D1D5DB;
-                border-radius: 8px;
-                padding: 12px;
-            }
-            QWidget:hover {
-                background-color: #E5E7EB;
-            }
-        """)
-        replace_container_layout = QVBoxLayout(replace_container)
-        replace_container_layout.setContentsMargins(12, 12, 12, 12)
-        replace_container_layout.addWidget(replace_widget)
-        layout.addWidget(replace_container)
-        
-        # Option 3: New Tab
+        layout.addWidget(
+            self._make_card(
+                self.replace_radio,
+                "<b>REPLACE</b> - Start fresh",
+                f"Clear existing data and load new file"
+                f"<br><span style='color:#6B7280;'>-> Results in {self.new_count:,} students</span>",
+            )
+        )
+
+        # NEW TAB
         self.new_tab_radio = QRadioButton()
-        newtab_layout = QVBoxLayout()
-        newtab_title = QLabel("<b>ADD AS NEW TAB</b> - Keep both")
-        newtab_title.setStyleSheet("color: #111827; font-size: 11pt;")
-        newtab_desc = QLabel("Keep both datasets in separate tabs<br><span style='color: #6B7280;'>-> Compare datasets side-by-side</span>")
-        newtab_desc.setStyleSheet("color: #374151;")
-        newtab_layout.addWidget(newtab_title)
-        newtab_layout.addWidget(newtab_desc)
-        
-        newtab_widget = QWidget()
-        newtab_widget_layout = QHBoxLayout(newtab_widget)
-        newtab_widget_layout.setContentsMargins(0, 0, 0, 0)
-        newtab_widget_layout.addWidget(self.new_tab_radio)
-        newtab_widget_layout.addLayout(newtab_layout)
-        newtab_widget_layout.addStretch()
-        
-        newtab_container = QWidget()
-        newtab_container.setStyleSheet("""
-            QWidget {
-                background-color: #F3F4F6;
-                border: 2px solid #D1D5DB;
-                border-radius: 8px;
-                padding: 12px;
-            }
-            QWidget:hover {
-                background-color: #E5E7EB;
-            }
-        """)
-        newtab_container_layout = QVBoxLayout(newtab_container)
-        newtab_container_layout.setContentsMargins(12, 12, 12, 12)
-        newtab_container_layout.addWidget(newtab_widget)
-        layout.addWidget(newtab_container)
-        
-        layout.addSpacing(8)
-        
+        layout.addWidget(
+            self._make_card(
+                self.new_tab_radio,
+                "<b>ADD AS NEW TAB</b> - Keep both",
+                "Keep both datasets in separate tabs"
+                "<br><span style='color:#6B7280;'>-> Compare side-by-side</span>",
+            )
+        )
+
+        layout.addSpacing(4)
+
         # Buttons
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self._on_accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
-    
+
+    # ── Helpers ────────────────────────────────────────────────────────────
+
+    def _make_card(self, radio: QRadioButton, title_html: str, desc_html: str) -> QWidget:
+        title_lbl = QLabel(title_html)
+        title_lbl.setStyleSheet("color: #111827; font-size: 11pt;")
+        desc_lbl = QLabel(desc_html)
+        desc_lbl.setStyleSheet("color: #374151;")
+
+        text_layout = QVBoxLayout()
+        text_layout.addWidget(title_lbl)
+        text_layout.addWidget(desc_lbl)
+
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.addWidget(radio)
+        row.addLayout(text_layout)
+        row.addStretch()
+
+        inner = QWidget()
+        inner.setLayout(row)
+
+        card = QWidget()
+        card.setStyleSheet(self._CARD_STYLE)
+        cl = QVBoxLayout(card)
+        cl.setContentsMargins(12, 12, 12, 12)
+        cl.addWidget(inner)
+        return card
+
+    def _guess_key_index(self) -> int:
+        """Pick the most likely ID column automatically."""
+        for pattern in ("_ID", "ID", "STUD_ID", "id", "Id"):
+            for i, col in enumerate(self.columns):
+                if col.upper().endswith(pattern) or col.upper() == pattern:
+                    return i
+        return 0
+
+    def _update_key_hint(self, col_name: str):
+        self._key_hint.setText(
+            f'Rows with the same "{col_name}" will be deduplicated (new values win).'
+        )
+
+    def _on_merge_toggled(self, checked: bool):
+        self._key_group.setVisible(checked)
+
+    # ── Results ────────────────────────────────────────────────────────────
+
     def _on_accept(self):
-        """Handle OK button."""
         if self.merge_radio.isChecked():
-            self.result_action = 'merge'
+            self.result_action = "merge"
         elif self.replace_radio.isChecked():
-            self.result_action = 'replace'
+            self.result_action = "replace"
         elif self.new_tab_radio.isChecked():
-            self.result_action = 'new_tab'
+            self.result_action = "new_tab"
         self.accept()
-    
+
     def get_action(self) -> Optional[str]:
-        """Get the selected action."""
         return self.result_action
+
+    def get_key_columns(self) -> list:
+        """Return the column(s) chosen for deduplication."""
+        return [self._key_combo.currentText()]
+
+
+SUPPORTED_EXTENSIONS = ('.xlsx', '.xls', '.csv', '.tsv', '.json')
+
 
 
 class MainWindow(QMainWindow):
@@ -345,6 +379,8 @@ class MainWindow(QMainWindow):
         # === MODERN ACTION BAR ===
         self.action_bar = ModernActionBar()
         content_layout.addWidget(self.action_bar)
+
+
 
         # === MODERN SEARCH BAR ===
         self.search_bar = ModernSearchBar()
@@ -560,6 +596,7 @@ class MainWindow(QMainWindow):
         """Connect signals and slots for modern UI."""
         # === MODERN ACTION BAR ===
         self.action_bar.loadRequested.connect(self._on_load_file)
+        self.action_bar.addFileRequested.connect(self._on_add_file_dialog)
         self.action_bar.saveRequested.connect(self._on_save_current)
         self.action_bar.exportRequested.connect(self._on_export_mode)
         self.action_bar.archivesRequested.connect(self._on_browse_archives)
@@ -602,18 +639,23 @@ class MainWindow(QMainWindow):
         if event.mimeData().hasUrls():
             for url in event.mimeData().urls():
                 filepath = url.toLocalFile()
-                if filepath.lower().endswith(('.xlsx', '.xls', '.csv', '.tsv', '.json')):
+                if filepath.lower().endswith(SUPPORTED_EXTENSIONS):
                     event.acceptProposedAction()
                     return
         event.ignore()
-    
+
     def dropEvent(self, event):
-        """Handle drop event."""
+        """Handle drop event - routes to _add_file when data exists."""
         for url in event.mimeData().urls():
             filepath = url.toLocalFile()
-            if filepath.lower().endswith(('.xlsx', '.xls', '.csv', '.tsv', '.json')):
-                self.load_file(filepath)
-                break
+            if filepath.lower().endswith(SUPPORTED_EXTENSIONS):
+                event.acceptProposedAction()
+                if self.df.empty:
+                    self.load_file(filepath)
+                else:
+                    self._add_file(filepath)
+                return
+        event.ignore()
     
     def load_file(self, filepath: str, sheet_name: Optional[str] = None):
         """Load a data file with smart merge handling."""
@@ -638,31 +680,37 @@ class MainWindow(QMainWindow):
             
             # Check if data already exists
             if not self.df.empty:
-                dialog = MergeDialog(len(self.df), len(new_df), filepath, self)
-                
+                data_cols = [c for c in self.df.columns if c != DATE_COL_NAME]
+                dialog = MergeDialog(len(self.df), len(new_df), filepath, data_cols, self)
+
                 if dialog.exec_() != QDialog.Accepted:
                     return
-                
+
                 action = dialog.get_action()
-                
+
                 if action == 'merge':
-                    merged, success, message = merge_dataframes(self.df, new_df)
-                    
+                    key_cols = dialog.get_key_columns()
+                    merged, success, message = merge_dataframes(self.df, new_df, key_columns=key_cols)
+
                     if not success:
                         QMessageBox.warning(self, "Column Mismatch", message)
                         return
-                    
+
+                    before = len(self.df)
                     self.df = merged
                     self.model.set_dataframe(self.df)
                     self.current_file_path = filepath
-                    self.status_bar.showMessage(f"Merged {len(new_df)} new records", 5000)
-                
+                    deduped = before + len(new_df) - len(merged)
+                    self.status_bar.showMessage(
+                        f"Merged {len(new_df)} records ({deduped} duplicates removed)", 5000
+                    )
+
                 elif action == 'replace':
                     self.df = new_df
                     self.model.set_dataframe(self.df)
                     self.current_file_path = filepath
                     self.status_bar.showMessage(f"Replaced with {len(new_df)} records", 5000)
-                
+
                 elif action == 'new_tab':
                     tab_name = os.path.basename(filepath)
                     self._create_file_tab(new_df, filepath, tab_name=tab_name)
@@ -696,9 +744,113 @@ class MainWindow(QMainWindow):
             "",
             "Data Files (*.xlsx *.xls *.csv *.tsv *.json);;Excel Files (*.xlsx *.xls);;CSV Files (*.csv);;TSV Files (*.tsv);;JSON Files (*.json)"
         )
-        
+
         if filepath:
             self.load_file(filepath)
+
+    def _on_add_file_dialog(self):
+        """Open file dialog for adding a compatible file."""
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Add Compatible File",
+            "",
+            "Data Files (*.xlsx *.xls *.csv *.tsv *.json);;Excel Files (*.xlsx *.xls);;CSV Files (*.csv);;TSV Files (*.tsv);;JSON Files (*.json)"
+        )
+        if filepath:
+            self._add_file(filepath)
+
+    def _add_file(self, filepath: str, sheet_name: Optional[str] = None):
+        """Add a file after checking column compatibility.
+
+        If no data is loaded yet, falls back to normal load_file().
+        Otherwise validates that columns match before showing the MergeDialog.
+        """
+        # No data loaded yet – just do a normal load
+        if self.df.empty:
+            self.load_file(filepath, sheet_name)
+            return
+
+        try:
+            new_df, needs_sheet, sheets = load_dataframe_from_file(filepath, sheet_name)
+
+            if needs_sheet:
+                sheet, ok = QInputDialog.getItem(
+                    self,
+                    "Select Sheet",
+                    "This file has multiple sheets. Choose one to load:",
+                    sheets,
+                    0,
+                    False,
+                )
+                if not ok:
+                    return
+                self._add_file(filepath, sheet)
+                return
+
+            new_df = add_date_column(new_df)
+
+            # --- Column compatibility check ---
+            existing_cols = set(c for c in self.df.columns if c != DATE_COL_NAME)
+            new_cols = set(c for c in new_df.columns if c != DATE_COL_NAME)
+
+            if existing_cols != new_cols:
+                missing = existing_cols - new_cols
+                extra = new_cols - existing_cols
+                parts = []
+                if missing:
+                    parts.append(f"Missing columns:\n  {', '.join(sorted(missing))}")
+                if extra:
+                    parts.append(f"Extra columns:\n  {', '.join(sorted(extra))}")
+                QMessageBox.warning(
+                    self,
+                    "Incompatible File",
+                    "The file cannot be added because its columns do not match "
+                    "the current dataset.\n\n" + "\n\n".join(parts),
+                )
+                return
+
+            # --- Columns match – show MergeDialog ---
+            data_cols = [c for c in self.df.columns if c != DATE_COL_NAME]
+            dialog = MergeDialog(len(self.df), len(new_df), filepath, data_cols, self)
+            if dialog.exec_() != QDialog.Accepted:
+                return
+
+            action = dialog.get_action()
+
+            if action == 'merge':
+                key_cols = dialog.get_key_columns()
+                merged, success, message = merge_dataframes(self.df, new_df, key_columns=key_cols)
+                if not success:
+                    QMessageBox.warning(self, "Merge Error", message)
+                    return
+                before = len(self.df)
+                self.df = merged
+                self.model.set_dataframe(self.df)
+                self.current_file_path = filepath
+                deduped = before + len(new_df) - len(merged)
+                self.status_bar.showMessage(
+                    f"Merged {len(new_df)} records ({deduped} duplicates removed)", 5000
+                )
+
+            elif action == 'replace':
+                self.df = new_df
+                self.model.set_dataframe(self.df)
+                self.current_file_path = filepath
+                self.status_bar.showMessage(f"Replaced with {len(new_df)} records", 5000)
+
+            elif action == 'new_tab':
+                tab_name = os.path.basename(filepath)
+                self._create_file_tab(new_df, filepath, tab_name=tab_name)
+                self.status_bar.showMessage(f"Added {len(new_df)} records in new tab", 5000)
+                self._save_state()
+                return
+
+            save_last_loaded_file(filepath)
+            create_archive_snapshot(self.df, self.model.filter_manager)
+            self._save_state()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error Adding File", f"Failed to add file:\n\n{str(e)}")
     
     def _on_save_current(self):
         """Save current view to file."""
@@ -2341,7 +2493,7 @@ class MainWindow(QMainWindow):
             self.header.update_file_name("No file")
 
         self._update_tab_counts()
-    
+
     def _update_tab_counts(self):
         """Update tab tooltips with row counts (NOT in tab name)."""
         for index, widget, proxy in self._iter_tab_proxies():
