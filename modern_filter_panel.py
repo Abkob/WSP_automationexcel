@@ -55,8 +55,8 @@ class ModernFilterChip(QFrame):
         self.setCursor(Qt.PointingHandCursor)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(8)
+        layout.setContentsMargins(8, 6, 6, 6)
+        layout.setSpacing(6)
 
         tag_label = QLabel(self._get_rule_tag())
         tag_label.setStyleSheet(
@@ -64,38 +64,43 @@ class ModernFilterChip(QFrame):
             color: {AppTheme.PRIMARY_DARK};
             background-color: {AppTheme.PRIMARY_LIGHT};
             border: 1px solid {AppTheme.PRIMARY};
-            border-radius: 5px;
-            padding: 2px 6px;
-            font-size: 8pt;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-size: 7.5pt;
             font-weight: 600;
             """
         )
-        layout.addWidget(tag_label)
+        layout.addWidget(tag_label, 0, Qt.AlignVCenter)
 
-        self.text_label = QLabel(str(self.filter_rule))
+        rule_text = str(self.filter_rule)
+        self.text_label = QLabel(rule_text)
         self.text_label.setWordWrap(False)
+        self.text_label.setToolTip(rule_text)  # Show full text on hover
         self.text_label.setStyleSheet(
             f"""
             color: {AppTheme.TEXT};
             font-weight: 500;
-            font-size: 9.5pt;
+            font-size: 8.5pt;
             background: transparent;
             border: none;
             """
         )
-        layout.addWidget(self.text_label, 1)
+        layout.addWidget(self.text_label, 1, Qt.AlignVCenter)
 
-        self.remove_btn = QPushButton("x")
-        self.remove_btn.setFixedSize(22, 22)
+        self.remove_btn = QPushButton("\u00d7")
+        self.remove_btn.setFixedSize(18, 18)
+        self.remove_btn.setCursor(Qt.PointingHandCursor)
         self.remove_btn.setStyleSheet(
             f"""
             QPushButton {{
-                background-color: transparent;
+                background-color: {AppTheme.GRAY_200};
                 color: {AppTheme.TEXT_SECONDARY};
                 border: none;
-                font-size: 10pt;
+                font-size: 11pt;
                 font-weight: 600;
-                border-radius: 11px;
+                border-radius: 9px;
+                padding: 0px;
+                margin: 0px;
             }}
             QPushButton:hover {{
                 background-color: {AppTheme.ERROR};
@@ -104,7 +109,7 @@ class ModernFilterChip(QFrame):
             """
         )
         self.remove_btn.clicked.connect(lambda: self.removeClicked.emit(self.filter_rule))
-        layout.addWidget(self.remove_btn)
+        layout.addWidget(self.remove_btn, 0, Qt.AlignVCenter)
 
         self._update_style(hovered=False)
 
@@ -250,7 +255,7 @@ class ModernFilterPanel(QWidget):
             self.logo_label.setStyleSheet(f"font-size: 12pt; color: {AppTheme.PRIMARY}; font-weight: 800;")
         title_row.addWidget(self.logo_label, 0, Qt.AlignVCenter)
 
-        self.title_label = QLabel("Filter Rules")
+        self.title_label = QLabel("Rules")
         self.title_label.setStyleSheet(
             f"color: {AppTheme.TEXT}; font-size: 11.5pt; font-weight: 600; font-family: {AppTheme.FONT_UI_BOLD};"
         )
@@ -261,14 +266,14 @@ class ModernFilterPanel(QWidget):
         self.collapse_btn.setCheckable(False)
         self.collapse_btn.setText("<")
         self.collapse_btn.setToolTip("Collapse panel")
-        self.collapse_btn.setFixedSize(26, 26)
+        self.collapse_btn.setFixedSize(24, 24)
         self.collapse_btn.setStyleSheet(
             f"""
             QToolButton {{
                 border: 1px solid {AppTheme.BORDER};
                 background-color: {AppTheme.BACKGROUND};
                 color: {AppTheme.TEXT};
-                border-radius: 6px;
+                border-radius: 4px;
                 font-weight: 700;
                 font-size: 10pt;
             }}
@@ -286,8 +291,8 @@ class ModernFilterPanel(QWidget):
 
         header_layout.addLayout(title_row)
 
-        self.subtitle_label = QLabel("Create rules to slice the dataset quickly.")
-        self.subtitle_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt; font-weight: 400;")
+        self.subtitle_label = QLabel("Add a filter to create a rule tab")
+        self.subtitle_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 8.5pt; font-weight: 400;")
         self.subtitle_label.setWordWrap(True)
         header_layout.addWidget(self.subtitle_label)
 
@@ -363,64 +368,110 @@ class ModernFilterPanel(QWidget):
         )
         layout.addWidget(self.control_bar)
 
+        # Mode bar wrapper for proper margins
+        mode_wrapper = QWidget()
+        mode_wrapper_layout = QVBoxLayout(mode_wrapper)
+        mode_wrapper_layout.setContentsMargins(12, 6, 12, 6)
+        mode_wrapper_layout.setSpacing(0)
+
         self.mode_bar = QFrame()
         mode_layout = QHBoxLayout(self.mode_bar)
-        mode_layout.setContentsMargins(12, 8, 12, 8)
-        mode_layout.setSpacing(8)
+        mode_layout.setContentsMargins(8, 6, 8, 6)
+        mode_layout.setSpacing(6)
 
         self.mode_label = QLabel("Combine")
-        self.mode_label.setStyleSheet(f"color: {AppTheme.TEXT_SECONDARY}; font-size: 9pt; font-weight: 500;")
-        mode_layout.addWidget(self.mode_label)
-
-        self.mode_combo = QComboBox()
-        self.mode_combo.addItem("ALL (AND)", "all")
-        self.mode_combo.addItem("ANY (OR)", "any")
-        self.mode_combo.setStyleSheet(
+        self.mode_label.setStyleSheet(
             f"""
-            QComboBox {{
-                padding: 6px 10px;
-                font-size: 9pt;
-                font-weight: 500;
-                color: {AppTheme.TEXT};
-                background-color: {AppTheme.BACKGROUND};
-                border: 1px solid {AppTheme.BORDER};
-                border-radius: 8px;
-                min-height: 30px;
-            }}
-            QComboBox:focus {{
-                border: 1px solid {AppTheme.PRIMARY};
-            }}
-            QComboBox::drop-down {{
+            color: {AppTheme.TEXT_SECONDARY};
+            font-size: 8.5pt;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            """
+        )
+        mode_layout.addWidget(self.mode_label, 0, Qt.AlignVCenter)
+
+        # Segmented control container
+        self._segment_container = QFrame()
+        segment_layout = QHBoxLayout(self._segment_container)
+        segment_layout.setContentsMargins(2, 2, 2, 2)
+        segment_layout.setSpacing(0)
+
+        self._mode_all_btn = QPushButton("ALL")
+        self._mode_all_btn.setCheckable(True)
+        self._mode_all_btn.setChecked(True)
+        self._mode_all_btn.setCursor(Qt.PointingHandCursor)
+        self._mode_all_btn.clicked.connect(lambda: self._on_segment_clicked("all"))
+
+        self._mode_any_btn = QPushButton("ANY")
+        self._mode_any_btn.setCheckable(True)
+        self._mode_any_btn.setChecked(False)
+        self._mode_any_btn.setCursor(Qt.PointingHandCursor)
+        self._mode_any_btn.clicked.connect(lambda: self._on_segment_clicked("any"))
+
+        # Style for segmented buttons
+        segment_btn_style = f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {AppTheme.TEXT_SECONDARY};
                 border: none;
-                width: 20px;
+                border-radius: 4px;
+                padding: 4px 12px;
+                font-size: 8pt;
+                font-weight: 600;
+                min-width: 40px;
             }}
-            QComboBox::down-arrow {{
-                image: none;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 6px solid {AppTheme.TEXT_SECONDARY};
-                margin-right: 6px;
+            QPushButton:hover {{
+                background-color: {AppTheme.GRAY_200};
+                color: {AppTheme.TEXT};
+            }}
+            QPushButton:checked {{
+                background-color: {AppTheme.PRIMARY};
+                color: #FFFFFF;
+            }}
+            QPushButton:checked:hover {{
+                background-color: {AppTheme.PRIMARY_DARK};
+            }}
+        """
+        self._mode_all_btn.setStyleSheet(segment_btn_style)
+        self._mode_any_btn.setStyleSheet(segment_btn_style)
+
+        segment_layout.addWidget(self._mode_all_btn)
+        segment_layout.addWidget(self._mode_any_btn)
+
+        self._segment_container.setStyleSheet(
+            f"""
+            QFrame {{
+                background-color: {AppTheme.GRAY_100};
+                border: 1px solid {AppTheme.GRAY_200};
+                border-radius: 6px;
             }}
             """
         )
-        self.mode_combo.currentIndexChanged.connect(self._on_mode_changed)
-        mode_layout.addWidget(self.mode_combo, 1)
+        mode_layout.addWidget(self._segment_container, 1)
+
+        # Hidden combo for compatibility with existing code
+        self.mode_combo = QComboBox()
+        self.mode_combo.addItem("ALL (AND)", "all")
+        self.mode_combo.addItem("ANY (OR)", "any")
+        self.mode_combo.setVisible(False)
 
         self.mode_bar.setStyleSheet(
             f"""
             QFrame {{
                 background-color: {AppTheme.SURFACE};
                 border: 1px solid {AppTheme.GRAY_200};
-                border-radius: 8px;
+                border-radius: 6px;
             }}
             """
         )
-        layout.addWidget(self.mode_bar)
+        mode_wrapper_layout.addWidget(self.mode_bar)
+        layout.addWidget(mode_wrapper)
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll_area.setStyleSheet(
             f"""
             QScrollArea {{
@@ -432,8 +483,8 @@ class ModernFilterPanel(QWidget):
 
         self.filters_container = QWidget()
         self.filters_layout = QVBoxLayout(self.filters_container)
-        self.filters_layout.setContentsMargins(12, 12, 12, 12)
-        self.filters_layout.setSpacing(8)
+        self.filters_layout.setContentsMargins(8, 8, 8, 8)
+        self.filters_layout.setSpacing(6)
         self.filters_layout.setAlignment(Qt.AlignTop)
 
         self.empty_label = QLabel("No active rules.\nUse Add Rule to begin.")
@@ -516,6 +567,18 @@ class ModernFilterPanel(QWidget):
     def _on_edit_filter(self, filter_rule):
         self.filterEdited.emit(filter_rule, filter_rule)
 
+    def _on_segment_clicked(self, mode: str):
+        """Handle segmented control click."""
+        if mode == "all":
+            self._mode_all_btn.setChecked(True)
+            self._mode_any_btn.setChecked(False)
+            self.mode_combo.setCurrentIndex(0)
+        else:
+            self._mode_all_btn.setChecked(False)
+            self._mode_any_btn.setChecked(True)
+            self.mode_combo.setCurrentIndex(1)
+        self.filterModeChanged.emit(mode)
+
     def _on_mode_changed(self):
         mode = self.mode_combo.currentData()
         self.filterModeChanged.emit(mode)
@@ -532,35 +595,42 @@ class ModernFilterPanel(QWidget):
     def _update_dynamic_width(self):
         if getattr(self, "_is_collapsed", False):
             return
-        widths = []
-        for widget in [
-            getattr(self, "title_label", None),
-            getattr(self, "subtitle_label", None),
-            getattr(self, "control_bar", None),
-            getattr(self, "mode_bar", None),
-            getattr(self, "stats_label", None),
-            getattr(self, "empty_label", None),
-        ]:
-            if widget is not None and widget.isVisible():
-                widths.append(widget.sizeHint().width())
 
+        # Calculate content widths with proper minimum
+        min_width = 300
+        max_width = 470
+        padding = 32  # Account for margins and scrollbar
+
+        widths = [min_width]
+
+        # Check filter chips (these are the main content that might need space)
         for i in range(self.filters_layout.count()):
-            widget = self.filters_layout.itemAt(i).widget()
-            if widget is not None and widget.isVisible():
-                widths.append(widget.sizeHint().width())
+            item = self.filters_layout.itemAt(i)
+            if item is None:
+                continue
+            widget = item.widget()
+            if widget is not None and widget.isVisible() and isinstance(widget, ModernFilterChip):
+                hint = widget.sizeHint().width()
+                if hint > 0:
+                    widths.append(hint + padding)
 
-        desired = max(widths) if widths else 280
-        desired = min(max(desired + 32, 260), 520)
+        desired = max(widths) if widths else min_width
+        desired = min(max(desired, min_width), max_width)
         self.setMinimumWidth(desired)
         self.widthSuggested.emit(desired)
 
     def get_current_mode(self) -> str:
+        if hasattr(self, "_mode_all_btn") and self._mode_all_btn.isChecked():
+            return "all"
+        elif hasattr(self, "_mode_any_btn") and self._mode_any_btn.isChecked():
+            return "any"
         return self.mode_combo.currentData() or "all"
 
     def get_filter_mode(self) -> str:
         return self.get_current_mode()
 
     def set_mode(self, mode: str):
+        # Update hidden combo
         self.mode_combo.blockSignals(True)
         try:
             for i in range(self.mode_combo.count()):
@@ -570,6 +640,11 @@ class ModernFilterPanel(QWidget):
         finally:
             self.mode_combo.blockSignals(False)
 
+        # Update segmented control
+        if hasattr(self, "_mode_all_btn") and hasattr(self, "_mode_any_btn"):
+            self._mode_all_btn.setChecked(mode == "all")
+            self._mode_any_btn.setChecked(mode == "any")
+
     def set_filter_mode(self, mode: str):
         self.set_mode(mode)
 
@@ -577,6 +652,10 @@ class ModernFilterPanel(QWidget):
         self.mode_combo.setEnabled(enabled)
         if hasattr(self, "mode_label"):
             self.mode_label.setEnabled(enabled)
+        if hasattr(self, "_mode_all_btn"):
+            self._mode_all_btn.setEnabled(enabled)
+        if hasattr(self, "_mode_any_btn"):
+            self._mode_any_btn.setEnabled(enabled)
 
     def set_action_controls_visible(self, visible: bool):
         if hasattr(self, "control_bar"):

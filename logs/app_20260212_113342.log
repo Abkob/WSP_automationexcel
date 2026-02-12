@@ -1,0 +1,18 @@
+2026-02-12 11:33:42,283 - StudentManager - INFO - ================================================================================
+2026-02-12 11:33:42,284 - StudentManager - INFO - Application Starting
+2026-02-12 11:33:42,284 - StudentManager - INFO - Log file: logs\app_20260212_113342.log
+2026-02-12 11:33:42,285 - StudentManager - INFO - ================================================================================
+2026-02-12 11:33:42,285 - StudentManager - INFO - ================================================================================
+2026-02-12 11:33:42,285 - StudentManager - INFO - STARTING MAIN APPLICATION
+2026-02-12 11:33:42,291 - StudentManager - INFO - ================================================================================
+2026-02-12 11:33:42,292 - StudentManager - DEBUG - Entering: Application Setup
+2026-02-12 11:33:42,292 - StudentManager - INFO - Setting up application...
+2026-02-12 11:33:42,292 - StudentManager - DEBUG - Enabling High DPI scaling
+2026-02-12 11:33:42,293 - StudentManager - DEBUG - Creating QApplication instance
+2026-02-12 11:33:42,334 - StudentManager - DEBUG - Resolving fonts for platform: win32
+2026-02-12 11:33:42,336 - StudentManager - INFO - Font families selected: UI='Proxima Nova Rg', UI Medium='Proxima Nova Lt', UI Bold='Proxima Nova Th', Arabic='Dubai'
+2026-02-12 11:33:42,336 - StudentManager - DEBUG - Applying theme...
+2026-02-12 11:33:42,337 - StudentManager - INFO - Theme applied successfully
+2026-02-12 11:33:42,337 - StudentManager - INFO - Application setup complete
+2026-02-12 11:33:42,337 - StudentManager - DEBUG - Completed: Application Setup
+2026-02-12 11:33:42,337 - StudentManager - INFO - Importing main window module...

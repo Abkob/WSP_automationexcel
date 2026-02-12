@@ -1,5 +1,5 @@
 {
-  "last_file": "C:/Users/Amarus/Jan-Feb2026/WSP/ver5/final_snapshot.xlsx",
+  "last_file": "archives\\archive_2026-02-12_11-33-43.xlsx",
   "filtered_tab_mode": "matched",
   "tabs": [
     {
@@ -7,74 +7,6 @@
       "filters": [],
       "filter_mode": "all",
       "type": "base"
-    },
-    {
-      "name": "STUD_NAME: 0",
-      "filters": [
-        {
-          "type": "text",
-          "column": "STUD_NAME",
-          "tokens": [
-            "0"
-          ],
-          "case_sensitive": false
-        }
-      ],
-      "filter_mode": "all",
-      "type": "rule"
-    },
-    {
-      "name": "Accepted",
-      "filters": [
-        {
-          "type": "text",
-          "column": "STUD_ID",
-          "tokens": [
-            "100"
-          ],
-          "case_sensitive": false
-        },
-        {
-          "type": "text",
-          "column": "CLAS_DESC",
-          "tokens": [
-            "junior"
-          ],
-          "case_sensitive": false
-        }
-      ],
-      "filter_mode": "all",
-      "type": "custom"
-    },
-    {
-      "name": "CLAS_DESC: junior",
-      "filters": [
-        {
-          "type": "text",
-          "column": "CLAS_DESC",
-          "tokens": [
-            "junior"
-          ],
-          "case_sensitive": false
-        }
-      ],
-      "filter_mode": "all",
-      "type": "rule"
-    },
-    {
-      "name": "STUD_EMAIL: a",
-      "filters": [
-        {
-          "type": "text",
-          "column": "STUD_EMAIL",
-          "tokens": [
-            "a"
-          ],
-          "case_sensitive": false
-        }
-      ],
-      "filter_mode": "all",
-      "type": "rule"
     }
   ]
 }

@@ -319,10 +319,10 @@ class MainWindow(QMainWindow):
 
         # === LEFT: MODERN FILTER PANEL ===
         self.filter_panel = ModernFilterPanel()
-        self.filter_panel.setMinimumWidth(260)
+        self.filter_panel.setMinimumWidth(300)
         self.filter_panel.setMaximumWidth(16777215)
-        self._filter_panel_min_width = 260
-        self._filter_panel_max_width = 520
+        self._filter_panel_min_width = 300
+        self._filter_panel_max_width = 500
         self._filter_panel_collapsed = False
         self._filter_panel_user_collapsed = False
         self._filter_panel_auto_collapsed = False
@@ -409,7 +409,7 @@ class MainWindow(QMainWindow):
 
         content_splitter.addWidget(content_widget)
         content_splitter.setStretchFactor(1, 1)
-        content_splitter.setSizes([280, 1320])
+        content_splitter.setSizes([350, 1250])
         
         main_layout.addWidget(content_splitter, 1)
         
@@ -1499,18 +1499,33 @@ class MainWindow(QMainWindow):
             mask.append(self._row_matches_filters(row, filters, mode))
         return np.array(mask, dtype=bool)
 
-    def _build_union_rule_mask(self, df: pd.DataFrame) -> np.ndarray:
+    def _build_union_rule_mask(self, df: pd.DataFrame, combine_mode: str = "any") -> np.ndarray:
+        """Build highlight mask for base tab from all rule tab filters.
+
+        Args:
+            df: The dataframe to build the mask for
+            combine_mode: "any" for OR (union), "all" for AND (intersection)
+        """
         if df is None or df.empty:
             return np.array([], dtype=bool)
         rules = self._get_rule_definitions()
         if not rules:
             return np.array([False] * len(df), dtype=bool)
 
-        union_mask = np.array([False] * len(df), dtype=bool)
-        for filters, mode in rules:
-            rule_mask = self._build_mask_for_filters(df, filters, mode)
-            union_mask = np.logical_or(union_mask, rule_mask)
-        return union_mask
+        if combine_mode == "all":
+            # AND mode: row must match ALL rule tabs
+            combined_mask = np.array([True] * len(df), dtype=bool)
+            for filters, mode in rules:
+                rule_mask = self._build_mask_for_filters(df, filters, mode)
+                combined_mask = np.logical_and(combined_mask, rule_mask)
+            return combined_mask
+        else:
+            # OR mode (default): row must match ANY rule tab
+            union_mask = np.array([False] * len(df), dtype=bool)
+            for filters, mode in rules:
+                rule_mask = self._build_mask_for_filters(df, filters, mode)
+                union_mask = np.logical_or(union_mask, rule_mask)
+            return union_mask
 
     def _set_proxy_source_dataframe(self, proxy: SmartSearchProxy, df: pd.DataFrame):
         """Update a proxy's source data without swapping model objects when possible."""
@@ -1567,7 +1582,9 @@ class MainWindow(QMainWindow):
             self._refresh_all_views()
             return
 
-        union_mask = self._build_union_rule_mask(df)
+        # Get the base tab's combine mode for determining how rule tabs are combined
+        base_tab_mode = getattr(self.table_all, "tab_filter_mode", "any")
+        union_mask = self._build_union_rule_mask(df, combine_mode=base_tab_mode)
         self.model.set_highlight_mask(union_mask)
 
         # Update main filter_manager with all rule filters (cell-level highlights only).
@@ -1817,8 +1834,12 @@ class MainWindow(QMainWindow):
         if mode not in ["all", "any"]:
             mode = "all"
         widget.tab_filter_mode = mode
-        if getattr(widget, "tab_kind", None) == "rule":
+        tab_kind = getattr(widget, "tab_kind", None)
+        if tab_kind == "rule":
             self._rebuild_rule_tab(widget)
+            self._refresh_rule_state()
+        elif tab_kind == "base":
+            # For base tab, mode affects how all rule tabs are combined for highlights
             self._refresh_rule_state()
         else:
             self._apply_tab_filters(widget)
@@ -1904,7 +1925,8 @@ class MainWindow(QMainWindow):
             return None
 
         base_df = self.model.dataframe()
-        union_mask = self._build_union_rule_mask(base_df)
+        base_tab_mode = getattr(self.table_all, "tab_filter_mode", "any")
+        union_mask = self._build_union_rule_mask(base_df, combine_mode=base_tab_mode)
         if proxy is None:
             return union_mask
 
@@ -2336,7 +2358,8 @@ class MainWindow(QMainWindow):
 
         if tab_kind == "base":
             df = self.model.dataframe()
-            return self._build_union_rule_mask(df)
+            base_tab_mode = getattr(self.table_all, "tab_filter_mode", "any")
+            return self._build_union_rule_mask(df, combine_mode=base_tab_mode)
 
         current_model = self._get_current_model() or self.model
         if current_model is None:
