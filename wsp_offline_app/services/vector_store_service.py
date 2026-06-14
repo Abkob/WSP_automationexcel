@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -12,6 +13,13 @@ from services.embedding_service import normalize_embedding_matrix
 
 
 DEFAULT_VECTOR_STORE_NAME = "faiss"
+
+# ── in-process cache for the loaded vector matrix + metadata ─────────────────
+# Keyed by the absolute path of the vectors file.
+# Entry: (matrix, metadata_list, vectors_mtime, metadata_mtime)
+# Invalidated automatically when either file's mtime changes (i.e. after upsert).
+_VECTOR_CACHE: dict[Path, tuple[np.ndarray, list[dict], float, float]] = {}
+_VECTOR_CACHE_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -56,12 +64,14 @@ class FaissVectorStore:
         self.index_dir.mkdir(parents=True, exist_ok=True)
 
         if not ordered_records:
+            self._invalidate_cache()
             self.metadata_path.write_text("[]", encoding="utf-8")
             np.save(self.vectors_path, np.empty((0, 0), dtype=np.float32))
             if self.index_path.exists():
                 self.index_path.unlink()
             return
 
+        self._invalidate_cache()
         matrix = normalize_embedding_matrix(np.vstack([np.asarray(record.embedding, dtype=np.float32) for record in ordered_records]))
         write_faiss_index(self.index_path, matrix)
         np.save(self.vectors_path, matrix)
@@ -103,8 +113,7 @@ class FaissVectorStore:
     ) -> tuple[VectorSearchResult, ...]:
         if top_k <= 0:
             raise ValueError("top_k must be positive")
-        metadata_rows = self.load_metadata()
-        matrix = self.load_vectors()
+        matrix, metadata_rows = self._load_cached()
         if matrix.size == 0 or not metadata_rows:
             return ()
 
@@ -154,15 +163,44 @@ class FaissVectorStore:
             for index, row in enumerate(metadata_rows)
         )
 
+    def _load_cached(self) -> tuple[np.ndarray, list[dict]]:
+        """Return (matrix, metadata) from in-memory cache, reloading if either file changed."""
+        v_path = self.vectors_path
+        m_path = self.metadata_path
+        v_mtime = v_path.stat().st_mtime if v_path.exists() else 0.0
+        m_mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
+
+        with _VECTOR_CACHE_LOCK:
+            cached = _VECTOR_CACHE.get(v_path)
+            if cached is not None:
+                _, _, cached_v_mtime, cached_m_mtime = cached
+                if cached_v_mtime == v_mtime and cached_m_mtime == m_mtime:
+                    return cached[0], cached[1]
+
+            matrix = (
+                np.load(v_path).astype(np.float32)
+                if v_path.exists()
+                else np.empty((0, 0), dtype=np.float32)
+            )
+            metadata = (
+                json.loads(m_path.read_text(encoding="utf-8"))
+                if m_path.exists()
+                else []
+            )
+            _VECTOR_CACHE[v_path] = (matrix, metadata, v_mtime, m_mtime)
+            return matrix, metadata
+
+    def _invalidate_cache(self) -> None:
+        with _VECTOR_CACHE_LOCK:
+            _VECTOR_CACHE.pop(self.vectors_path, None)
+
     def load_metadata(self) -> list[dict[str, Any]]:
-        if not self.metadata_path.exists():
-            return []
-        return json.loads(self.metadata_path.read_text(encoding="utf-8"))
+        _, metadata = self._load_cached()
+        return metadata
 
     def load_vectors(self) -> np.ndarray:
-        if not self.vectors_path.exists():
-            return np.empty((0, 0), dtype=np.float32)
-        return np.load(self.vectors_path).astype(np.float32)
+        matrix, _ = self._load_cached()
+        return matrix
 
 
 def write_faiss_index(index_path: Path, matrix: np.ndarray) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import json
 from dataclasses import dataclass
 from typing import Iterable
@@ -30,6 +31,69 @@ from services.semantic_service import (
     truncate_semantic_prompt_text,
 )
 from services.vector_store_service import DEFAULT_VECTOR_STORE_NAME, FaissVectorStore, VectorRecord
+
+
+# ── index freshness tracking ──────────────────────────────────────────────────
+# When the background reindex finishes after an import it calls mark_index_fresh().
+# rank_student_rows_by_vector_search skips the per-search sync while the index
+# is fresh, cutting 300-500ms overhead on repeated searches.
+# Any new import calls mark_index_stale() first so the next search re-syncs.
+import threading as _threading
+_index_fresh   = False
+_reindex_running = False
+_index_lock    = _threading.Lock()
+
+def mark_index_fresh() -> None:
+    global _index_fresh, _reindex_running
+    with _index_lock:
+        _index_fresh     = True
+        _reindex_running = False
+
+def mark_index_stale() -> None:
+    global _index_fresh
+    with _index_lock:
+        _index_fresh = False
+
+def mark_reindex_started() -> None:
+    global _reindex_running
+    with _index_lock:
+        _reindex_running = True
+
+def _is_index_fresh() -> bool:
+    """True when the background reindex finished and no import has arrived since."""
+    with _index_lock:
+        return _index_fresh
+
+def _reindex_in_progress() -> bool:
+    """True while the background thread is actively encoding profiles."""
+    with _index_lock:
+        return _reindex_running
+
+
+# ── query vector LRU cache ────────────────────────────────────────────────────
+# Avoids re-encoding the same query string on repeated searches.
+# Key: (model_name, query_text) → value: encoded vector as tuple (hashable).
+_QUERY_VECTOR_CACHE: collections.OrderedDict[tuple[str, str], tuple[float, ...]] = collections.OrderedDict()
+_QUERY_VECTOR_CACHE_LOCK = _threading.Lock()
+_QUERY_VECTOR_CACHE_MAX = 64
+
+
+def _get_query_vector(model: EmbeddingModel, query: str) -> np.ndarray:
+    cache_key = (model.model_name, query)
+    with _QUERY_VECTOR_CACHE_LOCK:
+        if cache_key in _QUERY_VECTOR_CACHE:
+            _QUERY_VECTOR_CACHE.move_to_end(cache_key)
+            return np.array(_QUERY_VECTOR_CACHE[cache_key], dtype=np.float32)
+
+    vector = np.asarray(model.encode([query], kind="query")[0], dtype=np.float32)
+
+    with _QUERY_VECTOR_CACHE_LOCK:
+        _QUERY_VECTOR_CACHE[cache_key] = tuple(vector.tolist())
+        _QUERY_VECTOR_CACHE.move_to_end(cache_key)
+        if len(_QUERY_VECTOR_CACHE) > _QUERY_VECTOR_CACHE_MAX:
+            _QUERY_VECTOR_CACHE.popitem(last=False)
+
+    return vector
 
 
 OLLAMA_RAG_SYSTEM_PROMPT = (
@@ -280,15 +344,22 @@ def rank_student_rows_by_vector_search(
         query = semantic_filter.query
         model = embedding_model or get_default_embedding_model(settings)
         store = vector_store or get_default_vector_store(settings)
-        sync_student_semantic_index(session, settings, candidate_rows, embedding_model=model, vector_store=store)
-        query_vector = model.encode([query], kind="query")[0]
-        profiles_by_id = {profile.STUD_ID: profile for profile in build_student_semantic_profiles(candidate_rows)}
+        if not _is_index_fresh() and not _reindex_in_progress():
+            sync_student_semantic_index(session, settings, candidate_rows, embedding_model=model, vector_store=store)
+        candidate_id_set = {row.STUD_ID for row in candidate_rows}
+        query_vector = _get_query_vector(model, query)
         vector_results = store.query(
             np.asarray(query_vector, dtype=np.float32),
             top_k=semantic_filter.top_k,
-            candidate_ids=profiles_by_id.keys(),
+            candidate_ids=candidate_id_set,
             minimum_score=semantic_filter.minimum_score,
         )
+        if not vector_results:
+            return ()
+        # Build profiles only for matched students, not all candidates
+        matched_ids = {r.record_id for r in vector_results}
+        matched_rows = tuple(row for row in candidate_rows if row.STUD_ID in matched_ids)
+        profiles_by_id = {p.STUD_ID: p for p in build_student_semantic_profiles(matched_rows)}
         return tuple(
             SemanticMatch(
                 STUD_ID=result.record_id,

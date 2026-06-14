@@ -50,7 +50,7 @@ from services.filter_service import (
     log_filter_run,
 )
 from services.semantic_service import check_ollama_model_availability, rank_student_rows_semantically
-from services.semantic_search_service import rank_student_rows_by_ollama_rag, rank_student_rows_by_vector_search
+from services.semantic_search_service import mark_index_fresh, mark_index_stale, mark_reindex_started, rank_student_rows_by_ollama_rag, rank_student_rows_by_vector_search, sync_student_semantic_index
 from services.value_normalizer import NormalizationWarning, normalize_boolean, normalize_date, normalize_email, normalize_number, normalize_phone_text, normalize_text
 
 
@@ -368,9 +368,16 @@ def initialize_runtime_database(settings: AppSettings) -> None:
 def _prewarm_embedding_model(settings: AppSettings) -> None:
     try:
         from services.embedding_service import get_default_embedding_model
+        from services.vector_store_service import FaissVectorStore
         model = get_default_embedding_model(settings)
         model.encode(["warmup"], kind="query")
         LOGGER.info("Embedding model pre-warmed: %s", settings.embedding_model_name)
+        # If a FAISS index already exists on disk from a prior run, treat the
+        # index as fresh so the first search doesn't trigger an inline full-sync.
+        store = FaissVectorStore(settings.semantic_index_dir)
+        if store.vectors_path.exists() and store.count() > 0:
+            mark_index_fresh()
+            LOGGER.info("Existing FAISS index found (%d vectors) — marked fresh", store.count())
     except Exception as exc:
         LOGGER.warning("Embedding model pre-warm skipped: %s", exc)
 
@@ -469,6 +476,7 @@ def save_configured_import_folder(settings: AppSettings, folder_path: str | Path
 
 
 def run_excel_import_from_path(settings: AppSettings, source_path: str | Path, *, archive_dir: Path | None = None) -> dict[str, Any]:
+    mark_index_stale()
     ensure_data_directories(settings)
     engine = create_sqlite_engine(settings.database_path)
     initialize_database(engine)
@@ -606,6 +614,23 @@ def run_excel_import_from_path(settings: AppSettings, source_path: str | Path, *
     with session_factory() as session:
         create_database_backup(settings.database_path, settings.backup_dir, reason="post_import", session=session)
         session.commit()
+
+    def _background_reindex() -> None:
+        try:
+            with session_factory() as bg_session:
+                active_students = (
+                    bg_session.query(StudentCurrent)
+                    .filter(StudentCurrent.missing_from_latest_import == False)
+                    .all()
+                )
+                sync_student_semantic_index(bg_session, settings, active_students)
+                bg_session.commit()
+            mark_index_fresh()
+        except Exception:
+            pass  # never crash the import response; search will lazy-sync on next query
+
+    mark_reindex_started()
+    threading.Thread(target=_background_reindex, daemon=True, name="semantic-reindex").start()
 
     return result
 
