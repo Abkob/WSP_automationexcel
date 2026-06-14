@@ -418,25 +418,57 @@ def _prewarm_embedding_model(settings: AppSettings) -> None:
         LOGGER.warning("Embedding model pre-warm skipped: %s", exc)
 
 
-def _startup_reindex(settings: AppSettings) -> None:
+def _startup_reindex(settings: AppSettings, chunk_size: int = 200) -> None:
     try:
         mark_reindex_started()
         engine = create_sqlite_engine(settings.database_path)
         initialize_database(engine)
         from sqlalchemy.orm import Session as _Session
+        from services.embedding_service import get_default_embedding_model
+        from services.vector_store_service import FaissVectorStore
+        from services.semantic_document_service import build_student_semantic_profiles
+        from services.semantic_search_service import (
+            load_existing_semantic_rows, profile_needs_embedding,
+            upsert_semantic_embedding_rows,
+        )
+        from services.vector_store_service import VectorRecord
+        model = get_default_embedding_model(settings)
+        store = FaissVectorStore(settings.semantic_index_dir, collection_name="students")
+
         with _Session(engine) as session:
-            active_students = (
+            all_students = (
                 session.query(StudentCurrent)
                 .filter(StudentCurrent.missing_from_latest_import == False)
                 .all()
             )
-            LOGGER.info("Startup reindex: encoding %d students", len(active_students))
-            sync_student_semantic_index(session, settings, active_students)
-            session.commit()
+            profiles = build_student_semantic_profiles(all_students)
+            existing_rows = load_existing_semantic_rows(session, model.model_name)
+            indexed_ids = store.record_ids()
+            changed = [p for p in profiles if profile_needs_embedding(p, existing_rows.get(p.STUD_ID), indexed_ids)]
+            LOGGER.info("Startup reindex: %d students need encoding", len(changed))
+
+            for i in range(0, len(changed), chunk_size):
+                chunk = changed[i:i + chunk_size]
+                vectors = model.encode([p.text for p in chunk], kind="document")
+                records = tuple(
+                    VectorRecord(
+                        record_id=p.STUD_ID,
+                        embedding=vectors[j],
+                        metadata=p.metadata | {"semantic_hash": p.document_hash, "model_name": model.model_name},
+                        document=p.text,
+                    )
+                    for j, p in enumerate(chunk)
+                )
+                store.upsert(records)
+                upsert_semantic_embedding_rows(session, chunk, model_name=model.model_name, vector_store_name=store.vector_store_name)
+                session.commit()
+                LOGGER.info("Startup reindex: %d/%d done", min(i + chunk_size, len(changed)), len(changed))
+
         mark_index_fresh()
         LOGGER.info("Startup reindex complete")
     except Exception as exc:
         LOGGER.error("Startup reindex failed: %s", exc)
+        mark_index_stale()
 
 
 def open_session(settings: AppSettings):
@@ -1442,13 +1474,15 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
     sheets_active = "active" if active_path == "/excel-sheets" else ""
     import_active = "active" if active_path == "/import" else ""
     status_active = "active" if active_path == "/system-status" else ""
+    import os as _os
+    _v = str(int(_os.path.getmtime(STATIC_DIR / "wsp.css") * 1000))[-6:]
     return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{settings.app_name}</title>
-  <link rel="stylesheet" href="/static/wsp.css">
+  <link rel="stylesheet" href="/static/wsp.css?v={_v}">
 </head>
 <body data-active-path="{active_path}">
 <div class="admin-shell">
@@ -1518,11 +1552,7 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
           <div class="semantic-card">
             <div class="semantic-card-head">
               <span>Semantic Query</span>
-              <span id="index-coverage-badge" class="index-coverage-badge">Checking index…</span>
-            </div>
-            <div id="index-reindex-warning" class="index-reindex-warning" style="display:none">
-              <span id="index-reindex-msg"></span>
-              <button type="button" id="index-reindex-btn" class="index-reindex-btn">Rebuild Index</button>
+              <span id="index-coverage-badge" class="index-coverage-badge">Checking index...</span>
             </div>
             <label>
               Ask local AI
@@ -1551,12 +1581,14 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
             <label>Maximum GPA<input name="gpa_max" type="number" min="0" max="4" step="0.05"></label>
           </div>
           <div class="two-col">
-            <label>Major
+            <div class="ms-field">
+              <span class="ms-field-label">Major</span>
               <div class="ms-root" id="ms-major" data-name="majors" data-placeholder="Any major"></div>
-            </label>
-            <label>Class / Year
+            </div>
+            <div class="ms-field">
+              <span class="ms-field-label">Class / Year</span>
               <div class="ms-root" id="ms-class" data-name="classes" data-placeholder="Any year"></div>
-            </label>
+            </div>
           </div>
           <div class="three-col">
             <label>Probation<select name="probation"><option value="any">Any</option><option value="yes">Yes</option><option value="no">No</option></select></label>
@@ -1667,6 +1699,19 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
             <div id="import-folder-summary" class="folder-summary"></div>
             <div id="import-run-status" class="inline-status" aria-live="polite"></div>
           </div>
+          <div id="semantic-index-widget" class="semantic-index-widget">
+            <div class="semantic-index-widget-head">
+              <div>
+                <strong>AI Search Index</strong>
+                <span id="index-coverage-badge" class="index-coverage-badge">Checking...</span>
+              </div>
+              <button type="button" id="index-reindex-btn" class="index-reindex-btn" style="display:none">Rebuild Index</button>
+            </div>
+            <div id="index-reindex-msg" class="semantic-index-msg"></div>
+            <div class="semantic-index-bar-wrap">
+              <div id="index-coverage-bar" class="semantic-index-bar" style="width:0%"></div>
+            </div>
+          </div>
           <div id="backup-policy" class="policy-grid"></div>
           <div id="import-paths" class="path-stack"></div>
         </section>
@@ -1757,7 +1802,7 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
   </div>
 </div>
   <script src="/static/chart.umd.min.js" defer></script>
-  <script src="/static/wsp.js" defer></script>
+  <script src="/static/wsp.js?v={_v}" defer></script>
 </body>
 </html>"""
 

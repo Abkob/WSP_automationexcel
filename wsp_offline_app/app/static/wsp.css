@@ -846,6 +846,19 @@ mark.search-hl {
 }
 
 /* ── multi-select picker ─────────────────────────────────────────────────── */
+.ms-field {
+  display: grid;
+  gap: 7px;
+}
+
+.ms-field-label {
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
 .ms-root {
   position: relative;
 }
@@ -2228,31 +2241,62 @@ table.sheet-grid-table {
 .index-coverage-badge.danger { background: #fee2e2; color: var(--danger); }
 .index-coverage-badge.building { background: #eff6ff; color: #2563eb; }
 
-.index-reindex-warning {
+.semantic-index-widget {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 12px 14px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.semantic-index-widget-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  background: #fff3cd;
-  border: 1px solid #f59e0b;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 10px;
+  gap: 8px;
+}
+.semantic-index-widget-head > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.semantic-index-widget-head strong {
   font-size: 12px;
-  color: #92600a;
+  font-weight: 700;
+  color: var(--ink);
 }
-.index-reindex-warning.danger {
-  background: #fee2e2;
-  border-color: var(--danger);
-  color: #991b1b;
+.semantic-index-msg {
+  font-size: 11px;
+  color: var(--faint);
+  line-height: 1.4;
 }
+.semantic-index-bar-wrap {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.semantic-index-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: #2563eb;
+  transition: width 1s ease, background 0.3s;
+  width: 0%;
+}
+.semantic-index-bar.good    { background: var(--good); }
+.semantic-index-bar.warn    { background: #f59e0b; }
+.semantic-index-bar.danger  { background: var(--danger); }
+.semantic-index-bar.building { background: #2563eb; }
+
 .index-reindex-btn {
   flex: 0 0 auto;
   background: #f59e0b;
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 5px 12px;
+  padding: 4px 10px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -2260,8 +2304,6 @@ table.sheet-grid-table {
 }
 .index-reindex-btn:hover { background: #d97706; }
 .index-reindex-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.index-reindex-warning.danger .index-reindex-btn { background: var(--danger); }
-.index-reindex-warning.danger .index-reindex-btn:hover { background: #b91c1c; }
 
 label {
   display: grid;

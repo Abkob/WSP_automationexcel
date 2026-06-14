@@ -108,8 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     refreshIndexCoverage();
-    const reindexBtn = document.getElementById("index-reindex-btn");
-    if (reindexBtn) reindexBtn.addEventListener("click", triggerReindex);
   }
   if (activePath === "/excel-sheets") {
     loadExcelSheets();
@@ -118,6 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadImportCenter();
     loadBackupVault();
     startImportFolderAutoRefresh();
+    refreshIndexCoverage();
+    const reindexBtn = document.getElementById("index-reindex-btn");
+    if (reindexBtn) reindexBtn.addEventListener("click", triggerReindex);
   }
   if (activePath === "/system-status") {
     loadSystemStatus();
@@ -348,10 +349,10 @@ async function loadFilterOptions() {
 let _coveragePoller = null;
 
 async function refreshIndexCoverage() {
-  const badge   = document.getElementById("index-coverage-badge");
-  const warning = document.getElementById("index-reindex-warning");
-  const msg     = document.getElementById("index-reindex-msg");
-  const btn     = document.getElementById("index-reindex-btn");
+  const badge = document.getElementById("index-coverage-badge");
+  const msg   = document.getElementById("index-reindex-msg");
+  const btn   = document.getElementById("index-reindex-btn");
+  const bar   = document.getElementById("index-coverage-bar");
   if (!badge) return;
 
   let data;
@@ -362,48 +363,41 @@ async function refreshIndexCoverage() {
 
   const { index_count, db_count, coverage_pct, reindex_running } = data;
 
+  if (bar) bar.style.width = coverage_pct + "%";
+
   if (reindex_running) {
-    badge.textContent = `Building… ${coverage_pct}%`;
+    badge.textContent = "Building " + coverage_pct + "%";
     badge.className = "index-coverage-badge building";
-    if (warning) {
-      warning.style.display = "flex";
-      warning.className = "index-reindex-warning";
-      msg.textContent = `Indexing in progress — ${index_count} / ${db_count} students encoded (${coverage_pct}%)`;
-      if (btn) { btn.disabled = true; btn.textContent = "Building…"; }
-    }
-    // Poll faster while building
+    if (msg) msg.textContent = "Indexing: " + index_count + " / " + db_count + " students encoded";
+    if (btn) { btn.style.display = "none"; }
+    if (bar) bar.className = "semantic-index-bar building";
     clearTimeout(_coveragePoller);
     _coveragePoller = setTimeout(refreshIndexCoverage, 4000);
     return;
   }
 
   if (coverage_pct >= 100) {
-    badge.textContent = `Index: ${coverage_pct}% (${index_count} students)`;
+    badge.textContent = index_count + " students indexed";
     badge.className = "index-coverage-badge good";
-    if (warning) warning.style.display = "none";
-    // Done — poll slowly to catch future drift
+    if (msg) msg.textContent = "AI search covers all " + db_count + " students.";
+    if (btn) btn.style.display = "none";
+    if (bar) bar.className = "semantic-index-bar good";
     clearTimeout(_coveragePoller);
     _coveragePoller = setTimeout(refreshIndexCoverage, 30000);
   } else if (coverage_pct >= 50) {
-    badge.textContent = `Index: ${coverage_pct}% (${index_count}/${db_count})`;
+    badge.textContent = coverage_pct + "% indexed";
     badge.className = "index-coverage-badge warn";
-    if (warning) {
-      warning.style.display = "flex";
-      warning.className = "index-reindex-warning";
-      msg.textContent = `AI search is limited to ${index_count} of ${db_count} students (${coverage_pct}% coverage). Results may be biased.`;
-      if (btn) { btn.disabled = false; btn.textContent = "Rebuild Index"; }
-    }
+    if (msg) msg.textContent = "Only " + index_count + " of " + db_count + " students indexed. Results may be biased.";
+    if (btn) { btn.style.display = ""; btn.disabled = false; btn.textContent = "Rebuild Index"; }
+    if (bar) bar.className = "semantic-index-bar warn";
     clearTimeout(_coveragePoller);
     _coveragePoller = setTimeout(refreshIndexCoverage, 8000);
   } else {
-    badge.textContent = `Index: ${coverage_pct}% — INCOMPLETE`;
+    badge.textContent = coverage_pct + "% — incomplete";
     badge.className = "index-coverage-badge danger";
-    if (warning) {
-      warning.style.display = "flex";
-      warning.className = "index-reindex-warning danger";
-      msg.textContent = `Only ${index_count} of ${db_count} students are indexed — AI search is severely biased. Rebuild required.`;
-      if (btn) { btn.disabled = false; btn.textContent = "Rebuild Index Now"; }
-    }
+    if (msg) msg.textContent = "Only " + index_count + " of " + db_count + " students are indexed. AI search is biased.";
+    if (btn) { btn.style.display = ""; btn.disabled = false; btn.textContent = "Rebuild Now"; }
+    if (bar) bar.className = "semantic-index-bar danger";
     clearTimeout(_coveragePoller);
     _coveragePoller = setTimeout(refreshIndexCoverage, 8000);
   }
@@ -412,12 +406,11 @@ async function refreshIndexCoverage() {
 async function triggerReindex() {
   const btn = document.getElementById("index-reindex-btn");
   const badge = document.getElementById("index-coverage-badge");
-  if (btn) { btn.disabled = true; btn.textContent = "Starting…"; }
-  if (badge) { badge.textContent = "Starting reindex…"; badge.className = "index-coverage-badge building"; }
+  if (btn) { btn.disabled = true; btn.textContent = "Starting..."; }
+  if (badge) { badge.textContent = "Starting..."; badge.className = "index-coverage-badge building"; }
   try {
     await fetch("/api/admin/reindex", { method: "POST" });
   } catch (_) { /* server will reindex anyway */ }
-  // Start polling immediately
   clearTimeout(_coveragePoller);
   _coveragePoller = setTimeout(refreshIndexCoverage, 2000);
 }
