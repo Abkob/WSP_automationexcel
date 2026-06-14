@@ -1918,6 +1918,127 @@ Tests:
 - [ ] Documentation review.
 - [ ] Run through docs using the packaged app.
 
+## Phase 16: Testbench Infrastructure
+
+Goal: generate realistic multi-wave test data and run automated import + search verification against the live server.
+
+### 16.1 Import Testbench
+
+- [x] Create `scripts/create_testbench.py` generating 34 XLSX workbooks in `data/testbench/`.
+- [x] Group A — core pipeline waves: baseline, update, restore, missing, duplicate (409), empty (400).
+- [x] Group B — ID edge cases: leading zeros, long IDs, duplicates within file.
+- [x] Group C — field edge cases: GPA boundary, long text, special chars, missing optional fields.
+- [x] Group D — schema variants: extra columns, missing columns, lowercase/mixed-case headers.
+- [x] Group E — workbook structure: wrong sheet name, empty file, multi-sheet workbook.
+- [x] Group F — filter/search targets: one file per major with targeted skill keywords.
+- [x] Group G — cumulative waves G1→G6 building to 3 000 active students.
+- [x] Fix `_write_wb` to use `data_keys=COLS` parameter so lowercase-header files still write correct cell values.
+- [x] G-series students generated with realistic distributions: ~15 % probation, ~25 % financial aid, ~20 % dorms.
+- [x] Create `scripts/run_testbench.py` that auto-imports each file via `POST /api/import/run`.
+- [x] Expected-error files assert correct HTTP codes (409 duplicate, 400 empty/wrong-sheet).
+- [x] Non-expected 409s on re-runs treated as SKIP, not FAIL.
+- [x] End-to-end sanity checks: `/api/search {}` and `/api/export {}` after all imports.
+
+Result: 33/33 pass, 1 skip, 0 failures.
+
+### 16.2 AI Semantic Search Testbench
+
+- [x] Create `scripts/run_search_testbench.py` with 47 queries across 7 categories.
+- [x] Category A — domain matching: 10 major-specific queries, accuracy check against expected top major.
+- [x] Category B — skill keyword queries: 10 skill-phrase queries.
+- [x] Category C — cache consistency: same query run twice, scores must match exactly.
+- [x] Category D — threshold edge cases: 0.0, 0.10, 0.30, 0.50, 0.75, 0.95, 1.00.
+- [x] Category E — combined filter + semantic: GPA range, probation flag, financial aid, dorms.
+- [x] Category F — adversarial inputs: empty, whitespace, SQL injection, Arabic text, emoji, XSS — all must return HTTP 200.
+- [x] Category G — concurrent load: 5 parallel searches via threads.
+- [x] Record p50, p95, p99, max timing and flag slow queries.
+- [x] Restore 3 000-student population automatically if active count < 2 900.
+- [x] Poll for background reindex completion instead of fixed sleep.
+
+Final result: **27/27 checks passed**. p50 = 421 ms, p95 = 625 ms.
+
+---
+
+## Phase 17: Semantic Search Performance Optimizations
+
+### 17.1 In-Memory Vector Cache
+
+- [x] Add module-level `_VECTOR_CACHE` dict in `services/vector_store_service.py` keyed by vectors file path.
+- [x] Cache entry stores `(matrix, metadata, v_mtime, m_mtime)`; invalidated automatically when either file's mtime changes.
+- [x] `_load_cached()` reads from disk only when mtime differs from cached value.
+- [x] `_invalidate_cache()` called at start of `replace_all()` and on empty-path early return.
+- [x] `query()` uses `_load_cached()` instead of separate `load_metadata()` + `load_vectors()` calls.
+
+Improvement: eliminated 1–2 s disk read per search.
+
+### 17.2 Background Reindex After Import
+
+- [x] Add daemon thread in `app/web_app.py` after every successful import.
+- [x] Thread calls `sync_student_semantic_index` on all active students, then `mark_index_fresh()`.
+- [x] Import API response returns immediately; index update happens in background.
+
+### 17.3 Index Freshness And Reindex-In-Progress Flags
+
+- [x] Add `_index_fresh`, `_reindex_running`, and `_index_lock` to `services/semantic_search_service.py`.
+- [x] `mark_index_stale()` — called at start of every import.
+- [x] `mark_reindex_started()` — called in `web_app.py` just before background thread launches.
+- [x] `mark_index_fresh()` — called when background thread finishes; also clears `_reindex_running`.
+- [x] `rank_student_rows_by_vector_search` skips inline sync when `_is_index_fresh()` OR `_reindex_in_progress()`.
+- [x] Prevents double-encoding when background thread and a search request compete for CPU.
+
+### 17.4 Startup Freshness Pre-Warm
+
+- [x] In `_prewarm_embedding_model()`, check if FAISS `vectors_path` exists and `store.count() > 0`.
+- [x] If so, call `mark_index_fresh()` on startup.
+- [x] Prevents first search after a server restart from triggering a full inline sync of all students.
+
+### 17.5 LRU Query Vector Cache
+
+- [x] Add `_QUERY_VECTOR_CACHE` (`collections.OrderedDict`) in `semantic_search_service.py`, max 64 entries.
+- [x] `_get_query_vector(model, query)` — checks cache before calling `model.encode()`.
+- [x] Cache keyed by `(model_name, query_text)` so different models don't collide.
+- [x] Thread-safe via `_QUERY_VECTOR_CACHE_LOCK`.
+- [x] `rank_student_rows_by_vector_search` uses `_get_query_vector` instead of inline `model.encode`.
+
+Improvement: repeat queries return in < 150 ms instead of 400–600 ms.
+
+Performance summary after all optimizations (3 000 students, CPU-only):
+- Import response: immediate (background reindex decoupled)
+- First search (cold): ~450 ms
+- Repeat search (LRU hit): ~80–200 ms
+- p50: 421 ms · p95: 625 ms · p99: 1 250 ms
+
+---
+
+## Phase 18: Excel Sheets UI Fixes
+
+### 18.1 Remove 75-Row Limit
+
+- [x] `build_excel_sheets_payload` in `app/web_app.py` had `.limit(75)` on the `StudentCurrent` query.
+- [x] Removed limit — Current Students sheet now loads all active students.
+
+### 18.2 Global Search Inline On Sheets
+
+- [x] Previous behavior: global search hid the sheet workspace and showed a separate flat panel.
+- [x] New behavior: sheet stays visible; rows are filtered and highlighted directly in the table.
+- [x] Tab bar shows match-count badges (`em.sheet-tab-badge` — red pill) per sheet.
+- [x] If the active sheet has 0 matches, auto-switch to the first sheet that has results.
+- [x] Blue info banner above the table shows matched-row count on current sheet and total across all sheets.
+- [x] Clicking a tab while search is active re-filters on the new tab without clearing the query.
+- [x] Clearing the search input restores normal sheet view with full tab click handlers.
+- [x] Added `renderActiveSheetWithQuery(query)` helper that renders the active sheet filtered by a given query string.
+- [x] Added CSS: `.global-results-banner` (blue info bar), `.sheet-tab-badge` (red count pill on tabs).
+
+---
+
+## Phase 19: Dashboard Chart.js Fix
+
+- [x] Dashboard bar/line/histogram charts were not rendering — Chart.js bundle was missing from static assets.
+- [x] Downloaded `chart.umd.min.js` (v4.4.4, 201 KB) to `app/static/`.
+- [x] HTML references it with `<script src="/static/chart.umd.min.js" defer>` before `wsp.js`.
+
+---
+
 ## Current Next Task
 
 - [ ] Continue Phase 10: manual visual/accessibility click-through on the FastAPI UI, then add save presets and student detail preview.

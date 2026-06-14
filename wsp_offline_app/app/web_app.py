@@ -50,7 +50,7 @@ from services.filter_service import (
     log_filter_run,
 )
 from services.semantic_service import check_ollama_model_availability, rank_student_rows_semantically
-from services.semantic_search_service import mark_index_fresh, mark_index_stale, mark_reindex_started, rank_student_rows_by_ollama_rag, rank_student_rows_by_vector_search, sync_student_semantic_index
+from services.semantic_search_service import _is_index_fresh, _reindex_in_progress, mark_index_fresh, mark_index_stale, mark_reindex_started, rank_student_rows_by_ollama_rag, rank_student_rows_by_vector_search, sync_student_semantic_index
 from services.value_normalizer import NormalizationWarning, normalize_boolean, normalize_date, normalize_email, normalize_number, normalize_phone_text, normalize_text
 
 
@@ -104,6 +104,28 @@ def create_web_app(settings: AppSettings) -> FastAPI:
         import os, threading
         threading.Timer(0.4, lambda: os._exit(0)).start()
         return {"status": "shutting down"}
+
+    @app.post("/api/admin/reindex")
+    def admin_reindex() -> dict[str, Any]:
+        if _reindex_in_progress():
+            return {"status": "already_running", "message": "Reindex already in progress"}
+        threading.Thread(target=_startup_reindex, args=(settings,), daemon=True, name="manual-reindex").start()
+        return {"status": "started", "message": "Full reindex started in background"}
+
+    @app.get("/api/admin/index-status")
+    def admin_index_status() -> dict[str, Any]:
+        from services.vector_store_service import FaissVectorStore
+        store = FaissVectorStore(settings.semantic_index_dir)
+        index_count = store.count() if store.vectors_path.exists() else 0
+        with open_session(settings) as session:
+            db_count = session.query(StudentCurrent).count()
+        return {
+            "index_count": index_count,
+            "db_count": db_count,
+            "coverage_pct": round(index_count / db_count * 100, 1) if db_count else 0,
+            "reindex_running": _reindex_in_progress(),
+            "index_fresh": _is_index_fresh(),
+        }
 
     @app.get("/", response_class=HTMLResponse)
     def dashboard_page() -> str:
@@ -173,7 +195,7 @@ def create_web_app(settings: AppSettings) -> FastAPI:
 
     @app.post("/api/export")
     def export_students(payload: dict[str, Any]) -> dict[str, Any]:
-        request = build_filter_request_from_payload(payload, page_size=500)
+        request = build_filter_request_from_payload(payload, page_size=100_000)
         with open_session(settings) as session:
             result = execute_filter_request(
                 session,
@@ -372,14 +394,49 @@ def _prewarm_embedding_model(settings: AppSettings) -> None:
         model = get_default_embedding_model(settings)
         model.encode(["warmup"], kind="query")
         LOGGER.info("Embedding model pre-warmed: %s", settings.embedding_model_name)
-        # If a FAISS index already exists on disk from a prior run, treat the
-        # index as fresh so the first search doesn't trigger an inline full-sync.
         store = FaissVectorStore(settings.semantic_index_dir)
-        if store.vectors_path.exists() and store.count() > 0:
-            mark_index_fresh()
-            LOGGER.info("Existing FAISS index found (%d vectors) — marked fresh", store.count())
+        index_count = store.count() if store.vectors_path.exists() else 0
+        if index_count > 0:
+            # Validate coverage: only mark fresh if the index covers ≥90% of DB students.
+            # A stale/partial index (e.g. from a crashed reindex) must NOT be marked fresh
+            # or searches will be silently biased to whichever students made it in.
+            engine = create_sqlite_engine(settings.database_path)
+            initialize_database(engine)
+            with engine.connect() as conn:
+                db_count = conn.execute(__import__("sqlalchemy").text("SELECT COUNT(*) FROM students_current")).scalar() or 0
+            coverage = index_count / db_count if db_count > 0 else 1.0
+            if coverage >= 0.90:
+                mark_index_fresh()
+                LOGGER.info("Existing FAISS index (%d/%d students, %.0f%%) — marked fresh", index_count, db_count, coverage * 100)
+            else:
+                LOGGER.warning(
+                    "FAISS index is stale: %d indexed vs %d in DB (%.0f%% coverage) — scheduling startup reindex",
+                    index_count, db_count, coverage * 100,
+                )
+                threading.Thread(target=_startup_reindex, args=(settings,), daemon=True, name="startup-reindex").start()
     except Exception as exc:
         LOGGER.warning("Embedding model pre-warm skipped: %s", exc)
+
+
+def _startup_reindex(settings: AppSettings) -> None:
+    try:
+        mark_reindex_started()
+        engine = create_sqlite_engine(settings.database_path)
+        initialize_database(engine)
+        from sqlalchemy.orm import Session as _Session
+        with _Session(engine) as session:
+            active_students = (
+                session.query(StudentCurrent)
+                .filter(StudentCurrent.missing_from_latest_import == False)
+                .all()
+            )
+            LOGGER.info("Startup reindex: encoding %d students", len(active_students))
+            sync_student_semantic_index(session, settings, active_students)
+            session.commit()
+        mark_index_fresh()
+        LOGGER.info("Startup reindex complete")
+    except Exception as exc:
+        LOGGER.error("Startup reindex failed: %s", exc)
 
 
 def open_session(settings: AppSettings):
@@ -776,7 +833,6 @@ def build_excel_sheets_payload(settings: AppSettings, session) -> dict[str, Any]
     students = (
         session.query(StudentCurrent)
         .order_by(StudentCurrent.STUD_ID.asc())
-        .limit(75)
         .all()
     )
     rejected_logs = (
@@ -1462,10 +1518,14 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
           <div class="semantic-card">
             <div class="semantic-card-head">
               <span>Semantic Query</span>
-              <strong><span class="status-dot good"></span> Ready</strong>
+              <span id="index-coverage-badge" class="index-coverage-badge">Checking index…</span>
+            </div>
+            <div id="index-reindex-warning" class="index-reindex-warning" style="display:none">
+              <span id="index-reindex-msg"></span>
+              <button type="button" id="index-reindex-btn" class="index-reindex-btn">Rebuild Index</button>
             </div>
             <label>
-              Ask local Qwen
+              Ask local AI
               <textarea name="semantic_query" rows="3" placeholder="Find students good for social media posters, Canva, and design communications"></textarea>
             </label>
             <div class="rag-controls">
@@ -1491,8 +1551,12 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
             <label>Maximum GPA<input name="gpa_max" type="number" min="0" max="4" step="0.05"></label>
           </div>
           <div class="two-col">
-            <label>Major<select name="major"><option value="">Any major</option></select></label>
-            <label>Class<select name="class_desc"><option value="">Any class</option></select></label>
+            <label>Major
+              <div class="ms-root" id="ms-major" data-name="majors" data-placeholder="Any major"></div>
+            </label>
+            <label>Class / Year
+              <div class="ms-root" id="ms-class" data-name="classes" data-placeholder="Any year"></div>
+            </label>
           </div>
           <div class="three-col">
             <label>Probation<select name="probation"><option value="any">Any</option><option value="yes">Yes</option><option value="no">No</option></select></label>
@@ -1590,36 +1654,17 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
         <section class="operation-card import-action-card">
           <div class="drop-zone" id="import-drop-zone">
             <div class="drop-icon">XL</div>
-            <h2>Import Folder</h2>
-            <p>Paste or keep the folder path below. The newest accepted workbook stays current; older workbook files move into this folder's archive.</p>
+            <h2>Drop Folder</h2>
+            <p>Drop a new Excel workbook into this folder — it is automatically imported and the previous file is archived. Checked every 30 s while this page is open.</p>
             <label>
-              Assigned Import Folder
+              Import Folder path
               <input id="import-folder-path" type="text" autocomplete="off">
             </label>
             <div class="action-row">
               <button class="primary-button" id="save-import-folder" type="button">Save Folder</button>
-              <button class="secondary-button" id="open-refresh-folder" type="button">Check Folder Now</button>
+              <button class="secondary-button" id="open-refresh-folder" type="button">Check Now</button>
             </div>
             <div id="import-folder-summary" class="folder-summary"></div>
-            <label>
-              Manual selected workbook path
-              <input id="import-path" type="text" autocomplete="off">
-            </label>
-            <div class="two-col">
-              <label>
-                Files seen in Import Folder
-                <select id="import-candidates"></select>
-              </label>
-              <label>
-                Current folder
-                <input id="watched-folder" type="text" readonly>
-              </label>
-            </div>
-            <div class="action-row">
-              <button class="secondary-button" id="refresh-upload-folder" type="button">Check Import Folder</button>
-              <button class="secondary-button" id="run-import" type="button">Import Selected Workbook</button>
-              <button class="secondary-button" id="refresh-import" type="button">Refresh</button>
-            </div>
             <div id="import-run-status" class="inline-status" aria-live="polite"></div>
           </div>
           <div id="backup-policy" class="policy-grid"></div>
@@ -1731,8 +1776,8 @@ def build_filter_request_from_payload(payload: dict[str, Any], *, page_size: int
     category_filters = tuple(
         item
         for item in (
-            build_category_filter("MAJR_DESC", payload.get("major")),
-            build_category_filter("CLAS_DESC", payload.get("class_desc")),
+            build_category_filter("MAJR_DESC", payload.get("majors") or payload.get("major")),
+            build_category_filter("CLAS_DESC", payload.get("classes") or payload.get("class_desc")),
         )
         if item is not None
     )
@@ -1746,10 +1791,11 @@ def build_filter_request_from_payload(payload: dict[str, Any], *, page_size: int
     )
     semantic_query = clean_optional_text(payload.get("semantic_query"))
     semantic_threshold = optional_float(payload.get("semantic_threshold"))
+    _top_k = page_size or int(payload.get("page_size") or 100)
     semantic_filter = (
         SemanticFilter(
             semantic_query,
-            top_k=page_size or int(payload.get("page_size") or 100),
+            top_k=_top_k,
             minimum_score=semantic_threshold if semantic_threshold is not None else 0.1,
         )
         if semantic_query
@@ -1792,6 +1838,9 @@ def build_boolean_filter(field_name: str, value: Any) -> BooleanFilter | None:
 
 
 def build_category_filter(field_name: str, value: Any) -> CategoryFilter | None:
+    if isinstance(value, list):
+        values = tuple(v for v in (clean_optional_text(x) for x in value) if v)
+        return CategoryFilter(field_name, values) if values else None
     clean_value = clean_optional_text(value)
     return CategoryFilter(field_name, (clean_value,)) if clean_value else None
 

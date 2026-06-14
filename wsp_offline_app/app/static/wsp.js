@@ -18,14 +18,15 @@ function loadFilterPrefs() {
       const el = form.querySelector(`[name="${name}"]`);
       if (el && val !== undefined && val !== "" && val !== null) el.value = val;
     };
+    set("semantic_query", prefs.semantic_query);
     set("semantic_threshold", prefs.semantic_threshold);
     set("gpa_min", prefs.gpa_min);
     set("gpa_max", prefs.gpa_max);
     set("probation", prefs.probation);
     set("financial_aid", prefs.financial_aid);
     set("dorms", prefs.dorms);
-    set("major", prefs.major);
-    set("class_desc", prefs.class_desc);
+    if (prefs.majors && prefs.majors.length) setMultiSelectValues("ms-major", prefs.majors);
+    if (prefs.classes && prefs.classes.length) setMultiSelectValues("ms-class", prefs.classes);
     set("sort_field", prefs.sort_field);
     set("sort_direction", prefs.sort_direction);
     set("page_size", prefs.page_size);
@@ -76,8 +77,8 @@ function buildPrefsSummary(prefs) {
   const parts = [];
   if (prefs.gpa_min) parts.push(`GPA ≥ ${prefs.gpa_min}`);
   if (prefs.gpa_max) parts.push(`GPA ≤ ${prefs.gpa_max}`);
-  if (prefs.major) parts.push(`Major: ${prefs.major}`);
-  if (prefs.class_desc) parts.push(`Class: ${prefs.class_desc}`);
+  if (prefs.majors && prefs.majors.length) parts.push(`Major: ${prefs.majors.join(", ")}`);
+  if (prefs.classes && prefs.classes.length) parts.push(`Class: ${prefs.classes.join(", ")}`);
   if (prefs.probation && prefs.probation !== "any") parts.push(`Probation: ${prefs.probation}`);
   if (prefs.financial_aid && prefs.financial_aid !== "any") parts.push(`Aid: ${prefs.financial_aid}`);
   if (prefs.dorms && prefs.dorms !== "any") parts.push(`Dorms: ${prefs.dorms}`);
@@ -94,19 +95,21 @@ document.addEventListener("DOMContentLoaded", () => {
     loadDashboard();
   }
   if (activePath === "/filters") {
-    loadFilterOptions();
-  }
-  if (activePath === "/filters") {
-    const restored = loadFilterPrefs();
-    runSearch();
-    if (restored) {
-      const badge = document.querySelector("#prefs-badge");
-      if (badge) {
-        badge.textContent = "✓ Preferences restored";
-        badge.className = "prefs-badge saved visible";
-        badge._timer = setTimeout(() => badge.classList.remove("visible"), 3000);
+    loadFilterOptions().then(() => {
+      const restored = loadFilterPrefs();
+      runSearch();
+      if (restored) {
+        const badge = document.querySelector("#prefs-badge");
+        if (badge) {
+          badge.textContent = "✓ Preferences restored";
+          badge.className = "prefs-badge saved visible";
+          badge._timer = setTimeout(() => badge.classList.remove("visible"), 3000);
+        }
       }
-    }
+    });
+    refreshIndexCoverage();
+    const reindexBtn = document.getElementById("index-reindex-btn");
+    if (reindexBtn) reindexBtn.addEventListener("click", triggerReindex);
   }
   if (activePath === "/excel-sheets") {
     loadExcelSheets();
@@ -163,6 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
       clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(saveFilterPrefs, 800);
     });
+    form.addEventListener("ms-change", () => {
+      runSearch();
+      saveFilterPrefs();
+    });
   }
 
   const clearPrefsBtn = document.querySelector("#clear-filter-prefs");
@@ -182,6 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
       const globalInput = document.querySelector("#global-search-input");
       if (globalInput) globalInput.value = "";
+      clearMultiSelect("ms-major");
+      clearMultiSelect("ms-class");
       updateThresholdOutput();
       runSearch();
     });
@@ -331,8 +340,86 @@ async function loadDashboard() {
 async function loadFilterOptions() {
   const response = await fetch("/api/filter-options");
   const data = await response.json();
-  fillSelect("major", data.majors);
-  fillSelect("class_desc", data.classes);
+  initMultiSelect("ms-major", data.majors);
+  initMultiSelect("ms-class", data.classes);
+}
+
+// ── index coverage indicator ──────────────────────────────────────────────────
+let _coveragePoller = null;
+
+async function refreshIndexCoverage() {
+  const badge   = document.getElementById("index-coverage-badge");
+  const warning = document.getElementById("index-reindex-warning");
+  const msg     = document.getElementById("index-reindex-msg");
+  const btn     = document.getElementById("index-reindex-btn");
+  if (!badge) return;
+
+  let data;
+  try {
+    const r = await fetch("/api/admin/index-status");
+    data = await r.json();
+  } catch (_) { return; }
+
+  const { index_count, db_count, coverage_pct, reindex_running } = data;
+
+  if (reindex_running) {
+    badge.textContent = `Building… ${coverage_pct}%`;
+    badge.className = "index-coverage-badge building";
+    if (warning) {
+      warning.style.display = "flex";
+      warning.className = "index-reindex-warning";
+      msg.textContent = `Indexing in progress — ${index_count} / ${db_count} students encoded (${coverage_pct}%)`;
+      if (btn) { btn.disabled = true; btn.textContent = "Building…"; }
+    }
+    // Poll faster while building
+    clearTimeout(_coveragePoller);
+    _coveragePoller = setTimeout(refreshIndexCoverage, 4000);
+    return;
+  }
+
+  if (coverage_pct >= 100) {
+    badge.textContent = `Index: ${coverage_pct}% (${index_count} students)`;
+    badge.className = "index-coverage-badge good";
+    if (warning) warning.style.display = "none";
+    // Done — poll slowly to catch future drift
+    clearTimeout(_coveragePoller);
+    _coveragePoller = setTimeout(refreshIndexCoverage, 30000);
+  } else if (coverage_pct >= 50) {
+    badge.textContent = `Index: ${coverage_pct}% (${index_count}/${db_count})`;
+    badge.className = "index-coverage-badge warn";
+    if (warning) {
+      warning.style.display = "flex";
+      warning.className = "index-reindex-warning";
+      msg.textContent = `AI search is limited to ${index_count} of ${db_count} students (${coverage_pct}% coverage). Results may be biased.`;
+      if (btn) { btn.disabled = false; btn.textContent = "Rebuild Index"; }
+    }
+    clearTimeout(_coveragePoller);
+    _coveragePoller = setTimeout(refreshIndexCoverage, 8000);
+  } else {
+    badge.textContent = `Index: ${coverage_pct}% — INCOMPLETE`;
+    badge.className = "index-coverage-badge danger";
+    if (warning) {
+      warning.style.display = "flex";
+      warning.className = "index-reindex-warning danger";
+      msg.textContent = `Only ${index_count} of ${db_count} students are indexed — AI search is severely biased. Rebuild required.`;
+      if (btn) { btn.disabled = false; btn.textContent = "Rebuild Index Now"; }
+    }
+    clearTimeout(_coveragePoller);
+    _coveragePoller = setTimeout(refreshIndexCoverage, 8000);
+  }
+}
+
+async function triggerReindex() {
+  const btn = document.getElementById("index-reindex-btn");
+  const badge = document.getElementById("index-coverage-badge");
+  if (btn) { btn.disabled = true; btn.textContent = "Starting…"; }
+  if (badge) { badge.textContent = "Starting reindex…"; badge.className = "index-coverage-badge building"; }
+  try {
+    await fetch("/api/admin/reindex", { method: "POST" });
+  } catch (_) { /* server will reindex anyway */ }
+  // Start polling immediately
+  clearTimeout(_coveragePoller);
+  _coveragePoller = setTimeout(refreshIndexCoverage, 2000);
 }
 
 async function runSearch() {
@@ -411,15 +498,15 @@ function renderSheetTabs() {
       if (sheetState.editMode) cancelSheetEdits();
       sheetState.activeKey = button.dataset.sheetKey;
       const globalInput = document.querySelector("#sheets-global-search");
-      if (globalInput) globalInput.value = "";
-      const resultsEl = document.querySelector("#sheets-global-results");
-      if (resultsEl) resultsEl.hidden = true;
-      const workspaceEl = document.querySelector(".sheet-workspace");
-      if (workspaceEl) workspaceEl.hidden = false;
       const editToggle = document.querySelector("#sheet-edit-toggle");
       if (editToggle) editToggle.hidden = sheetState.activeKey !== "Student_Directory";
-      renderSheetTabs();
-      renderActiveSheet();
+      if (globalInput && globalInput.value.trim()) {
+        renderSheetsGlobalSearch();
+      } else {
+        if (globalInput) globalInput.value = "";
+        renderSheetTabs();
+        renderActiveSheet();
+      }
     });
   });
 }
@@ -431,65 +518,104 @@ function renderSheetsGlobalSearch() {
   if (!input || !resultsEl || !workspaceEl) return;
 
   const query = input.value.trim().toLowerCase();
+
+  // Clear the banner and always keep the workspace visible
+  resultsEl.hidden = true;
+  workspaceEl.hidden = false;
+
   if (!query) {
-    resultsEl.hidden = true;
-    workspaceEl.hidden = false;
+    // Restore normal sheet render without any filter
+    renderSheetTabs();
+    renderActiveSheet();
     return;
   }
 
-  const hits = [];
+  // Count matches per sheet so tabs can show badge counts
+  const matchCounts = {};
   for (const sheet of sheetState.sheets) {
-    for (let rowIdx = 0; rowIdx < (sheet.rows || []).length; rowIdx++) {
-      const row = sheet.rows[rowIdx];
-      const matchedCells = [];
-      for (let colIdx = 0; colIdx < (sheet.headers || []).length; colIdx++) {
-        const cell = String(row[colIdx] ?? "");
-        if (cell.toLowerCase().includes(query)) {
-          matchedCells.push({ header: sheet.headers[colIdx], value: cell, colIdx });
-        }
-      }
-      if (matchedCells.length) {
-        hits.push({ sheet: sheet.label, row: rowIdx + 1, cells: matchedCells, fullRow: row, headers: sheet.headers });
-      }
+    let count = 0;
+    for (const row of (sheet.rows || [])) {
+      if ((row || []).some((cell) => String(cell ?? "").toLowerCase().includes(query))) count++;
     }
+    matchCounts[sheet.key] = count;
   }
 
-  workspaceEl.hidden = true;
-  resultsEl.hidden = false;
+  const totalMatches = Object.values(matchCounts).reduce((a, b) => a + b, 0);
 
-  if (!hits.length) {
+  // If current sheet has 0 matches, switch to the first sheet that does
+  if (matchCounts[sheetState.activeKey] === 0) {
+    const firstHit = sheetState.sheets.find((s) => matchCounts[s.key] > 0);
+    if (firstHit) sheetState.activeKey = firstHit.key;
+  }
+
+  // Show match counts on tabs
+  const tabs = document.querySelector("#sheet-tabs");
+  if (tabs) {
+    tabs.innerHTML = sheetState.sheets.map((sheet) => {
+      const n = matchCounts[sheet.key] || 0;
+      const badge = n > 0 ? `<em class="sheet-tab-badge">${n}</em>` : "";
+      return `<button class="sheet-tab ${sheet.key === sheetState.activeKey ? "active" : ""}" type="button" role="tab" aria-selected="${sheet.key === sheetState.activeKey}" data-sheet-key="${escapeHtml(sheet.key)}">
+        <span>${escapeHtml(sheet.label)}${badge}</span>
+        <small>${escapeHtml(sheet.description)}</small>
+      </button>`;
+    }).join("");
+    tabs.querySelectorAll("[data-sheet-key]").forEach((button) => {
+      button.addEventListener("click", () => {
+        sheetState.activeKey = button.dataset.sheetKey;
+        renderSheetsGlobalSearch();
+      });
+    });
+  }
+
+  // Show banner above table
+  if (totalMatches > 0) {
+    const sheetMatches = matchCounts[sheetState.activeKey] || 0;
+    resultsEl.innerHTML = `<div class="global-results-banner">
+      Showing <strong>${sheetMatches.toLocaleString()}</strong> matching row${sheetMatches !== 1 ? "s" : ""} on this sheet
+      — <strong>${totalMatches.toLocaleString()}</strong> total across all sheets
+    </div>`;
+    resultsEl.hidden = false;
+  } else {
     resultsEl.innerHTML = `<div class="global-results-empty">No results for <strong>${escapeHtml(query)}</strong> across any sheet.</div>`;
-    return;
+    resultsEl.hidden = false;
   }
 
-  const grouped = {};
-  for (const hit of hits) {
-    (grouped[hit.sheet] = grouped[hit.sheet] || []).push(hit);
-  }
+  // Render the active sheet with the global query as its row filter
+  renderActiveSheetWithQuery(query);
+}
 
-  resultsEl.innerHTML = Object.entries(grouped).map(([sheetLabel, sheetHits]) => `
-    <div class="global-results-group">
-      <div class="global-results-group-header">
-        <span>${escapeHtml(sheetLabel)}</span>
-        <span>${sheetHits.length} match${sheetHits.length !== 1 ? "es" : ""}</span>
-      </div>
-      <div class="global-results-rows">
-        ${sheetHits.map((hit) => `
-          <div class="global-results-row">
-            <span class="global-results-row-num">${hit.row}</span>
-            <div class="global-results-cells">
-              ${hit.cells.map((c) => `
-                <span class="global-results-cell">
-                  <span class="global-results-cell-header">${escapeHtml(c.header)}</span>
-                  <span class="global-results-cell-value">${highlightText(c.value, query)}</span>
-                </span>
-              `).join("")}
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `).join("") + `<div class="global-results-count">${hits.length} total matches across ${Object.keys(grouped).length} sheet${Object.keys(grouped).length !== 1 ? "s" : ""}</div>`;
+function renderActiveSheetWithQuery(globalQuery) {
+  const sheet = sheetState.sheets.find((item) => item.key === sheetState.activeKey);
+  const table = document.querySelector("#sheet-table");
+  const summary = document.querySelector("#sheet-summary");
+  const status = document.querySelector("#sheet-status");
+  if (!sheet || !table || !summary) return;
+
+  const query = globalQuery || "";
+  const allRows = sheet.rows || [];
+  const rows = allRows.filter((row) => !query || row.some((cell) => String(cell ?? "").toLowerCase().includes(query)));
+
+  summary.innerHTML = `
+    <article><strong>${rows.length.toLocaleString()}</strong><span>matching rows</span></article>
+    <article><strong>${(sheet.headers || []).length.toLocaleString()}</strong><span>columns</span></article>
+    <article><strong>${escapeHtml(sheet.label)}</strong><span>${escapeHtml(sheet.description)}</span></article>
+  `;
+
+  table.innerHTML = `
+    <thead>
+      <tr><th>#</th>${(sheet.headers || []).map((header, index) => `<th><small>COL ${excelColumnName(index)}</small>${escapeHtml(header)}</th>`).join("")}</tr>
+    </thead>
+    <tbody>
+      ${rows.map((row, rowIndex) => {
+        const originalRowIndex = allRows.indexOf(row);
+        const cells = (sheet.headers || []).map((_, colIndex) => {
+          const val = row[colIndex] ?? "";
+          return `<td>${highlightText(val, query)}</td>`;
+        }).join("");
+        return `<tr data-row-index="${rowIndex}"><td>${originalRowIndex + 1}</td>${cells}</tr>`;
+      }).join("") || `<tr><td colspan="${(sheet.headers || []).length + 1}" class="empty-state">No rows match <strong>${escapeHtml(query)}</strong>.</td></tr>`}
+    </tbody>
+  `;
 }
 
 function renderActiveSheet() {
@@ -1274,8 +1400,8 @@ function collectSearchPayload() {
     technical_skills_query: valueOf(formData, "technical_skills_query"),
     gpa_min: valueOf(formData, "gpa_min"),
     gpa_max: valueOf(formData, "gpa_max"),
-    major: valueOf(formData, "major"),
-    class_desc: valueOf(formData, "class_desc"),
+    majors: getMultiSelectValues("ms-major"),
+    classes: getMultiSelectValues("ms-class"),
     probation: valueOf(formData, "probation") || "any",
     financial_aid: valueOf(formData, "financial_aid") || "any",
     dorms: valueOf(formData, "dorms") || "any",
@@ -1660,8 +1786,8 @@ function renderActiveFilterTags(payload) {
   if (payload.technical_skills_query) tags.push(`Skills contain ${payload.technical_skills_query}`);
   if (payload.gpa_min) tags.push(`GPA >= ${payload.gpa_min}`);
   if (payload.gpa_max) tags.push(`GPA <= ${payload.gpa_max}`);
-  if (payload.major) tags.push(`Major = ${payload.major}`);
-  if (payload.class_desc) tags.push(`Class = ${payload.class_desc}`);
+  if (payload.majors && payload.majors.length) tags.push(`Major = ${payload.majors.join(", ")}`);
+  if (payload.classes && payload.classes.length) tags.push(`Class = ${payload.classes.join(", ")}`);
   if (payload.probation !== "any") tags.push(`Probation = ${payload.probation}`);
   if (payload.financial_aid !== "any") tags.push(`Aid = ${payload.financial_aid}`);
   if (payload.dorms !== "any") tags.push(`Dorms = ${payload.dorms}`);
@@ -1679,6 +1805,190 @@ function updateThresholdOutput() {
   if (input && output) {
     output.textContent = `${Math.round(Number(input.value || 0) * 100)}%`;
   }
+}
+
+// ── multi-select picker ───────────────────────────────────────────────────────
+// State keyed by element id
+const _msState = {};
+
+function initMultiSelect(rootId, allOptions) {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const placeholder = root.dataset.placeholder || "Any";
+  _msState[rootId] = { allOptions: allOptions || [], selected: new Set() };
+
+  root.innerHTML = `
+    <button type="button" class="ms-trigger" data-open="false" aria-haspopup="listbox" aria-expanded="false">
+      <span class="ms-trigger-label">${escapeHtml(placeholder)}</span>
+      <span class="ms-trigger-arrow">▼</span>
+    </button>
+    <div class="ms-dropdown" role="listbox" aria-multiselectable="true">
+      <input class="ms-search" type="text" placeholder="Search..." autocomplete="off">
+      <div class="ms-list"></div>
+      <div class="ms-clear-row">
+        <button type="button" class="ms-clear-btn">Clear all</button>
+        <span class="ms-count"></span>
+      </div>
+    </div>
+    <div class="ms-pills"></div>
+  `;
+
+  const trigger  = root.querySelector(".ms-trigger");
+  const dropdown = root.querySelector(".ms-dropdown");
+  const search   = root.querySelector(".ms-search");
+  const list     = root.querySelector(".ms-list");
+  const clearBtn = root.querySelector(".ms-clear-btn");
+  const countEl  = root.querySelector(".ms-count");
+  const pillsEl  = root.querySelector(".ms-pills");
+
+  function renderOptions(filter) {
+    const q = (filter || "").toLowerCase();
+    const opts = _msState[rootId].allOptions.filter((o) => !q || o.toLowerCase().includes(q));
+    if (!opts.length) {
+      list.innerHTML = `<div class="ms-empty">No matches</div>`;
+      return;
+    }
+    list.innerHTML = opts.map((o) => {
+      const checked = _msState[rootId].selected.has(o) ? "checked" : "";
+      return `<label class="ms-option"><input type="checkbox" value="${escapeHtml(o)}" ${checked}><span>${escapeHtml(o)}</span></label>`;
+    }).join("");
+    list.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        if (cb.checked) _msState[rootId].selected.add(cb.value);
+        else _msState[rootId].selected.delete(cb.value);
+        renderPills();
+        renderTriggerLabel();
+        triggerChange();
+      });
+    });
+  }
+
+  function renderPills() {
+    const sel = [..._msState[rootId].selected];
+    countEl.textContent = sel.length ? `${sel.length} selected` : "";
+    pillsEl.innerHTML = sel.map((v) => `
+      <span class="ms-pill" data-val="${escapeHtml(v)}">
+        <span>${escapeHtml(v)}</span>
+        <button type="button" class="ms-pill-remove" aria-label="Remove ${escapeHtml(v)}">×</button>
+      </span>
+    `).join("");
+    pillsEl.querySelectorAll(".ms-pill-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        _msState[rootId].selected.delete(btn.closest(".ms-pill").dataset.val);
+        renderOptions(search.value);
+        renderPills();
+        renderTriggerLabel();
+        triggerChange();
+      });
+    });
+  }
+
+  function renderTriggerLabel() {
+    const sel = [..._msState[rootId].selected];
+    trigger.querySelector(".ms-trigger-label").textContent =
+      sel.length === 0 ? placeholder :
+      sel.length === 1 ? sel[0] :
+      `${sel.length} selected`;
+  }
+
+  function triggerChange() {
+    root.dispatchEvent(new Event("ms-change", { bubbles: true }));
+  }
+
+  function openDropdown() {
+    dropdown.classList.add("open");
+    trigger.dataset.open = "true";
+    trigger.setAttribute("aria-expanded", "true");
+    search.value = "";
+    renderOptions("");
+    search.focus();
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove("open");
+    trigger.dataset.open = "false";
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.contains("open") ? closeDropdown() : openDropdown();
+  });
+
+  search.addEventListener("input", () => renderOptions(search.value));
+
+  clearBtn.addEventListener("click", () => {
+    _msState[rootId].selected.clear();
+    renderOptions(search.value);
+    renderPills();
+    renderTriggerLabel();
+    triggerChange();
+  });
+
+  dropdown.addEventListener("click", (e) => e.stopPropagation());
+
+  document.addEventListener("click", () => closeDropdown());
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDropdown(); });
+
+  renderOptions("");
+  renderPills();
+}
+
+function getMultiSelectValues(rootId) {
+  return _msState[rootId] ? [..._msState[rootId].selected] : [];
+}
+
+function setMultiSelectValues(rootId, values) {
+  if (!_msState[rootId]) return;
+  _msState[rootId].selected = new Set(values || []);
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const list  = root.querySelector(".ms-list");
+  const pillsEl = root.querySelector(".ms-pills");
+  const countEl = root.querySelector(".ms-count");
+  const search = root.querySelector(".ms-search");
+  const placeholder = root.dataset.placeholder || "Any";
+
+  const sel = [..._msState[rootId].selected];
+  countEl.textContent = sel.length ? `${sel.length} selected` : "";
+  root.querySelector(".ms-trigger .ms-trigger-label").textContent =
+    sel.length === 0 ? placeholder :
+    sel.length === 1 ? sel[0] :
+    `${sel.length} selected`;
+
+  if (list) {
+    const q = (search ? search.value : "").toLowerCase();
+    const opts = _msState[rootId].allOptions.filter((o) => !q || o.toLowerCase().includes(q));
+    list.innerHTML = opts.map((o) => {
+      const checked = _msState[rootId].selected.has(o) ? "checked" : "";
+      return `<label class="ms-option"><input type="checkbox" value="${escapeHtml(o)}" ${checked}><span>${escapeHtml(o)}</span></label>`;
+    }).join("");
+  }
+
+  if (pillsEl) {
+    pillsEl.innerHTML = sel.map((v) => `
+      <span class="ms-pill" data-val="${escapeHtml(v)}">
+        <span>${escapeHtml(v)}</span>
+        <button type="button" class="ms-pill-remove" aria-label="Remove ${escapeHtml(v)}">×</button>
+      </span>
+    `).join("");
+    pillsEl.querySelectorAll(".ms-pill-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        _msState[rootId].selected.delete(btn.closest(".ms-pill").dataset.val);
+        if (list) {
+          list.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+            if (cb.value === btn.closest(".ms-pill").dataset.val) cb.checked = false;
+          });
+        }
+        setMultiSelectValues(rootId, [..._msState[rootId].selected]);
+        root.dispatchEvent(new Event("ms-change", { bubbles: true }));
+      });
+    });
+  }
+}
+
+function clearMultiSelect(rootId) {
+  setMultiSelectValues(rootId, []);
 }
 
 function fillSelect(name, values) {

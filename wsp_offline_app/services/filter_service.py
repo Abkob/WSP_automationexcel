@@ -187,8 +187,8 @@ class PaginationSpec:
     def __post_init__(self) -> None:
         if self.page < 1:
             raise FilterValidationError("Pagination page must be 1 or greater")
-        if self.page_size < 1 or self.page_size > 500:
-            raise FilterValidationError("Pagination page_size must be between 1 and 500")
+        if self.page_size < 1:
+            raise FilterValidationError("Pagination page_size must be 1 or greater")
 
     @property
     def offset(self) -> int:
