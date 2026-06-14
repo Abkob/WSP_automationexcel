@@ -6,3 +6,19 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+*.log
+*.txt.bak
+# Temp recovery scripts from disaster-recovery sessions
+extract_*.py
+inspect_*.py
+grep_all_semantic.py
+check_third_transcript.py
+candidate_*.py
+extracted_*.py
+__tmp*.py
+__recover*.py
+__find*.py
+__extract*.py
+semantic_service_debug.txt
+raw_1028_content.txt
+__tmp_err.log
