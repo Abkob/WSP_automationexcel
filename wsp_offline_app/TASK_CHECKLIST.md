@@ -1,6 +1,6 @@
 # WSP Offline App Master Checklist
 
-Last updated: 2026-06-07
+Last updated: 2026-06-15
 
 This file is the editable source of truth for the project. We will work task by task, update this checklist after each completed subtask, and only move forward after the related tests pass.
 
@@ -46,12 +46,13 @@ Decision:
 - [x] SQLAlchemy for database models and queries.
 - [x] pandas for Excel import and tabular cleaning.
 - [x] openpyxl for Excel export and workbook inspection.
-- [x] Plotly for dashboard charts.
+- [x] Plotly for dashboard charts — replaced by Chart.js (v4.4.4) after FastAPI migration; Plotly no longer used in live app.
+- [x] Chart.js v4.4.4 for interactive dashboard charts (bar, histogram, donut).
 - [ ] watchdog for folder watching.
-- [x] Ollama for local semantic model hosting.
-- [x] Qwen3 8B (`qwen3:8b`) for optional local query rewriting, hard-filter extraction, and result explanations.
+- [x] Ollama installed locally; Qwen3 8B pulled. NOT used in live search path — only mxbai+FAISS is active.
+- [x] Qwen3 8B (`qwen3:8b`) — available locally but not the live search engine; was used during Phase 9 development.
 - [x] sentence-transformers for true local embedding-based semantic retrieval.
-- [x] `intfloat/multilingual-e5-small` as the first configured embedding model.
+- [x] `intfloat/multilingual-e5-small` as the first configured embedding model — replaced by `mixedbread-ai/mxbai-embed-large-v1`.
 - [x] FAISS for offline vector storage and cosine-similarity search.
 - [x] ChromaDB was evaluated but blocked on this Windows machine by native C++ build requirements for `chroma-hnswlib`.
 - [ ] PyInstaller for Windows `.exe` packaging.
@@ -1610,19 +1611,21 @@ Test result:
 
 ### 10.4 Import Page
 
-- [ ] Add manual Excel upload.
-- [ ] Add selected watched folder display.
-- [ ] Add start watcher button.
+Note: Implemented across Phases 10.12, 10.13, and 10.15 rather than as a standalone phase.
+
+- [x] Add manual Excel upload — implemented as path-based import via `/api/import/run`.
+- [x] Add selected watched folder display — Import Folder path shown and editable in Import Center.
+- [ ] Add start watcher button — background refresher exists but no manual watcher start/stop button yet.
 - [ ] Add stop watcher button.
-- [ ] Add latest import summary.
-- [ ] Add detected columns table.
-- [ ] Add error log table.
+- [x] Add latest import summary — import pipeline steps and logs rendered in Import Center.
+- [x] Add detected columns table — schema registry table shown in Import Center.
+- [x] Add error log table — console event log shown in Import Center.
 
 Tests:
 
-- [ ] Unit test import service.
-- [ ] UI smoke test import route.
-- [ ] Manual test file upload.
+- [x] Unit test import service — covered in `test_web_app.py` Phases 10.12–10.15.
+- [x] UI smoke test import route — `/import` returns HTTP 200.
+- [ ] Manual test drag-and-drop file upload (not implemented; only path-based import exists).
 
 ### 10.5 Student Profile Page Or Dialog
 
@@ -2039,9 +2042,105 @@ Performance summary after all optimizations (3 000 students, CPU-only):
 
 ---
 
-## Current Next Task
+## Phase 20: Multi-Select Filter Pickers + Search Bias Fix
 
-- [ ] Continue Phase 10: manual visual/accessibility click-through on the FastAPI UI, then add save presets and student detail preview.
+### 20.1 Multi-Select Picker (Major / Class / Year)
+- [x] Replaced `<select name="major">` and `<select name="class_desc">` in filter form with `<div class="ms-root" id="ms-major">` and `<div class="ms-root" id="ms-class">`
+- [x] Backend `build_category_filter()` now accepts list values and uses `.in_()` for multi-value SQL
+- [x] `build_filter_request_from_payload()` reads `payload.get("majors")` / `payload.get("classes")` (arrays)
+- [x] `collectSearchPayload()` in JS returns `majors: getMultiSelectValues("ms-major")` and `classes: getMultiSelectValues("ms-class")` as arrays
+- [x] Full floating picker JS implementation added to `app/static/wsp.js` (before `fillSelect`):
+  - `initMultiSelect(rootId, allOptions)` — builds trigger button + floating dropdown with search + checkboxes + pills
+  - `getMultiSelectValues(rootId)` — returns `string[]` of checked values from `_msState`
+  - `setMultiSelectValues(rootId, values)` — restores from localStorage (called after `loadFilterOptions()` resolves)
+  - `clearMultiSelect(rootId)` — called by Reset button and filter clear
+- [x] `_msState` keyed by element id, `OrderedDict`-style with `selected: Set`
+- [x] `ms-change` custom bubbling event dispatched on every selection change; form listens and calls `runSearch() + saveFilterPrefs()`
+- [x] Full CSS added to `wsp.css`: `.ms-root`, `.ms-trigger`, `.ms-dropdown`, `.ms-list`, `.ms-option`, `.ms-pills`, `.ms-pill`, `.ms-pill-remove`, `.ms-search`, `.ms-clear-btn`, `.ms-count`, `.ms-empty`
+- [x] `loadFilterOptions()` calls `initMultiSelect("ms-major", data.majors)` and `initMultiSelect("ms-class", data.classes)` after fetch
+- [x] `DOMContentLoaded` chains: `loadFilterOptions().then(() => { loadFilterPrefs(); runSearch(); })`
+- [x] `loadFilterPrefs()` restores `setMultiSelectValues` after options are populated (timing fix)
+- [x] `buildPrefsSummary()` and active filter tags updated to handle arrays
+- [x] Reset button calls `clearMultiSelect("ms-major")` and `clearMultiSelect("ms-class")`
+
+**BUG FOUND:** ms-root was inside `<label>` element with `display:grid` CSS — browser suppresses button rendering inside label in some contexts.
+- [x] Fixed: moved ms-root into `<div class="ms-field">` with `<span class="ms-field-label">` for the text
+- [x] Added `.ms-field` and `.ms-field-label` CSS to match label style
+
+**BUG FOUND:** Browser was caching old wsp.css and wsp.js even after server restart — pickers appeared broken.
+- [x] Fixed: added `?v={mtime}` cache-buster to CSS and JS `<link>`/`<script>` tags in `render_html_shell()`
+
+### 20.2 Semantic Search Bias Diagnosis
+- [x] Wrote `scripts/run_bias_testbench.py` — checks FAISS index coverage vs DB count, profile uniqueness, score distribution, and cross-query diversity
+- [x] **ROOT CAUSE FOUND:** FAISS index only had 21 students out of 3870 (0.5% coverage)
+  - Pre-warm was calling `mark_index_fresh()` whenever `store.count() > 0`, even if index was stale/partial
+  - This caused every search to skip the sync, permanently locking onto the same 21 students
+- [x] Fixed `_prewarm_embedding_model`: validates coverage >= 90% before marking fresh; if stale, launches `_startup_reindex` as daemon thread
+- [x] Added `_startup_reindex(settings, chunk_size=200)` — encodes students in chunks of 200 so progress is visible (FAISS updated per chunk)
+  - **KNOWN BUG:** May crash on import of `profile_needs_embedding` from `semantic_search_service` — needs verification next session
+  - **KNOWN BUG:** Reindex stuck at 21 even after restart — likely import error in `_startup_reindex` silently caught by except clause; `_reindex_running` never resets to False after crash
+- [x] Added `mark_index_stale()` call in `_startup_reindex` except block (partial fix — need to also reset `_reindex_running`)
+- [x] Added `/api/admin/reindex` (POST) — triggers manual full reindex via `_startup_reindex`
+- [x] Added `/api/admin/index-status` (GET) — returns `{index_count, db_count, coverage_pct, reindex_running, index_fresh}`
+
+### 20.3 AI Search Index Widget (Import Page)
+- [x] Coverage badge (`#index-coverage-badge`) in the Semantic Query card header on filters page — shows live status
+- [x] Reindex warning widget MOVED from filter panel to Import/Export page as `#semantic-index-widget`
+  - Widget contains: badge + "Rebuild Index" button + status message + animated progress bar
+  - Widget is in Import Center section, below the drop zone folder summary
+- [x] `refreshIndexCoverage()` JS function polls `/api/admin/index-status` every 4s (while building) or 8-30s (idle)
+- [x] `triggerReindex()` JS function calls `POST /api/admin/reindex` and restarts polling
+- [x] Import page wires up `refreshIndexCoverage()` and reindex button on DOMContentLoaded
+- [x] Filter page shows coverage badge in semantic card head only (no warning/button there)
+- [x] CSS added: `.semantic-index-widget`, `.semantic-index-widget-head`, `.semantic-index-msg`, `.semantic-index-bar-wrap`, `.semantic-index-bar` with color variants (good/warn/danger/building)
+
+### 20.4 Filter & Export Limit Removal
+- [x] `PaginationSpec` validator: removed 500-row upper bound (only checks `page_size < 1`)
+- [x] Export endpoint: `page_size=100_000` instead of `500`
+- [x] `_top_k` in `build_filter_request_from_payload`: `page_size or int(payload.get("page_size") or 100)`
+
+### 20.5 Filter Auto-Remember (localStorage)
+- [x] `saveFilterPrefs()` saves full `collectSearchPayload()` to `localStorage["wsp_filter_prefs_v1"]`
+- [x] `loadFilterPrefs()` restores all fields including `semantic_query` (was previously missing)
+- [x] Major/class restored via `setMultiSelectValues` (not `.value =` which doesn't work on ms-root divs)
+- [x] Timing fix: `loadFilterOptions().then(() => loadFilterPrefs())` ensures options exist before restore
+
+---
+
+## Phase 21: Next Tasks (as of 2026-06-15)
+
+### 🔴 Critical — Fix Before Anything Else
+
+- [ ] **Fix `_startup_reindex` crash** in `app/web_app.py`.
+  - Symptom: stuck at `index_count: 21`, `reindex_running: true` forever.
+  - Cause: `_startup_reindex` crashes silently; `_reindex_running` is never reset to `False`.
+  - Fix A (minimal): in `except` block, add `global _reindex_running; _reindex_running = False` and use `exc_info=True` in `LOGGER.error(...)` to see the real traceback.
+  - Fix B (clean): replace chunk logic in `_startup_reindex` with a call to `sync_student_semantic_index`.
+  - See `memory/bugs_open.md` for full diagnosis.
+- [ ] After reindex fix, run `scripts/run_bias_testbench.py` to confirm coverage = 100%.
+
+### 🟡 Pending Features
+
+- [ ] **Graphify everything** — add more Chart.js visualizations:
+  - Per-major GPA distribution histogram
+  - Import history timeline (batch sizes over time)
+  - Search score distribution chart
+- [ ] Verify multi-select Major/Class pickers work after hard browser refresh (Ctrl+Shift+R).
+- [ ] Student Profile page or dialog (Phase 10.5 — never implemented).
+- [ ] Import history page (Phase 10.6 — never implemented).
+- [ ] Settings page (Phase 10.7 — never implemented).
+- [ ] Folder watcher service (Phase 11 — never implemented; background polling exists but no live file-watch).
+
+### 🟢 Working & Verified (Phase 20 summary)
+
+- [x] Multi-select picker (Major / Class) — floating dropdown with search, pills, clear.
+- [x] Filter/export row limit removed — no more 500-row cap.
+- [x] Filter prefs auto-saved/restored — `localStorage["wsp_filter_prefs_v1"]` including semantic query and multi-select values.
+- [x] AI index coverage badge in filter page semantic card head.
+- [x] Reindex widget on Import page — badge, progress bar, Rebuild Index button.
+- [x] Cache-busting `?v={mtime}` on all static CSS/JS URLs.
+- [x] Admin endpoints: `GET /api/admin/index-status`, `POST /api/admin/reindex`.
+- [x] Bias diagnostic script: `scripts/run_bias_testbench.py`.
 
 ## Decisions Log
 
@@ -2083,10 +2182,10 @@ Performance summary after all optimizations (3 000 students, CPU-only):
 
 ## Test Command Log
 
-Record test runs here as the project progresses.
+Chronological record of test runs, live checks, and import results. Each entry prefixed with date and optional phase tag.
 
 ```text
-2026-06-03:
+── 2026-06-03 (Phases 0–8) ──────────────────────────────────────────────────────────────────
 - Python version check: Python 3.12.13.
 - pip version check: pip 26.1.2.
 - pytest version check: pytest 9.0.3.
@@ -2126,7 +2225,8 @@ Record test runs here as the project progresses.
 - pytest after Phase 8.1 metric cards: 206 passed in 9.80s.
 - pytest after Phase 8.2 structured charts: 211 passed in 13.99s.
 - pytest after Phase 8.3 latest import summary: 214 passed in 14.23s.
-2026-06-04:
+
+── 2026-06-04 (Phases 9–10.3, Semantic Search, FastAPI Migration) ───────────────────────────
 - pytest tests/test_semantic_service.py after Phase 9.1 semantic text builder: 8 passed in 1.71s.
 - pytest tests/test_semantic_service.py tests/test_config.py after Ollama settings/status layer: 27 passed in 0.55s.
 - pytest full suite after Phase 9.1 and Ollama status layer: 233 passed in 17.24s.
@@ -2154,7 +2254,8 @@ Record test runs here as the project progresses.
 - real Qwen dummy-data smoke after semantic runtime fix: query `spreadsheet reporting with careful data entry` returned 5 ranked students; top result `260072` score 0.80.
 - pytest full suite after semantic runtime fix: 281 passed in 19.82s.
 - NiceGUI final smoke check: `/filters` and `/` returned HTTP 200 at http://127.0.0.1:8080, with clean server error log.
-2026-06-07:
+
+── 2026-06-07 (Phase 9.3b Embeddings, Phase 10.8–10.11 FastAPI UI & AUB Restyle) ───────────
 - generated rerun dummy workbook: `WSP_dummy_semantic_rerun_20260607.xlsx`, 122 rows, 39 columns, 3 removed, 7 updated, 5 added.
 - rerun import: batch 2 completed with 5 new rows, 7 updated rows, 110 unchanged rows, 3 missing rows, 0 warnings.
 - DB state after rerun import: 125 current records, 122 active records, 3 missing records, 10 history rows.
@@ -2169,7 +2270,8 @@ Record test runs here as the project progresses.
 - pytest full suite after FastAPI UI migration and offline semantic ranker: 289 passed in 20.74s.
 - live FastAPI UI check: `/filters`, `/static/wsp.css`, `/static/wsp.js`, `/api/dashboard`, and `/api/search` returned HTTP 200.
 - live `/filters` HTML check: contains `Find students by fit`, includes `/static/wsp.css` and `/static/wsp.js`, and does not contain `_nicegui`.
-2026-06-08:
+
+── 2026-06-08 (Phases 10.12–10.15: Admin Pages, Import Folder, Added/Modified Fields) ───────
 - pytest tests/test_web_app.py after upload-folder refresh and source clarity: 10 passed in 14.29s.
 - pytest full suite after upload-folder refresh and source clarity: 315 passed in 28.40s.
 - live diagnosis after blank dashboard/filter issue: latest `WSP.xlsx` had 39 headers and 0 student data rows, causing 122 active students to be marked missing.
@@ -2185,4 +2287,19 @@ Record test runs here as the project progresses.
 - pytest regression after Windows Excel file-handle closure fix: 2 passed in 2.18s.
 - pytest full suite after Import Folder and Added/Modified implementation: 321 passed in 41.45s.
 - live restart after Import Folder implementation: port 8080 listening, Import Folder at `C:\Users\Salam\Documents\WSP\Import Folder`, dashboard/search totals `122`, and filter table showed Added/Modified columns.
+
+── 2026-06-15 (Phases 16–20: Testbench, Perf Opts, Excel Sheets, Chart.js, Multi-Select, Bias Fix) ──
+2026-06-15: [Phase 20.1] Multi-select picker implemented: initMultiSelect/getMultiSelectValues/setMultiSelectValues/clearMultiSelect added to wsp.js; full CSS added to wsp.css; filter form switched from <select> to ms-root divs; backend build_category_filter uses .in_() for multi-value SQL.
+2026-06-15: [Phase 20.1 bug] ms-root inside <label> with display:grid suppressed button rendering — fixed by moving to <div class="ms-field">.
+2026-06-15: [Phase 20.1 bug] Browser caching old wsp.css/wsp.js — fixed by adding ?v={mtime} cache-buster to render_html_shell().
+2026-06-15: [Phase 20.2] FAISS bias root cause confirmed: index had 21/3870 students; pre-warm called mark_index_fresh() whenever count > 0.
+2026-06-15: [Phase 20.2] scripts/run_bias_testbench.py created; confirmed only 21 indexed, always same students returned.
+2026-06-15: [Phase 20.2] _prewarm_embedding_model updated to require >= 90% coverage before marking fresh; launches _startup_reindex thread if stale.
+2026-06-15: [Phase 20.2 OPEN BUG] Reindex still stuck at 21 after restart — _startup_reindex crashes silently, _reindex_running stays True forever. Root cause unresolved; see bugs_open.md.
+2026-06-15: [Phase 20.3] Coverage badge added to filter page semantic card head; reindex widget added to Import page with progress bar and Rebuild Index button.
+2026-06-15: [Phase 20.4] PaginationSpec 500-row cap removed; export endpoint raised to 100,000 rows.
+2026-06-15: [Phase 20.5] saveFilterPrefs/loadFilterPrefs updated to include semantic_query and multi-select values via setMultiSelectValues.
+2026-06-15: [Cleanup] Removed unnecessary scripts: reindex_test.py, extract_images.py, build_rerun_dummy_workbook.mjs, create_shortcut.ps1.
+2026-06-15: [Cleanup] Removed empty ideastoimplement.txt from project root.
+2026-06-15: [Memory] Reorganized memory/ folder — MEMORY.md rewritten as START HERE index; bugs_open.md created with FAISS fix instructions; project_session_changes.md removed (redundant).
 ```

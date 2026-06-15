@@ -50,9 +50,10 @@ def mark_index_fresh() -> None:
         _reindex_running = False
 
 def mark_index_stale() -> None:
-    global _index_fresh
+    global _index_fresh, _reindex_running
     with _index_lock:
-        _index_fresh = False
+        _index_fresh     = False
+        _reindex_running = False
 
 def mark_reindex_started() -> None:
     global _reindex_running

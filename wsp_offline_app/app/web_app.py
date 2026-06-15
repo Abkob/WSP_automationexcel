@@ -115,15 +115,27 @@ def create_web_app(settings: AppSettings) -> FastAPI:
     @app.get("/api/admin/index-status")
     def admin_index_status() -> dict[str, Any]:
         from services.vector_store_service import FaissVectorStore
-        store = FaissVectorStore(settings.semantic_index_dir)
-        index_count = store.count() if store.vectors_path.exists() else 0
+        running = _reindex_in_progress()
         with open_session(settings) as session:
             db_count = session.query(StudentCurrent).count()
+        if running and _reindex_progress["total"] > 0:
+            # During encoding: report in-memory progress without touching disk
+            encoded = _reindex_progress["done"]
+            total = _reindex_progress["total"]
+            return {
+                "index_count": encoded,
+                "db_count": db_count,
+                "coverage_pct": round(encoded / db_count * 100, 1) if db_count else 0,
+                "reindex_running": True,
+                "index_fresh": False,
+            }
+        store = FaissVectorStore(settings.semantic_index_dir)
+        index_count = store.count() if store.vectors_path.exists() else 0
         return {
             "index_count": index_count,
             "db_count": db_count,
             "coverage_pct": round(index_count / db_count * 100, 1) if db_count else 0,
-            "reindex_running": _reindex_in_progress(),
+            "reindex_running": running,
             "index_fresh": _is_index_fresh(),
         }
 
@@ -387,6 +399,11 @@ def initialize_runtime_database(settings: AppSettings) -> None:
     initialize_database(engine)
 
 
+# Tracks encoding progress so the status endpoint can report it without requiring
+# mid-reindex FAISS disk writes.
+_reindex_progress: dict[str, int] = {"done": 0, "total": 0}
+
+
 def _prewarm_embedding_model(settings: AppSettings) -> None:
     try:
         from services.embedding_service import get_default_embedding_model
@@ -418,20 +435,23 @@ def _prewarm_embedding_model(settings: AppSettings) -> None:
         LOGGER.warning("Embedding model pre-warm skipped: %s", exc)
 
 
-def _startup_reindex(settings: AppSettings, chunk_size: int = 200) -> None:
+def _startup_reindex(settings: AppSettings) -> None:
+    global _reindex_progress
     try:
         mark_reindex_started()
+        _reindex_progress = {"done": 0, "total": 0}
+
         engine = create_sqlite_engine(settings.database_path)
         initialize_database(engine)
         from sqlalchemy.orm import Session as _Session
         from services.embedding_service import get_default_embedding_model
-        from services.vector_store_service import FaissVectorStore
+        from services.vector_store_service import FaissVectorStore, VectorRecord
         from services.semantic_document_service import build_student_semantic_profiles
         from services.semantic_search_service import (
             load_existing_semantic_rows, profile_needs_embedding,
             upsert_semantic_embedding_rows,
         )
-        from services.vector_store_service import VectorRecord
+
         model = get_default_embedding_model(settings)
         store = FaissVectorStore(settings.semantic_index_dir, collection_name="students")
 
@@ -445,29 +465,42 @@ def _startup_reindex(settings: AppSettings, chunk_size: int = 200) -> None:
             existing_rows = load_existing_semantic_rows(session, model.model_name)
             indexed_ids = store.record_ids()
             changed = [p for p in profiles if profile_needs_embedding(p, existing_rows.get(p.STUD_ID), indexed_ids)]
-            LOGGER.info("Startup reindex: %d students need encoding", len(changed))
 
-            for i in range(0, len(changed), chunk_size):
-                chunk = changed[i:i + chunk_size]
+            total = len(changed)
+            _reindex_progress = {"done": 0, "total": total}
+            LOGGER.info("Startup reindex: %d/%d students need encoding", total, len(profiles))
+
+            if not changed:
+                mark_index_fresh()
+                return
+
+            # Encode in CPU-friendly batches of 64, collect all records in memory.
+            # FAISS and DB are written once at the end — not per batch.
+            encode_batch = 64
+            all_records: list[VectorRecord] = []
+            for i in range(0, total, encode_batch):
+                chunk = changed[i:i + encode_batch]
                 vectors = model.encode([p.text for p in chunk], kind="document")
-                records = tuple(
-                    VectorRecord(
+                for j, p in enumerate(chunk):
+                    all_records.append(VectorRecord(
                         record_id=p.STUD_ID,
                         embedding=vectors[j],
                         metadata=p.metadata | {"semantic_hash": p.document_hash, "model_name": model.model_name},
                         document=p.text,
-                    )
-                    for j, p in enumerate(chunk)
-                )
-                store.upsert(records)
-                upsert_semantic_embedding_rows(session, chunk, model_name=model.model_name, vector_store_name=store.vector_store_name)
-                session.commit()
-                LOGGER.info("Startup reindex: %d/%d done", min(i + chunk_size, len(changed)), len(changed))
+                    ))
+                _reindex_progress["done"] = min(i + encode_batch, total)
+                LOGGER.info("Startup reindex: encoded %d/%d", _reindex_progress["done"], total)
+
+            # Single FAISS write + single DB upsert
+            store.upsert(tuple(all_records))
+            upsert_semantic_embedding_rows(session, changed, model_name=model.model_name, vector_store_name=store.vector_store_name)
+            session.commit()
 
         mark_index_fresh()
-        LOGGER.info("Startup reindex complete")
+        _reindex_progress["done"] = total
+        LOGGER.info("Startup reindex complete: %d students indexed", total)
     except Exception as exc:
-        LOGGER.error("Startup reindex failed: %s", exc)
+        LOGGER.error("Startup reindex failed: %s", exc, exc_info=True)
         mark_index_stale()
 
 
