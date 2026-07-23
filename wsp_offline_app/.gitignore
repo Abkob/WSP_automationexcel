@@ -8,6 +8,7 @@ __pycache__/
 .pytest_cache/
 *.log
 *.txt.bak
+/dist
 # Temp recovery scripts from disaster-recovery sessions
 extract_*.py
 inspect_*.py
