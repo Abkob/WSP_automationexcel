@@ -54,3 +54,18 @@ def test_vector_store_upsert_replaces_existing_record(tmp_path) -> None:
     assert results[0].record_id == "1001"
     assert results[0].metadata["version"] == 2
     assert results[0].document == "new"
+
+
+def test_vector_store_delete_removes_only_requested_records(tmp_path) -> None:
+    store = FaissVectorStore(tmp_path, collection_name="students")
+    store.replace_all(
+        (
+            VectorRecord("1001", np.array([1.0, 0.0], dtype=np.float32), {}, "active"),
+            VectorRecord("1002", np.array([0.0, 1.0], dtype=np.float32), {}, "inactive"),
+        )
+    )
+
+    removed = store.delete({"1002", "missing"})
+
+    assert removed == 1
+    assert store.record_ids() == {"1001"}

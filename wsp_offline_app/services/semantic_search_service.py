@@ -12,7 +12,7 @@ from config import AppSettings
 from database.models import SemanticEmbedding, StudentCurrent
 from services.chat_orchestrator import interpret_chat_search_request
 from services.embedding_service import EmbeddingModel, get_default_embedding_model
-from services.explanation_service import build_local_semantic_explanation
+from services.explanation_service import EXPLANATION_FIELDS, OriginalTextEvidence, build_local_semantic_explanation
 from services.filter_service import SemanticFilter
 from services.semantic_document_service import (
     SEMANTIC_PROFILE_SOURCE_COLUMN,
@@ -77,6 +77,9 @@ def _reindex_in_progress() -> bool:
 _QUERY_VECTOR_CACHE: collections.OrderedDict[tuple[str, str], tuple[float, ...]] = collections.OrderedDict()
 _QUERY_VECTOR_CACHE_LOCK = _threading.Lock()
 _QUERY_VECTOR_CACHE_MAX = 64
+_EVIDENCE_VECTOR_CACHE: collections.OrderedDict[tuple[str, str, str], tuple[float, ...]] = collections.OrderedDict()
+_EVIDENCE_VECTOR_CACHE_LOCK = _threading.Lock()
+_EVIDENCE_VECTOR_CACHE_MAX = 8192
 
 
 def _get_query_vector(model: EmbeddingModel, query: str) -> np.ndarray:
@@ -95,6 +98,73 @@ def _get_query_vector(model: EmbeddingModel, query: str) -> np.ndarray:
             _QUERY_VECTOR_CACHE.popitem(last=False)
 
     return vector
+
+
+def _get_evidence_vectors(
+    model: EmbeddingModel,
+    evidence_rows: list[tuple[str, str, str]],
+) -> np.ndarray:
+    keys = [(model.model_name, field_name, value) for _student_id, field_name, value in evidence_rows]
+    vectors_by_key: dict[tuple[str, str, str], np.ndarray] = {}
+    missing_keys: list[tuple[str, str, str]] = []
+    with _EVIDENCE_VECTOR_CACHE_LOCK:
+        for key in keys:
+            cached = _EVIDENCE_VECTOR_CACHE.get(key)
+            if cached is None:
+                if key not in missing_keys:
+                    missing_keys.append(key)
+            else:
+                _EVIDENCE_VECTOR_CACHE.move_to_end(key)
+                vectors_by_key[key] = np.asarray(cached, dtype=np.float32)
+
+    if missing_keys:
+        texts = [f"{field_name}: {value}" for _model_name, field_name, value in missing_keys]
+        encoded = model.encode(texts, kind="document")
+        with _EVIDENCE_VECTOR_CACHE_LOCK:
+            for key, vector in zip(missing_keys, encoded, strict=True):
+                clean_vector = np.asarray(vector, dtype=np.float32)
+                vectors_by_key[key] = clean_vector
+                _EVIDENCE_VECTOR_CACHE[key] = tuple(clean_vector.tolist())
+                _EVIDENCE_VECTOR_CACHE.move_to_end(key)
+            while len(_EVIDENCE_VECTOR_CACHE) > _EVIDENCE_VECTOR_CACHE_MAX:
+                _EVIDENCE_VECTOR_CACHE.popitem(last=False)
+
+    return np.asarray([vectors_by_key[key] for key in keys], dtype=np.float32)
+
+
+def rank_original_text_evidence(
+    model: EmbeddingModel,
+    query_vector: np.ndarray,
+    profiles: Iterable[StudentSemanticProfile],
+    *,
+    evidence_per_student: int = 2,
+) -> dict[str, tuple[OriginalTextEvidence, ...]]:
+    evidence_rows = [
+        (profile.STUD_ID, field_name, profile.fields[field_name])
+        for profile in profiles
+        for field_name in EXPLANATION_FIELDS
+        if profile.fields.get(field_name)
+    ]
+    if not evidence_rows:
+        return {}
+    field_vectors = _get_evidence_vectors(model, evidence_rows)
+    clean_query_vector = np.asarray(query_vector, dtype=np.float32)
+    query_norm = float(np.linalg.norm(clean_query_vector))
+    if query_norm:
+        clean_query_vector = clean_query_vector / query_norm
+    field_norms = np.linalg.norm(field_vectors, axis=1, keepdims=True)
+    field_norms[field_norms == 0] = 1.0
+    similarities = (field_vectors / field_norms) @ clean_query_vector
+
+    by_student: dict[str, list[OriginalTextEvidence]] = collections.defaultdict(list)
+    for (student_id, field_name, value), similarity in zip(evidence_rows, similarities, strict=True):
+        by_student[student_id].append(
+            OriginalTextEvidence(field_name, value, round(float(similarity), 3))
+        )
+    return {
+        student_id: tuple(sorted(items, key=lambda item: (-item.similarity, item.field_name))[:evidence_per_student])
+        for student_id, items in by_student.items()
+    }
 
 
 OLLAMA_RAG_SYSTEM_PROMPT = (
@@ -294,10 +364,13 @@ def sync_student_semantic_index(
     *,
     embedding_model: EmbeddingModel | None = None,
     vector_store: FaissVectorStore | None = None,
+    prune_stale: bool = False,
 ) -> SemanticIndexSyncResult:
     model = embedding_model or get_default_embedding_model(settings)
     store = vector_store or get_default_vector_store(settings)
     profiles = build_student_semantic_profiles(students)
+    if prune_stale:
+        prune_stale_semantic_records(session, store, {profile.STUD_ID for profile in profiles})
     existing_rows = load_existing_semantic_rows(session, model.model_name)
     indexed_ids = store.record_ids()
 
@@ -329,6 +402,37 @@ def sync_student_semantic_index(
     )
 
 
+def prune_stale_semantic_records(
+    session: Session,
+    vector_store: FaissVectorStore,
+    active_student_ids: Iterable[str],
+) -> tuple[int, int]:
+    """Remove vectors and embedding rows for students outside the active dataset."""
+    active_ids = {str(student_id) for student_id in active_student_ids}
+    stale_vector_ids = vector_store.record_ids() - active_ids
+    removed_vectors = vector_store.delete(stale_vector_ids)
+
+    embedding_ids = {
+        str(student_id)
+        for (student_id,) in session.query(SemanticEmbedding.STUD_ID)
+        .filter(SemanticEmbedding.source_column == SEMANTIC_PROFILE_SOURCE_COLUMN)
+        .all()
+    }
+    stale_embedding_ids = sorted(embedding_ids - active_ids)
+    removed_rows = 0
+    for offset in range(0, len(stale_embedding_ids), 500):
+        removed_rows += (
+            session.query(SemanticEmbedding)
+            .filter(
+                SemanticEmbedding.source_column == SEMANTIC_PROFILE_SOURCE_COLUMN,
+                SemanticEmbedding.STUD_ID.in_(stale_embedding_ids[offset : offset + 500]),
+            )
+            .delete(synchronize_session=False)
+        )
+    session.flush()
+    return removed_vectors, removed_rows
+
+
 def rank_student_rows_by_vector_search(
     settings: AppSettings,
     session: Session,
@@ -345,9 +449,14 @@ def rank_student_rows_by_vector_search(
         query = semantic_filter.query
         model = embedding_model or get_default_embedding_model(settings)
         store = vector_store or get_default_vector_store(settings)
-        if not _is_index_fresh() and not _reindex_in_progress():
-            sync_student_semantic_index(session, settings, candidate_rows, embedding_model=model, vector_store=store)
         candidate_id_set = {row.STUD_ID for row in candidate_rows}
+        # The desktop process normally owns one index, but tests, repair tools,
+        # and future multi-profile use can open another index directory in the
+        # same process. Never trust the process-level freshness flag when this
+        # concrete store does not actually cover the requested students.
+        store_covers_candidates = candidate_id_set.issubset(store.record_ids())
+        if not store_covers_candidates or (not _is_index_fresh() and not _reindex_in_progress()):
+            sync_student_semantic_index(session, settings, candidate_rows, embedding_model=model, vector_store=store)
         query_vector = _get_query_vector(model, query)
         vector_results = store.query(
             np.asarray(query_vector, dtype=np.float32),
@@ -361,6 +470,10 @@ def rank_student_rows_by_vector_search(
         matched_ids = {r.record_id for r in vector_results}
         matched_rows = tuple(row for row in candidate_rows if row.STUD_ID in matched_ids)
         profiles_by_id = {p.STUD_ID: p for p in build_student_semantic_profiles(matched_rows)}
+        try:
+            evidence_by_id = rank_original_text_evidence(model, query_vector, profiles_by_id.values())
+        except Exception:
+            evidence_by_id = {}
         return tuple(
             SemanticMatch(
                 STUD_ID=result.record_id,
@@ -369,6 +482,7 @@ def rank_student_rows_by_vector_search(
                     query,
                     profiles_by_id[result.record_id],
                     score=result.score,
+                    evidence=evidence_by_id.get(result.record_id, ()),
                 ),
                 document_hash=str(result.metadata.get("semantic_hash") or ""),
             )

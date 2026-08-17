@@ -9,6 +9,7 @@ __pycache__/
 *.log
 *.txt.bak
 /dist
+/testbench_reports
 # Temp recovery scripts from disaster-recovery sessions
 extract_*.py
 inspect_*.py

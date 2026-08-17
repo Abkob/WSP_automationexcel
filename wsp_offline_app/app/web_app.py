@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import html
 import logging
 import shutil
 import threading
@@ -23,6 +24,7 @@ from database.models import BackupLog, ColumnRegistry, FileImportLog, ImportBatc
 from services.analytics_service import get_dashboard_charts, get_dashboard_metrics, get_latest_import_summary, get_text_and_semantic_analytics
 from services.archive_service import archive_and_create_pending_import_batch
 from services.backup_service import create_database_backup, verify_database_integrity
+from services.dashboard_intelligence_service import build_dashboard_intelligence
 from services.excel_importer import (
     DuplicateExcelFileError,
     MissingStudentIdError,
@@ -49,8 +51,11 @@ from services.filter_service import (
     execute_filter_request,
     log_filter_run,
 )
+from services.preferred_work_grouping_service import get_default_preferred_work_grouper
 from services.semantic_service import check_ollama_model_availability, rank_student_rows_semantically
 from services.semantic_search_service import _is_index_fresh, _reindex_in_progress, mark_index_fresh, mark_index_stale, mark_reindex_started, rank_student_rows_by_ollama_rag, rank_student_rows_by_vector_search, sync_student_semantic_index
+from services.student_profile_service import build_student_profile_payload, lookup_students
+from services.technical_skill_grouping_service import get_default_technical_skill_grouper
 from services.value_normalizer import NormalizationWarning, normalize_boolean, normalize_date, normalize_email, normalize_number, normalize_phone_text, normalize_text
 
 
@@ -92,7 +97,14 @@ IMPORT_FOLDER_REFRESH_LOCK = threading.Lock()
 
 def create_web_app(settings: AppSettings) -> FastAPI:
     initialize_runtime_database(settings)
+    # Freshness is process-global because the desktop application runs one app
+    # instance at a time. Reset it before inspecting this instance's database
+    # and vector directory so a previous app/test instance cannot cause an
+    # empty or stale index to be treated as current.
+    mark_index_stale()
     _prewarm_embedding_model(settings)
+    preferred_work_grouper = get_default_preferred_work_grouper(settings)
+    technical_skill_grouper = get_default_technical_skill_grouper(settings)
     app = FastAPI(title=settings.app_name)
     app.state.settings = settings
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -106,18 +118,26 @@ def create_web_app(settings: AppSettings) -> FastAPI:
         return {"status": "shutting down"}
 
     @app.post("/api/admin/reindex")
-    def admin_reindex() -> dict[str, Any]:
+    def admin_reindex(force: bool = True) -> dict[str, Any]:
         if _reindex_in_progress():
             return {"status": "already_running", "message": "Reindex already in progress"}
-        threading.Thread(target=_startup_reindex, args=(settings,), daemon=True, name="manual-reindex").start()
-        return {"status": "started", "message": "Full reindex started in background"}
+        threading.Thread(target=_startup_reindex, args=(settings, force), daemon=True, name="manual-reindex").start()
+        mode = "Full re-embedding" if force else "Incremental indexing"
+        return {"status": "started", "force": force, "message": f"{mode} started in background"}
 
     @app.get("/api/admin/index-status")
     def admin_index_status() -> dict[str, Any]:
         from services.vector_store_service import FaissVectorStore
         running = _reindex_in_progress()
         with open_session(settings) as session:
-            db_count = session.query(StudentCurrent).count()
+            active_ids = {
+                student_id
+                for (student_id,) in session.query(StudentCurrent.STUD_ID)
+                .filter(StudentCurrent.missing_from_latest_import.is_(False))
+                .all()
+            }
+            total_db_count = session.query(StudentCurrent).count()
+        db_count = len(active_ids)
         if running and _reindex_progress["total"] > 0:
             # During encoding: report in-memory progress without touching disk
             encoded = _reindex_progress["done"]
@@ -125,16 +145,18 @@ def create_web_app(settings: AppSettings) -> FastAPI:
             return {
                 "index_count": encoded,
                 "db_count": db_count,
-                "coverage_pct": round(encoded / db_count * 100, 1) if db_count else 0,
+                "total_db_count": total_db_count,
+                "coverage_pct": round(encoded / db_count * 100, 1) if db_count else 100.0,
                 "reindex_running": True,
                 "index_fresh": False,
             }
         store = FaissVectorStore(settings.semantic_index_dir)
-        index_count = store.count() if store.vectors_path.exists() else 0
+        index_count = len(store.record_ids() & active_ids) if store.vectors_path.exists() else 0
         return {
             "index_count": index_count,
             "db_count": db_count,
-            "coverage_pct": round(index_count / db_count * 100, 1) if db_count else 0,
+            "total_db_count": total_db_count,
+            "coverage_pct": round(index_count / db_count * 100, 1) if db_count else 100.0,
             "reindex_running": running,
             "index_fresh": _is_index_fresh(),
         }
@@ -151,6 +173,14 @@ def create_web_app(settings: AppSettings) -> FastAPI:
     def excel_sheets_page() -> str:
         return render_html_shell(settings, active_path="/excel-sheets")
 
+    @app.get("/student-profile", response_class=HTMLResponse)
+    def student_profile_directory_page() -> str:
+        return render_html_shell(settings, active_path="/student-profile")
+
+    @app.get("/student-profile/{student_id}", response_class=HTMLResponse)
+    def student_profile_page(student_id: str) -> str:
+        return render_html_shell(settings, active_path="/student-profile", student_id=student_id)
+
     @app.get("/import", response_class=HTMLResponse)
     def import_page() -> str:
         return render_html_shell(settings, active_path="/import")
@@ -160,18 +190,39 @@ def create_web_app(settings: AppSettings) -> FastAPI:
         return render_html_shell(settings, active_path="/system-status")
 
     @app.get("/api/dashboard")
-    def dashboard_data() -> dict[str, Any]:
+    def dashboard_data(
+        faculty: str = "",
+        major: str = "",
+        class_year: str = "",
+        enrollment: str = "any",
+        aid: str = "any",
+        attention: str = "any",
+        gpa_min: float | None = None,
+        gpa_max: float | None = None,
+    ) -> dict[str, Any]:
         with open_session(settings) as session:
             metrics = get_dashboard_metrics(session)
             charts = get_dashboard_charts(session)
             text_analytics = get_text_and_semantic_analytics(session)
             latest_import = get_latest_import_summary(session)
+            intelligence = build_dashboard_intelligence(
+                session,
+                work_grouper=preferred_work_grouper,
+                skill_grouper=technical_skill_grouper,
+                faculty=faculty,
+                major=major,
+                class_year=class_year,
+                enrollment=enrollment,
+                aid=aid,
+                attention=attention,
+                gpa_min=gpa_min,
+                gpa_max=gpa_max,
+            )
         return {
-            "metrics": asdict(metrics),
+            **intelligence,
+            "metrics": {**asdict(metrics), **intelligence["metrics"]},
             "charts": {
-                "students_by_major": chart_points_to_json(charts.students_by_major),
-                "students_by_class": chart_points_to_json(charts.students_by_class),
-                "gpa_distribution": chart_points_to_json(charts.gpa_distribution),
+                **intelligence["charts"],
                 "average_gpa_by_major": chart_points_to_json(charts.average_gpa_by_major),
                 "probation_by_major": chart_points_to_json(charts.probation_by_major),
                 "financial_aid_distribution": chart_points_to_json(charts.financial_aid_distribution),
@@ -191,6 +242,20 @@ def create_web_app(settings: AppSettings) -> FastAPI:
                 "majors": load_distinct_text_options(session, "MAJR_DESC"),
                 "classes": load_distinct_text_options(session, "CLAS_DESC"),
             }
+
+    @app.get("/api/students/lookup")
+    def student_lookup(q: str = "", limit: int = 12) -> dict[str, Any]:
+        with open_session(settings) as session:
+            rows = lookup_students(session, q, limit=limit)
+        return {"query": q, "count": len(rows), "students": rows}
+
+    @app.get("/api/students/{student_id}/profile")
+    def student_profile_data(student_id: str) -> dict[str, Any]:
+        with open_session(settings) as session:
+            payload = build_student_profile_payload(session, student_id)
+        if payload is None:
+            raise HTTPException(status_code=404, detail="Student profile not found")
+        return payload
 
     @app.post("/api/search")
     def search_students(payload: dict[str, Any]) -> dict[str, Any]:
@@ -420,22 +485,33 @@ def _prewarm_embedding_model(settings: AppSettings) -> None:
             engine = create_sqlite_engine(settings.database_path)
             initialize_database(engine)
             with engine.connect() as conn:
-                db_count = conn.execute(__import__("sqlalchemy").text("SELECT COUNT(*) FROM students_current")).scalar() or 0
-            coverage = index_count / db_count if db_count > 0 else 1.0
-            if coverage >= 0.90:
+                active_ids = {
+                    str(row[0])
+                    for row in conn.execute(
+                        __import__("sqlalchemy").text(
+                            "SELECT STUD_ID FROM students_current WHERE missing_from_latest_import = 0"
+                        )
+                    )
+                }
+            indexed_ids = store.record_ids()
+            covered_count = len(indexed_ids & active_ids)
+            stale_count = len(indexed_ids - active_ids)
+            db_count = len(active_ids)
+            coverage = covered_count / db_count if db_count > 0 else 1.0
+            if coverage >= 0.90 and stale_count == 0:
                 mark_index_fresh()
-                LOGGER.info("Existing FAISS index (%d/%d students, %.0f%%) — marked fresh", index_count, db_count, coverage * 100)
+                LOGGER.info("Existing FAISS index (%d/%d active students, %.0f%%) — marked fresh", covered_count, db_count, coverage * 100)
             else:
                 LOGGER.warning(
-                    "FAISS index is stale: %d indexed vs %d in DB (%.0f%% coverage) — scheduling startup reindex",
-                    index_count, db_count, coverage * 100,
+                    "FAISS index is stale: %d/%d active students covered with %d inactive vectors — scheduling startup reindex",
+                    covered_count, db_count, stale_count,
                 )
                 threading.Thread(target=_startup_reindex, args=(settings,), daemon=True, name="startup-reindex").start()
     except Exception as exc:
         LOGGER.warning("Embedding model pre-warm skipped: %s", exc)
 
 
-def _startup_reindex(settings: AppSettings) -> None:
+def _startup_reindex(settings: AppSettings, force: bool = False) -> None:
     global _reindex_progress
     try:
         mark_reindex_started()
@@ -449,7 +525,7 @@ def _startup_reindex(settings: AppSettings) -> None:
         from services.semantic_document_service import build_student_semantic_profiles
         from services.semantic_search_service import (
             load_existing_semantic_rows, profile_needs_embedding,
-            upsert_semantic_embedding_rows,
+            prune_stale_semantic_records, upsert_semantic_embedding_rows,
         )
 
         model = get_default_embedding_model(settings)
@@ -462,16 +538,31 @@ def _startup_reindex(settings: AppSettings) -> None:
                 .all()
             )
             profiles = build_student_semantic_profiles(all_students)
+            profile_ids = {profile.STUD_ID for profile in profiles}
+            removed_vectors, removed_rows = prune_stale_semantic_records(session, store, profile_ids)
             existing_rows = load_existing_semantic_rows(session, model.model_name)
             indexed_ids = store.record_ids()
-            changed = [p for p in profiles if profile_needs_embedding(p, existing_rows.get(p.STUD_ID), indexed_ids)]
+            changed = (
+                list(profiles)
+                if force
+                else [p for p in profiles if profile_needs_embedding(p, existing_rows.get(p.STUD_ID), indexed_ids)]
+            )
 
             total = len(changed)
-            _reindex_progress = {"done": 0, "total": total}
-            LOGGER.info("Startup reindex: %d/%d students need encoding", total, len(profiles))
+            already_indexed = 0 if force else len(indexed_ids & profile_ids)
+            _reindex_progress = {"done": already_indexed, "total": len(profiles)}
+            LOGGER.info("%s reindex: %d/%d students need encoding", "Forced" if force else "Incremental", total, len(profiles))
+            if removed_vectors or removed_rows:
+                LOGGER.info(
+                    "Startup reindex: pruned %d inactive vectors and %d inactive embedding rows",
+                    removed_vectors,
+                    removed_rows,
+                )
 
             if not changed:
+                session.commit()
                 mark_index_fresh()
+                _reindex_progress["done"] = len(profiles)
                 return
 
             # Encode in CPU-friendly batches of 64, collect all records in memory.
@@ -488,8 +579,9 @@ def _startup_reindex(settings: AppSettings) -> None:
                         metadata=p.metadata | {"semantic_hash": p.document_hash, "model_name": model.model_name},
                         document=p.text,
                     ))
-                _reindex_progress["done"] = min(i + encode_batch, total)
-                LOGGER.info("Startup reindex: encoded %d/%d", _reindex_progress["done"], total)
+                encoded_count = min(i + encode_batch, total)
+                _reindex_progress["done"] = already_indexed + encoded_count
+                LOGGER.info("Startup reindex: encoded %d/%d", encoded_count, total)
 
             # Single FAISS write + single DB upsert
             store.upsert(tuple(all_records))
@@ -497,8 +589,8 @@ def _startup_reindex(settings: AppSettings) -> None:
             session.commit()
 
         mark_index_fresh()
-        _reindex_progress["done"] = total
-        LOGGER.info("Startup reindex complete: %d students indexed", total)
+        _reindex_progress["done"] = _reindex_progress["total"]
+        LOGGER.info("Startup reindex complete: %d active students indexed", _reindex_progress["total"])
     except Exception as exc:
         LOGGER.error("Startup reindex failed: %s", exc, exc_info=True)
         mark_index_stale()
@@ -745,7 +837,7 @@ def run_excel_import_from_path(settings: AppSettings, source_path: str | Path, *
                     .filter(StudentCurrent.missing_from_latest_import == False)
                     .all()
                 )
-                sync_student_semantic_index(bg_session, settings, active_students)
+                sync_student_semantic_index(bg_session, settings, active_students, prune_stale=True)
                 bg_session.commit()
             mark_index_fresh()
         except Exception:
@@ -1501,10 +1593,11 @@ def format_bytes(size: int) -> str:
     return f"{size / (1024 ** 3):.2f} GB"
 
 
-def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
+def render_html_shell(settings: AppSettings, *, active_path: str, student_id: str | None = None) -> str:
     filters_active = "active" if active_path == "/filters" else ""
     dashboard_active = "active" if active_path == "/" else ""
     sheets_active = "active" if active_path == "/excel-sheets" else ""
+    profile_active = "active" if active_path == "/student-profile" else ""
     import_active = "active" if active_path == "/import" else ""
     status_active = "active" if active_path == "/system-status" else ""
     import os as _os
@@ -1517,7 +1610,7 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
   <title>{settings.app_name}</title>
   <link rel="stylesheet" href="/static/wsp.css?v={_v}">
 </head>
-<body data-active-path="{active_path}">
+<body data-active-path="{active_path}" data-student-id="{html.escape(student_id or '', quote=True)}">
 <div class="admin-shell">
   <aside class="sidebar" aria-label="Primary navigation">
     <div class="brand">
@@ -1527,10 +1620,11 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
     <nav>
       <div class="nav-label">Admin Workspace</div>
       <a class="{dashboard_active}" href="/"><span class="nav-glyph">OV</span>Dashboard</a>
-      <a class="{filters_active}" href="/filters"><span class="nav-glyph">FL</span>Filtering</a>
-      <a class="{sheets_active}" href="/excel-sheets"><span class="nav-glyph">XL</span>Excel Sheets</a>
-      <a class="{import_active}" href="/import"><span class="nav-glyph">IM</span>Import / Export</a>
-      <a class="{status_active}" href="/system-status"><span class="nav-glyph">TS</span>Test/System Status</a>
+      <a class="{filters_active}" href="/filters"><span class="nav-glyph">SM</span>Search &amp; Match</a>
+      <a class="{sheets_active}" href="/excel-sheets"><span class="nav-glyph">DX</span>Data Explorer</a>
+      <a class="{profile_active}" href="/student-profile"><span class="nav-glyph">SP</span>Student Profiles</a>
+      <a class="{import_active}" href="/import"><span class="nav-glyph">IM</span>Import Center</a>
+      <a class="{status_active}" href="/system-status"><span class="nav-glyph">SH</span>System Health</a>
     </nav>
 
   </aside>
@@ -1546,18 +1640,41 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
       </div>
     </header>
     <main class="app-main">
-    <section id="dashboard-view" class="view" aria-labelledby="dashboard-title">
-      <div class="page-heading">
-        <div>
-          <h1 id="dashboard-title">Overview</h1>
-          <p>Live snapshot of the current student population from the last imported workbook.</p>
+    <section id="dashboard-view" class="view" aria-label="Dashboard">
+      <nav class="dashboard-view-tabs" aria-label="Dashboard views">
+        <button class="active" type="button" role="tab" data-dashboard-tab="overview">Placement Overview</button>
+        <button type="button" role="tab" data-dashboard-tab="academics">Candidate Pool</button>
+        <button type="button" role="tab" data-dashboard-tab="workstudy">Skills &amp; Preferences</button>
+        <button type="button" role="tab" data-dashboard-tab="support">Funding &amp; Logistics</button>
+        <button type="button" role="tab" data-dashboard-tab="quality">Data Quality</button>
+      </nav>
+
+      <section class="dashboard-filter-shell" aria-labelledby="dashboard-filter-title">
+        <div class="dashboard-filter-head">
+          <div>
+            <span class="dashboard-filter-icon">⌘</span>
+            <div><strong id="dashboard-filter-title">Refine the candidate pool</strong><small>Focus every placement signal and candidate row together.</small></div>
+          </div>
+          <div>
+            <button id="dashboard-clear-filters" class="dashboard-text-button" type="button" disabled>Clear filters</button>
+            <button id="dashboard-toggle-filters" class="dashboard-filter-toggle" type="button" aria-expanded="false">Show filters <span>⌄</span></button>
+          </div>
         </div>
-        <button class="secondary-button report-button" type="button">Export Report</button>
+        <form id="dashboard-filter-form" class="dashboard-filter-grid is-collapsed">
+          <div class="dashboard-filter-field"><span>Faculty</span><div class="dashboard-multiselect" id="dashboard-ms-faculty" data-placeholder="All faculties"></div></div>
+          <div class="dashboard-filter-field"><span>Major</span><div class="dashboard-multiselect" id="dashboard-ms-major" data-placeholder="All majors"></div></div>
+          <div class="dashboard-filter-field"><span>Class / year</span><div class="dashboard-multiselect" id="dashboard-ms-class" data-placeholder="All classes"></div></div>
+          <label><span>Financial aid</span><select name="aid"><option value="any">Any</option><option value="yes">Receiving aid</option><option value="no">No aid</option></select></label>
+        </form>
+        <div id="dashboard-filter-chips" class="dashboard-filter-chips" aria-live="polite"></div>
+      </section>
+
+      <div id="dashboard-loading" class="dashboard-loading" role="status" hidden>
+        <div class="dashboard-loading-orb"><span></span><span></span><span></span></div>
+        <div><strong>Refining the student picture</strong><small>Recalculating metrics, insights, and student records…</small></div>
       </div>
-      <div id="metric-grid" class="metric-grid" aria-live="polite"></div>
-      <div id="latest-import"></div>
-      <div class="section-title">Population Analytics</div>
-      <div id="structured-charts" class="chart-grid"></div>
+
+      <div id="dashboard-tab-content" class="dashboard-tab-content" aria-live="polite"></div>
     </section>
 
     <section id="filters-view" class="view" aria-labelledby="filters-title">
@@ -1591,6 +1708,7 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
               Ask local AI
               <textarea name="semantic_query" rows="3" placeholder="Find students good for social media posters, Canva, and design communications"></textarea>
             </label>
+            <p class="semantic-source-note"><strong>Original-text search:</strong> matching uses each student’s untouched skills, preferences, experience, and language responses—not the grouped dashboard topic labels.</p>
             <div class="rag-controls">
               <label>
                 Threshold Match
@@ -1648,6 +1766,16 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
             <div id="search-time" class="mode-pill">Ready</div>
           </div>
           <div id="export-status" class="export-status"></div>
+          <div id="ai-search-progress" class="ai-search-progress" role="status" aria-live="polite" hidden>
+            <div class="ai-search-orb" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="ai-search-progress-copy">
+              <strong id="ai-search-progress-title">Searching the local AI index</strong>
+              <span id="ai-search-progress-detail">Reading your request</span>
+              <div class="ai-search-progress-track" aria-hidden="true"><span></span></div>
+            </div>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -1703,6 +1831,43 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
         </div>
         <div id="sheet-status" class="sheet-status-bar"></div>
       </div>
+    </section>
+
+    <section id="profile-view" class="view" aria-labelledby="profile-title">
+      <div class="profile-page-heading">
+        <div>
+          <p class="eyebrow">Student success workspace</p>
+          <h1 id="profile-title">Student Profile</h1>
+          <p>Find any student by name, ID, email, or major and review their complete WSP record in one place.</p>
+        </div>
+        <div class="profile-page-actions">
+          <button class="secondary-button" id="profile-directory-btn" type="button">Find another student</button>
+          <button class="primary-button" id="print-student-profile" type="button">Print profile</button>
+        </div>
+      </div>
+
+      <div class="profile-finder" id="profile-finder">
+        <label for="profile-search-input">Find a student</label>
+        <div class="profile-search-control">
+          <span class="profile-search-icon" aria-hidden="true">⌕</span>
+          <input id="profile-search-input" type="search" autocomplete="off" placeholder="Search by student name, ID, AUB email, or major…" aria-controls="profile-search-results" aria-expanded="false">
+          <kbd>Enter</kbd>
+        </div>
+        <div id="profile-search-results" class="profile-search-results" role="listbox" hidden></div>
+      </div>
+
+      <div id="profile-loading" class="profile-loading" role="status" hidden>
+        <div class="profile-loading-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div><strong>Opening the student record</strong><span>Organizing academic, work-study, and support information…</span></div>
+      </div>
+      <div id="profile-empty" class="profile-empty-state">
+        <div class="profile-empty-monogram">SP</div>
+        <h2>Start with a student</h2>
+        <p>Use the search above, click a student in Filtering, or right-click a row in the Excel Student Directory.</p>
+        <div id="profile-recent-students" class="profile-suggestion-list"></div>
+      </div>
+      <div id="profile-error" class="profile-error" role="alert" hidden></div>
+      <div id="student-profile-content" class="student-profile-content" aria-live="polite" hidden></div>
     </section>
 
     <section id="import-view" class="view" aria-labelledby="import-title">
@@ -1834,6 +1999,10 @@ def render_html_shell(settings: AppSettings, *, active_path: str) -> str:
     <footer class="app-footer">American University of Beirut · WSP Offline Systems · 2026 Admin Portal</footer>
   </div>
 </div>
+  <div id="student-context-menu" class="student-context-menu" role="menu" hidden>
+    <button type="button" data-profile-action="open" role="menuitem"><span>↗</span><strong>View student profile</strong></button>
+    <button type="button" data-profile-action="copy" role="menuitem"><span>ID</span><strong>Copy student ID</strong></button>
+  </div>
   <script src="/static/chart.umd.min.js" defer></script>
   <script src="/static/wsp.js?v={_v}" defer></script>
 </body>
@@ -1888,7 +2057,11 @@ def build_filter_request_from_payload(payload: dict[str, Any], *, page_size: int
         semantic_filter=semantic_filter,
         global_query=clean_optional_text(payload.get("global_query")),
         sort=SortSpec(payload.get("sort_field") or "STUD_ID", payload.get("sort_direction") or "asc"),
-        pagination=PaginationSpec(page=1, page_size=page_size or int(payload.get("page_size") or 100)),
+        pagination=PaginationSpec(
+            page=1,
+            page_size=page_size or int(payload.get("page_size") or 100),
+            _allow_large_internal_page=page_size is not None,
+        ),
         include_missing=bool(payload.get("include_missing")),
         selected_columns=DEFAULT_RESULT_COLUMNS,
     )

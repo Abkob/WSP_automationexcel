@@ -1,0 +1,40 @@
+name: Build Windows installer package
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build verified installer ZIP
+        shell: powershell
+        working-directory: wsp_offline_app
+        run: .\scripts\build_release.ps1
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WSP-Offline-System-Windows
+          path: |
+            wsp_offline_app/dist/*.zip
+            wsp_offline_app/dist/*.sha256
+          if-no-files-found: error
+
+      - name: Attach package to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            wsp_offline_app/dist/*.zip
+            wsp_offline_app/dist/*.sha256

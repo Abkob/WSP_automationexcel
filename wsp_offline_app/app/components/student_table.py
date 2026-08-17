@@ -53,7 +53,7 @@ def student_to_table_row(
         "FINANCIAL_AID": format_boolean(student.FINANCIAL_AID),
         "DORMS": format_boolean(student.DORMS),
         "semantic_score": format_semantic_score(semantic_score),
-        "semantic_explanation": truncate_text(semantic_reason, max_length=220),
+        "semantic_explanation": truncate_text(semantic_reason, max_length=360),
         "WSP_TECHNICAL_SKILLS": truncate_text(student.WSP_TECHNICAL_SKILLS, max_length=140),
         "WSP_PREFERRED_TYPE_OF_WORK": truncate_text(student.WSP_PREFERRED_TYPE_OF_WORK, max_length=140),
     }

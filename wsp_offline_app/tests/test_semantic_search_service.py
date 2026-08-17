@@ -99,6 +99,39 @@ def test_semantic_index_sync_embeds_only_new_or_changed_profiles(tmp_path: Path)
         assert session.query(SemanticEmbedding).count() == 2
 
 
+def test_semantic_index_sync_prunes_students_outside_active_dataset(tmp_path: Path) -> None:
+    settings = make_settings(tmp_path)
+    session_factory = make_session_factory(tmp_path)
+    model = MeaningEmbeddingModel()
+    store = FaissVectorStore(settings.semantic_index_dir)
+
+    with session_factory() as session:
+        active = StudentCurrent(STUD_ID="1001", WSP_TECHNICAL_SKILLS="document cleanup")
+        inactive = StudentCurrent(
+            STUD_ID="1002",
+            WSP_TECHNICAL_SKILLS="lab sample labels",
+            missing_from_latest_import=True,
+        )
+        session.add_all((active, inactive))
+        session.commit()
+        sync_student_semantic_index(session, settings, (active, inactive), embedding_model=model, vector_store=store)
+        session.commit()
+
+        result = sync_student_semantic_index(
+            session,
+            settings,
+            (active,),
+            embedding_model=model,
+            vector_store=store,
+            prune_stale=True,
+        )
+        session.commit()
+
+        assert result.embedded_count == 0
+        assert store.record_ids() == {"1001"}
+        assert {row.STUD_ID for row in session.query(SemanticEmbedding).all()} == {"1001"}
+
+
 def test_vector_search_retrieves_vague_related_profile_without_exact_keyword_overlap(tmp_path: Path) -> None:
     settings = make_settings(tmp_path)
     session_factory = make_session_factory(tmp_path)
@@ -136,6 +169,9 @@ def test_vector_search_retrieves_vague_related_profile_without_exact_keyword_ove
     assert [match.STUD_ID for match in matches] == ["1001", "1002"]
     assert matches[0].score > matches[1].score
     assert "Embedding match" in matches[0].reason
+    assert "Closest original evidence" in matches[0].reason
+    assert "Forms review and import cleanup" in matches[0].reason
+    assert "Organizational skills" in matches[0].reason
 
 
 def test_structured_filters_are_applied_before_vector_search(tmp_path: Path) -> None:

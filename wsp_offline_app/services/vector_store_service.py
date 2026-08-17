@@ -103,6 +103,19 @@ class FaissVectorStore:
             by_id[record.record_id] = record
         self.replace_all(by_id.values())
 
+    def delete(self, record_ids: Iterable[str]) -> int:
+        ids_to_delete = {str(record_id) for record_id in record_ids}
+        if not ids_to_delete:
+            return 0
+        existing_records = self.load_records()
+        retained_records = tuple(
+            record for record in existing_records if record.record_id not in ids_to_delete
+        )
+        removed_count = len(existing_records) - len(retained_records)
+        if removed_count:
+            self.replace_all(retained_records)
+        return removed_count
+
     def query(
         self,
         query_embedding: np.ndarray,

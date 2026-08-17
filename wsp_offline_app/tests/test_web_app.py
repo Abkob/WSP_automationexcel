@@ -10,7 +10,7 @@ from openpyxl import Workbook
 from app.web_app import build_filter_request_from_payload, create_web_app
 from config import AppSettings
 from database.db import create_session_factory, create_sqlite_engine, initialize_database
-from database.models import BackupLog, ColumnRegistry, FileImportLog, ImportBatch, StudentCurrent
+from database.models import BackupLog, ColumnRegistry, FileImportLog, ImportBatch, StudentCurrent, StudentHistory
 from services.excel_schema import EXPECTED_WSP_COLUMNS
 
 
@@ -78,8 +78,29 @@ def test_filters_page_uses_fastapi_static_ui_not_nicegui(tmp_path: Path) -> None
     assert "Filter Builder" in response.text
     assert "American University of Beirut" in response.text
     assert "AI semantic matching" in response.text
+    assert 'id="ai-search-progress"' in response.text
+    assert "Searching the local AI index" in response.text
+    loader_css = client.get("/static/wsp.css")
+    assert loader_css.status_code == 200
+    assert "@keyframes aubDotPulse" in loader_css.text
+    assert "linear-gradient(90deg, var(--aub), var(--aub-2), var(--aub))" in loader_css.text
     assert "/static/wsp.css" in response.text
     assert "_nicegui" not in response.text
+
+
+def test_index_status_uses_active_students_as_coverage_denominator(tmp_path: Path) -> None:
+    client, settings = make_test_client(tmp_path)
+    session_factory = create_session_factory(create_sqlite_engine(settings.database_path))
+    with session_factory() as session:
+        session.add(StudentCurrent(STUD_ID="inactive", missing_from_latest_import=True))
+        session.commit()
+
+    response = client.get("/api/admin/index-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["db_count"] == 3
+    assert payload["total_db_count"] == 4
 
 
 def test_admin_workspace_pages_render_from_fastapi_shell(tmp_path: Path) -> None:
@@ -87,8 +108,9 @@ def test_admin_workspace_pages_render_from_fastapi_shell(tmp_path: Path) -> None
 
     pages = {
         "/excel-sheets": "Excel Sheets",
+        "/student-profile": "Student Profile",
         "/import": "Import Center",
-        "/system-status": "Test/System Status",
+        "/system-status": "System Health",
     }
 
     for path, heading in pages.items():
@@ -103,9 +125,8 @@ def test_admin_workspace_pages_render_from_fastapi_shell(tmp_path: Path) -> None
     assert 'href="/excel-sheets"' in import_page.text
     assert 'href="/import"' in import_page.text
     assert 'href="/system-status"' in import_page.text
-    assert "Check Import Folder" in import_page.text
+    assert "Check Now" in import_page.text
     assert "Save Folder" in import_page.text
-    assert "Import Selected Workbook" in import_page.text
     assert "Auto-consume active" in import_page.text
     assert "disabled><span" not in import_page.text
 
@@ -118,6 +139,73 @@ def test_admin_workspace_pages_render_from_fastapi_shell(tmp_path: Path) -> None
     assert "students_current" in filters_page.text
 
 
+def test_student_profile_page_and_api_present_complete_record(tmp_path: Path) -> None:
+    client, settings = make_test_client(tmp_path)
+    session_factory = create_session_factory(create_sqlite_engine(settings.database_path))
+    with session_factory() as session:
+        student = session.query(StudentCurrent).filter_by(STUD_ID="260201").one()
+        student.STUD_EMAIL = "maya.rerun@aub.edu.lb"
+        student.MOBILE_NBR = "+961 70 000 201"
+        student.TOTAL_CREDIT_HOURS = 74
+        student.ENROLLED_IND = True
+        student.REGISTERED_IND = True
+        student.ASTD_DESC = "Good Standing"
+        student.WSP_ORGANIZATIONAL_SKILLS = "Scheduling; documentation"
+        student.WSP_SPOKEN_LANGUAGES = "Arabic, English"
+        student.extra_columns_json = {"SUPERVISOR_NAME": "Dr. Example", "OFFICE_LOCATION": "West Hall"}
+        session.add(
+            StudentHistory(
+                batch_id=1,
+                STUD_ID="260201",
+                all_excel_columns={"CUM_GPA": 3.6},
+                change_type="updated_student",
+            )
+        )
+        session.commit()
+
+    page = client.get("/student-profile/260201")
+    assert page.status_code == 200
+    assert 'data-active-path="/student-profile"' in page.text
+    assert 'data-student-id="260201"' in page.text
+    assert "Find a student" in page.text
+    assert "Student Profiles" in page.text
+
+    response = client.get("/api/students/260201/profile")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["identity"]["name"] == "Maya Rerun"
+    assert payload["identity"]["email"] == "maya.rerun@aub.edu.lb"
+    assert payload["highlights"][0]["value"] == "3.72"
+    assert payload["skills"][0]["values"][:2] == ["Excel", "SQL"]
+    assert payload["support"][0] == {"label": "Financial aid", "field": "FINANCIAL_AID", "value": True}
+    assert payload["additional_fields"][1]["label"] == "Supervisor Name"
+    assert payload["timeline"][0]["title"] in {"Student record updated", "Student record added"}
+
+
+def test_student_lookup_and_missing_profile(tmp_path: Path) -> None:
+    client, _settings = make_test_client(tmp_path)
+
+    lookup = client.get("/api/students/lookup", params={"q": "Maya", "limit": 5})
+    assert lookup.status_code == 200
+    assert lookup.json()["students"][0]["student_id"] == "260201"
+
+    response = client.get("/api/students/does-not-exist/profile")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Student profile not found"
+
+
+def test_filter_and_excel_assets_include_profile_entry_points(tmp_path: Path) -> None:
+    client, _settings = make_test_client(tmp_path)
+
+    script = client.get("/static/wsp.js").text
+    styles = client.get("/static/wsp.css").text
+    assert "student-profile-link" in script
+    assert "bindStudentProfileActions" in script
+    assert 'addEventListener("contextmenu"' in script
+    assert ".student-context-menu" in styles
+    assert ".profile-hero" in styles
+
+
 def test_dashboard_api_returns_metrics_and_chart_data(tmp_path: Path) -> None:
     client, _settings = make_test_client(tmp_path)
 
@@ -128,6 +216,27 @@ def test_dashboard_api_returns_metrics_and_chart_data(tmp_path: Path) -> None:
     assert payload["metrics"]["total_students"] == 3
     assert payload["latest_import"]["filename"] == "dummy.xlsx"
     assert payload["charts"]["students_by_major"]
+    assert payload["filter_options"]["faculties"]
+    assert payload["faculty_summary"]
+    assert payload["total_matches"] == 3
+    assert payload["preferred_work_grouping"]["method"] == "offline_embeddings"
+    assert payload["preferred_work_grouping"]["original_text_preserved"] is True
+    assert payload["preferred_work_grouping"]["preference_count"] == 3
+    assert payload["charts"]["work_preferences"]
+    assert payload["students"][0]["work_preference_group"]
+
+
+def test_dashboard_api_supports_faculty_and_class_drilldown(tmp_path: Path) -> None:
+    client, _settings = make_test_client(tmp_path)
+
+    response = client.get("/api/dashboard", params={"faculty": "OSB", "class_year": "Senior"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["selection_label"] == "OSB · Senior"
+    assert payload["total_matches"] == 1
+    assert payload["students"][0]["student_id"] == "260202"
+    assert payload["students"][0]["faculty"] == "OSB"
 
 
 def test_dashboard_static_assets_include_interactive_chart_system(tmp_path: Path) -> None:
@@ -141,6 +250,16 @@ def test_dashboard_static_assets_include_interactive_chart_system(tmp_path: Path
     assert "renderChartCard" in script.text
     assert "renderChartGrid" in script.text
     assert "renderChartStatPill" in script.text
+    assert "renderSinglePointSpotlight" in script.text
+    assert "initDashboardMultiSelect" in script.text
+    assert "renderDashboardFacultyComparison" in script.text
+    assert "percent-bars" in script.text
+    assert "Candidate context by faculty" in script.text
+    assert "Ready for matching" not in script.text
+    assert "Place the right student in the right role." not in client.get("/").text
+    assert "Grouped locally with offline embeddings" in script.text
+    assert "work_preference_group" in script.text
+    assert "handleDashboardChartSelection" in script.text
     assert "loadExcelSheets" in script.text
     assert "loadImportCenter" in script.text
     assert "loadSystemStatus" in script.text
@@ -149,6 +268,12 @@ def test_dashboard_static_assets_include_interactive_chart_system(tmp_path: Path
     assert ".chart-card" in styles.text
     assert ".chart-canvas-wrap" in styles.text
     assert ".chart-head" in styles.text
+    assert ".dashboard-page-head" in styles.text
+    assert ".dashboard-faculty-card" in styles.text
+    assert ".dashboard-grouping-note" in styles.text
+    assert ".chart-single-spotlight" in styles.text
+    assert 'id="dashboard-ms-major"' in client.get("/").text
+    assert ".dashboard-work-group" in styles.text
     assert ".sheet-workspace" in styles.text
     assert ".system-info-panel" in styles.text
     assert ".source-card" in styles.text

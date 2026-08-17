@@ -32,6 +32,25 @@ def test_student_semantic_profile_contains_work_study_sections() -> None:
     assert profile.document_hash == hash_semantic_profile(profile)
 
 
+def test_semantic_profile_preserves_unique_original_wording_not_dashboard_topics() -> None:
+    unique_skills = "pyhton automtion for turtle sensor logs v2"
+    unique_preference = "night-shift marine drone calibration near the coast"
+    profile = build_student_semantic_profile(
+        StudentCurrent(
+            STUD_ID="UNIQUE-1",
+            WSP_TECHNICAL_SKILLS=unique_skills,
+            WSP_PREFERRED_TYPE_OF_WORK=unique_preference,
+        )
+    )
+
+    assert profile.fields["WSP_TECHNICAL_SKILLS"] == unique_skills
+    assert profile.fields["WSP_PREFERRED_TYPE_OF_WORK"] == unique_preference
+    assert unique_skills in profile.text
+    assert unique_preference in profile.text
+    assert "Emerging ·" not in profile.text
+    assert "Unverified / Needs Review" not in profile.text
+
+
 def test_semantic_profile_excludes_private_contact_fields_by_default() -> None:
     profile = build_student_semantic_profile(
         StudentCurrent(

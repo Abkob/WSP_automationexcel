@@ -183,12 +183,15 @@ class SortSpec:
 class PaginationSpec:
     page: int = 1
     page_size: int = 50
+    _allow_large_internal_page: bool = field(default=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.page < 1:
             raise FilterValidationError("Pagination page must be 1 or greater")
         if self.page_size < 1:
             raise FilterValidationError("Pagination page_size must be 1 or greater")
+        if self.page_size > 500 and not self._allow_large_internal_page:
+            raise FilterValidationError("Pagination page_size must be 500 or less")
 
     @property
     def offset(self) -> int:
