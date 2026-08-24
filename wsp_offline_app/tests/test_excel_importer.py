@@ -12,6 +12,7 @@ from database.models import StudentHistory
 from services.excel_importer import (
     DuplicateExcelFileError,
     FileNotStableError,
+    GeneratedExportWorkbookError,
     MissingStudentIdError,
     TemporaryExcelFileIgnored,
     UnsupportedExcelFileError,
@@ -22,10 +23,12 @@ from services.excel_importer import (
     find_import_batch_by_hash,
     generate_row_hash,
     intake_excel_file,
+    is_generated_export_filename,
     is_temporary_excel_file,
     mark_missing_students,
     normalize_student_id,
     read_excel_workbook,
+    reject_generated_export_workbook,
     upsert_student_row,
     validate_excel_file_path,
     wait_for_file_size_to_stabilize,
@@ -73,6 +76,25 @@ def test_temporary_excel_file_is_ignored(tmp_path: Path) -> None:
     assert is_temporary_excel_file(path)
     with pytest.raises(TemporaryExcelFileIgnored, match="Ignoring temporary Excel file"):
         validate_excel_file_path(path)
+
+
+def test_generated_filtered_export_is_rejected_by_filename(tmp_path: Path) -> None:
+    path = create_minimal_workbook(tmp_path / "20260824_120000_filtered_students.xlsx")
+
+    assert is_generated_export_filename(path)
+    with pytest.raises(GeneratedExportWorkbookError, match="filtered export"):
+        reject_generated_export_workbook(path)
+
+
+def test_renamed_generated_export_is_rejected_by_sheet_signature(tmp_path: Path) -> None:
+    path = tmp_path / "renamed.xlsx"
+    workbook = Workbook()
+    workbook.active.title = "Filtered Results"
+    workbook.create_sheet("Filter Metadata")
+    workbook.save(path)
+
+    with pytest.raises(GeneratedExportWorkbookError, match="Filter Metadata"):
+        reject_generated_export_workbook(path)
 
 
 def test_file_size_stability_wait_accepts_stable_size(tmp_path: Path) -> None:

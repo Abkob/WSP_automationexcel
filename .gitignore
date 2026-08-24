@@ -1,2 +1,16 @@
 *.pdf
 *.xlsx
+*.xls
+*.xlsm
+
+# Private operational and research material
+Import Folder/
+Export Folder/
+SectionPapers/
+
+# Temporary Office lock files
+~$*
+
+# UI captures may contain applicant-style records or local paths
+wsp_offline_app/docs/assets/
+wsp_offline_app/docs/*.pptx

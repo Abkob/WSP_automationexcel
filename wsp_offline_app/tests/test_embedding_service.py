@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from services.embedding_service import is_sentence_transformer_model_cached, normalize_embedding_matrix, prepare_embedding_text
+from services.embedding_service import (
+    installed_local_model_path,
+    is_sentence_transformer_model_cached,
+    normalize_embedding_matrix,
+    prepare_embedding_text,
+    resolve_sentence_transformer_source,
+)
 
 
 def test_e5_embedding_text_uses_query_and_passage_prefixes() -> None:
@@ -34,3 +40,15 @@ def test_sentence_transformer_cache_check_requires_config_weight_and_tokenizer(m
     assert is_sentence_transformer_model_cached("intfloat/multilingual-e5-small") is True
     cached_files.remove("model.safetensors")
     assert is_sentence_transformer_model_cached("intfloat/multilingual-e5-small") is False
+
+
+def test_symlink_free_local_model_directory_is_discovered(tmp_path, monkeypatch) -> None:
+    model_name = "example/model"
+    monkeypatch.setenv("HF_HOME", str(tmp_path))
+    local_model = installed_local_model_path(model_name)
+    local_model.mkdir(parents=True)
+    for filename in ("config.json", "model.safetensors", "tokenizer.json"):
+        (local_model / filename).write_text("test", encoding="utf-8")
+
+    assert is_sentence_transformer_model_cached(model_name) is True
+    assert resolve_sentence_transformer_source(model_name) == local_model

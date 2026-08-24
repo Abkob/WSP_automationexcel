@@ -52,6 +52,7 @@ foreach ($item in @(
     "app",
     "database",
     "services",
+    "docs",
     "config.py",
     "main.py",
     "wsp_launcher.pyw",
@@ -59,12 +60,14 @@ foreach ($item in @(
     "requirements.lock.txt",
     "pyproject.toml",
     "README.md",
+    "TASK_CHECKLIST.md",
     "version.txt",
     "INSTALL_WSP.bat",
     "LAUNCH_WSP.bat",
     "UPDATE_WSP.bat",
     "UNINSTALL_WSP.bat",
     "scripts\install.ps1",
+    "scripts\install_gui.ps1",
     "scripts\uninstall.ps1",
     "scripts\verify_install.py",
     "scripts\download_mxbai.py",
@@ -80,13 +83,13 @@ Get-ChildItem -LiteralPath $StageAppDirectory -Recurse -Directory -Force |
     Sort-Object FullName -Descending |
     Remove-Item -Recurse -Force
 Get-ChildItem -LiteralPath $StageAppDirectory -Recurse -File -Force |
-    Where-Object { $_.Extension -in @(".pyc", ".pyo") } |
+    Where-Object { $_.Extension -in @(".pyc", ".pyo") -or $_.Name.StartsWith("~$") } |
     Remove-Item -Force
 
 $RootInstaller = @'
 @echo off
-call "%~dp0wsp_offline_app\INSTALL_WSP.bat"
-exit /b %ERRORLEVEL%
+start "" powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -STA -File "%~dp0wsp_offline_app\scripts\install_gui.ps1"
+exit /b 0
 '@
 Set-Content -LiteralPath (Join-Path $StageDirectory "INSTALL WSP - ONE CLICK.bat") -Value $RootInstaller -Encoding Ascii
 

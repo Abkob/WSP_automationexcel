@@ -1070,9 +1070,15 @@ async function runSearch() {
     renderResults(data.rows);
     renderActiveFilterTags(payload);
     document.querySelector("#result-count").textContent = `${data.total_count.toLocaleString()} results`;
-    setSearchStatus(`${elapsed}s`);
+    const usedKeywordFallback = data.semantic_mode === "keyword_fallback";
+    setSearchStatus(usedKeywordFallback ? `Keyword fallback · ${elapsed}s` : `${elapsed}s`);
     document.querySelector("#export-status").textContent = "";
-    finishSearchProgress(`${data.total_count.toLocaleString()} students found in ${elapsed}s`);
+    finishSearchProgress(
+      usedKeywordFallback
+        ? (data.semantic_notice || "Embedding unavailable; showing keyword matches.")
+        : `${data.total_count.toLocaleString()} students found in ${elapsed}s`,
+      usedKeywordFallback,
+    );
   } catch (error) {
     if (error.name === "AbortError") return;
     setSearchStatus("Search failed");
@@ -1231,6 +1237,7 @@ function renderActiveSheetWithQuery(globalQuery) {
   const query = globalQuery || "";
   const allRows = sheet.rows || [];
   const rows = allRows.filter((row) => !query || row.some((cell) => String(cell ?? "").toLowerCase().includes(query)));
+  const editMode = sheet.key === "Student_Directory" && sheetState.editMode;
 
   summary.innerHTML = `
     <article><strong>${rows.length.toLocaleString()}</strong><span>matching rows</span></article>

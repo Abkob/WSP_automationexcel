@@ -50,12 +50,48 @@ class DuplicateExcelFileError(ExcelIntakeError):
     """Raised when the exact same file was already imported."""
 
 
+class GeneratedExportWorkbookError(ExcelIntakeError):
+    """Raised when a WSP filtered export is submitted as a source workbook."""
+
+
 class MissingStudentIdError(ExcelIntakeError):
     """Raised when an imported row does not contain a usable STUD_ID."""
 
 
 class NoValidStudentRowsError(ExcelIntakeError):
     """Raised when a workbook has no usable student records to import."""
+
+
+def is_generated_export_filename(path: str | Path) -> bool:
+    return "filtered_students" in Path(path).stem.casefold() or "filtered_results" in Path(path).stem.casefold()
+
+
+def reject_generated_export_workbook(path: str | Path) -> None:
+    workbook_path = Path(path)
+    if is_generated_export_filename(workbook_path):
+        raise GeneratedExportWorkbookError(
+            f"Import rejected: {workbook_path.name} is a WSP filtered export, not a master student workbook. "
+            "Use the original full WSP workbook in the Import Folder."
+        )
+
+    try:
+        from openpyxl import load_workbook
+
+        workbook = load_workbook(workbook_path, read_only=True, data_only=True)
+        try:
+            sheet_names = set(workbook.sheetnames)
+        finally:
+            workbook.close()
+    except GeneratedExportWorkbookError:
+        raise
+    except Exception:
+        return
+
+    if {"Filtered Results", "Filter Metadata"}.issubset(sheet_names):
+        raise GeneratedExportWorkbookError(
+            f"Import rejected: {workbook_path.name} contains WSP Filtered Results and Filter Metadata sheets. "
+            "Exports cannot replace the master student workbook."
+        )
 
 
 @dataclass(frozen=True)

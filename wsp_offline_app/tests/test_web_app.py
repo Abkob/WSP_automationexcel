@@ -69,6 +69,15 @@ def make_test_client(tmp_path: Path) -> tuple[TestClient, AppSettings]:
     return TestClient(create_web_app(settings)), settings
 
 
+def test_production_app_registers_background_embedding_warmup(tmp_path: Path) -> None:
+    settings = AppSettings(data_dir=tmp_path / "production-data", runtime_mode="production")
+
+    app = create_web_app(settings)
+
+    handler_names = {getattr(handler, "__name__", "") for handler in app.router.on_startup}
+    assert "start_embedding_warmup" in handler_names
+
+
 def test_filters_page_uses_fastapi_static_ui_not_nicegui(tmp_path: Path) -> None:
     client, _settings = make_test_client(tmp_path)
 
@@ -204,6 +213,17 @@ def test_filter_and_excel_assets_include_profile_entry_points(tmp_path: Path) ->
     assert 'addEventListener("contextmenu"' in script
     assert ".student-context-menu" in styles
     assert ".profile-hero" in styles
+
+
+def test_excel_global_search_renderer_defines_edit_mode(tmp_path: Path) -> None:
+    client, _settings = make_test_client(tmp_path)
+
+    script = client.get("/static/wsp.js").text
+    global_renderer = script.split("function renderActiveSheetWithQuery", 1)[1].split(
+        "function renderActiveSheet()", 1
+    )[0]
+
+    assert 'const editMode = sheet.key === "Student_Directory" && sheetState.editMode;' in global_renderer
 
 
 def test_dashboard_api_returns_metrics_and_chart_data(tmp_path: Path) -> None:
@@ -480,6 +500,8 @@ def test_search_api_returns_fast_offline_semantic_results(tmp_path: Path) -> Non
     assert payload["rows"][0]["STUD_ID"] == "260201"
     assert float(payload["rows"][0]["semantic_score"]) > 0.5
     assert "embedding search was unavailable" not in payload["rows"][0]["semantic_explanation"]
+    assert payload["semantic_mode"] == "embedding"
+    assert payload["semantic_notice"] == ""
 
 
 def test_export_api_creates_filtered_xlsx(tmp_path: Path) -> None:
