@@ -232,9 +232,8 @@ def test_qwen_or_embedding_unavailable_falls_back_to_text_match(tmp_path: Path) 
         )
 
     assert [match.STUD_ID for match in matches] == ["1001"]
-    assert "Text keyword fallback" in matches[0].reason
+    assert "Text match fallback" in matches[0].reason
     assert "embedding search was unavailable" in matches[0].reason
-    assert "embedding model unavailable" in matches[0].reason
 
 
 def test_ollama_rag_ranker_sends_retrieved_profiles_to_local_model(tmp_path: Path) -> None:

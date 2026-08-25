@@ -5,7 +5,6 @@ import io
 import logging
 import os
 import socket
-import subprocess
 import sys
 import threading
 import time
@@ -15,59 +14,6 @@ from pathlib import Path
 # ── Anchor everything to the folder this file lives in ──────────────────────
 APP_DIR = Path(__file__).resolve().parent
 
-
-def _same_path(left: Path | str, right: Path | str) -> bool:
-    try:
-        return Path(left).resolve() == Path(right).resolve()
-    except (OSError, RuntimeError, ValueError):
-        return os.path.normcase(os.path.abspath(str(left))) == os.path.normcase(os.path.abspath(str(right)))
-
-
-def _private_runtime_candidate() -> tuple[Path, Path] | None:
-    """Return the verified app-local pythonw and launcher when available.
-
-    The first candidate repairs a launcher opened directly from its installed or
-    development folder. The second makes an accidentally opened extracted copy
-    redirect to the canonical Local AppData installation.
-    """
-    local_pythonw = APP_DIR / ".venv" / "Scripts" / "pythonw.exe"
-    local_launcher = APP_DIR / "wsp_launcher.pyw"
-    if local_pythonw.is_file() and local_launcher.is_file():
-        return local_pythonw, local_launcher
-
-    local_app_data = os.environ.get("LOCALAPPDATA")
-    if local_app_data:
-        installed_dir = Path(local_app_data) / "WSP Offline System" / "wsp_offline_app"
-        installed_pythonw = installed_dir / ".venv" / "Scripts" / "pythonw.exe"
-        installed_launcher = installed_dir / "wsp_launcher.pyw"
-        if installed_pythonw.is_file() and installed_launcher.is_file():
-            return installed_pythonw, installed_launcher
-    return None
-
-
-def _redirect_to_private_runtime() -> bool:
-    candidate = _private_runtime_candidate()
-    if candidate is None:
-        return False
-    pythonw, launcher = candidate
-    # On Windows the venv executable may resolve to the base Python binary, so
-    # sys.executable alone is not reliable. sys.prefix identifies the active
-    # environment and must match the .venv that owns the selected pythonw.
-    expected_prefix = pythonw.parent.parent
-    if _same_path(sys.prefix, expected_prefix) and _same_path(APP_DIR / "wsp_launcher.pyw", launcher):
-        return False
-    try:
-        subprocess.Popen(
-            [str(pythonw), str(launcher)],
-            cwd=str(launcher.parent),
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-        )
-    except OSError as exc:
-        log.error("Could not redirect to private runtime %s: %s", pythonw, exc)
-        return False
-    log.info("Redirected launcher from %s to private runtime %s", sys.executable, pythonw)
-    return True
-
 # ── pythonw.exe sets stdout/stderr to None — redirect to null so any
 #    library that calls sys.stdout.write() / .isatty() doesn't crash. ────────
 if sys.stdout is None:
@@ -75,43 +21,10 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = io.open(os.devnull, "w", encoding="utf-8")
 
-# ── Point HuggingFace cache to bundled .models/ only when it is complete ────
+# ── Point HuggingFace cache to bundled .models/ if present ──────────────────
 # This must happen before any sentence-transformers / huggingface_hub import.
-def _bundled_embedding_cache_is_complete(cache_root: Path) -> bool:
-    local_model = cache_root / "local_models" / "mixedbread-ai--mxbai-embed-large-v1"
-    if local_model.is_dir():
-        has_config = (local_model / "config.json").is_file()
-        has_weights = any((local_model / name).is_file() for name in ("model.safetensors", "pytorch_model.bin"))
-        has_tokenizer = any(
-            (local_model / name).is_file()
-            for name in ("tokenizer.json", "tokenizer_config.json", "vocab.txt", "sentencepiece.bpe.model")
-        )
-        if has_config and has_weights and has_tokenizer:
-            return True
-    snapshots = (
-        cache_root
-        / "hub"
-        / "models--mixedbread-ai--mxbai-embed-large-v1"
-        / "snapshots"
-    )
-    if not snapshots.is_dir():
-        return False
-    for snapshot in snapshots.iterdir():
-        if not snapshot.is_dir():
-            continue
-        has_config = (snapshot / "config.json").is_file()
-        has_weights = any((snapshot / name).is_file() for name in ("model.safetensors", "pytorch_model.bin"))
-        has_tokenizer = any(
-            (snapshot / name).is_file()
-            for name in ("tokenizer.json", "tokenizer_config.json", "vocab.txt", "sentencepiece.bpe.model")
-        )
-        if has_config and has_weights and has_tokenizer:
-            return True
-    return False
-
-
 _bundled_models = APP_DIR / ".models"
-if _bundled_embedding_cache_is_complete(_bundled_models):
+if _bundled_models.exists():
     os.environ["HF_HOME"] = str(_bundled_models)
 
 # ── Logging (no console in .pyw — write to file instead) ────────────────────
@@ -154,7 +67,7 @@ def _fatal(msg: str) -> None:
     log.error(msg)
     ctypes.windll.user32.MessageBoxW(
         0,
-        f"{msg}\n\nDetails: {_log_dir / 'launcher.log'}",
+        f"{msg}\n\nSee data/launcher.log for details.",
         "WSP — Startup Error",
         0x10,  # MB_ICONERROR
     )
@@ -230,11 +143,6 @@ def _open_app_window(url: str) -> None:
 # ────────────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    # A .pyw file opened directly is normally handled by Windows' global Python.
-    # Always move into WSP's verified private environment before importing deps.
-    if _redirect_to_private_runtime():
-        return
-
     # If WSP is already running, just open a new window and exit.
     if _is_port_in_use(PORT):
         log.info("Server already running — opening browser window")

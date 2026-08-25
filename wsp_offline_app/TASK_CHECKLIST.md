@@ -60,7 +60,7 @@ Decision:
 
 ## Real Workbook Findings
 
-Workbook inspected: `C:\Users\Salam\Documents\WSP\WSP.xlsx`
+Workbook inspected: `%USERPROFILE%\Documents\WSP\WSP.xlsx`
 
 - [x] Confirm workbook exists.
 - [x] Confirm workbook has one sheet named `Sheet1`.
@@ -1491,7 +1491,7 @@ Test result:
 
 - [x] Investigate blank dashboard and blank filter results from the live database.
 - [x] Confirm `/api/dashboard` returned `0` active students because every row was marked `missing_from_latest_import`.
-- [x] Inspect the latest imported workbook `C:\Users\Salam\Documents\WSP\WSP.xlsx`.
+- [x] Inspect the latest imported workbook `%USERPROFILE%\Documents\WSP\WSP.xlsx`.
 - [x] Confirm the workbook had valid headers but zero student data rows.
 - [x] Identify the unsafe behavior: a headers-only workbook imported as `0` rows and marked the previous active students missing.
 - [x] Add importer guard that rejects headers-only workbooks before missing-student detection runs.
@@ -1604,7 +1604,7 @@ Test result:
 2026-06-08: regression test for Windows Excel file-handle closure and Import Folder archiving: 2 passed in 2.18s.
 2026-06-08: full pytest suite after Import Folder and Added/Modified implementation: 321 passed in 41.45s.
 2026-06-08: live server restart after Import Folder implementation: port 8080 listening with startup complete.
-2026-06-08: live API check: Import Folder `C:\Users\Salam\Documents\WSP\Import Folder`, archive folder inside it, dashboard students `122`, search total `122`, and `added_to_db_at` populated for 125 rows.
+2026-06-08: live API check: Import Folder `%USERPROFILE%\Documents\WSP\Import Folder`, archive folder inside it, dashboard students `122`, search total `122`, and `added_to_db_at` populated for 125 rows.
 2026-06-08: live browser check: Import Center showed Save Folder, Check Import Folder, 3 folder summary cards, 4 backup policy cards, and no console errors.
 2026-06-08: live browser check: Filtering showed `122 results` plus Added and Modified columns; first visible Added value was `2026-06-04 13:48`.
 ```
@@ -2286,7 +2286,7 @@ Chronological record of test runs, live checks, and import results. Each entry p
 - pytest focused suite after Import Folder and Added/Modified implementation: 149 passed in 37.56s.
 - pytest regression after Windows Excel file-handle closure fix: 2 passed in 2.18s.
 - pytest full suite after Import Folder and Added/Modified implementation: 321 passed in 41.45s.
-- live restart after Import Folder implementation: port 8080 listening, Import Folder at `C:\Users\Salam\Documents\WSP\Import Folder`, dashboard/search totals `122`, and filter table showed Added/Modified columns.
+- live restart after Import Folder implementation: port 8080 listening, Import Folder at `%USERPROFILE%\Documents\WSP\Import Folder`, dashboard/search totals `122`, and filter table showed Added/Modified columns.
 
 ── 2026-06-15 (Phases 16–20: Testbench, Perf Opts, Excel Sheets, Chart.js, Multi-Select, Bias Fix) ──
 2026-06-15: [Phase 20.1] Multi-select picker implemented: initMultiSelect/getMultiSelectValues/setMultiSelectValues/clearMultiSelect added to wsp.js; full CSS added to wsp.css; filter form switched from <select> to ms-root divs; backend build_category_filter uses .in_() for multi-value SQL.

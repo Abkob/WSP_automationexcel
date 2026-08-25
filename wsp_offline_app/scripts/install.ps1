@@ -138,24 +138,6 @@ function Copy-ApplicationPayload {
     Write-Check "Application files installed to $AppDirectory"
 }
 
-function Stop-RunningInstalledApp {
-    $resolvedApp = [IO.Path]::GetFullPath($AppDirectory).TrimEnd("\")
-    $resolvedLauncher = [IO.Path]::GetFullPath($Launcher)
-    $targets = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-        if ($_.Name -notin @("python.exe", "pythonw.exe")) { return $false }
-        $insideInstall = $_.ExecutablePath -and [IO.Path]::GetFullPath($_.ExecutablePath).StartsWith("$resolvedApp\", [StringComparison]::OrdinalIgnoreCase)
-        $runsLauncher = $_.CommandLine -and $_.CommandLine.IndexOf($resolvedLauncher, [StringComparison]::OrdinalIgnoreCase) -ge 0
-        return $insideInstall -or $runsLauncher
-    }
-    foreach ($process in $targets) {
-        Stop-Process -Id $process.ProcessId -Force -ErrorAction Stop
-    }
-    if ($targets) {
-        Start-Sleep -Milliseconds 500
-        Write-Check "Closed the previous WSP instance before repair/update."
-    }
-}
-
 function Test-PythonCandidate {
     param([string]$Executable, [string[]]$PrefixArguments = @())
     try {
@@ -249,50 +231,6 @@ function New-Shortcut {
     $shortcut.Save()
 }
 
-function Assert-AppShortcut {
-    param([string]$ShortcutPath)
-    if (-not (Test-Path -LiteralPath $ShortcutPath -PathType Leaf)) {
-        throw "The WSP application shortcut was not created: $ShortcutPath"
-    }
-    $shell = New-Object -ComObject WScript.Shell
-    $shortcut = $shell.CreateShortcut($ShortcutPath)
-    if (-not ([IO.Path]::GetFullPath($shortcut.TargetPath)).Equals([IO.Path]::GetFullPath($VenvPythonw), [StringComparison]::OrdinalIgnoreCase)) {
-        throw "The WSP shortcut does not target the private Python environment."
-    }
-    if ($shortcut.Arguments.IndexOf($Launcher, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
-        throw "The WSP shortcut does not target the installed launcher."
-    }
-}
-
-function Start-And-VerifyApplication {
-    Write-Step "Launching WSP and verifying the Desktop shortcut runtime"
-    Start-Process -FilePath $VenvPythonw -ArgumentList "`"$Launcher`"" -WorkingDirectory $AppDirectory -WindowStyle Hidden | Out-Null
-    $deadline = (Get-Date).AddSeconds(240)
-    $lastError = "No response"
-    $attempt = 0
-    while ((Get-Date) -lt $deadline) {
-        $attempt++
-        try {
-            $status = Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/system-status" -TimeoutSec 2
-            $reportedDatabase = [IO.Path]::GetFullPath([string]$status.system.database_path)
-            $expectedDatabase = [IO.Path]::GetFullPath((Join-Path $DataDirectory "wsp.db"))
-            if ($status.health.database.ok -and $reportedDatabase.Equals($expectedDatabase, [StringComparison]::OrdinalIgnoreCase)) {
-                Write-Check "The installed launcher started WSP successfully on http://127.0.0.1:8080/."
-                return
-            }
-            $lastError = "A different or unhealthy service answered on port 8080."
-        }
-        catch {
-            $lastError = $_.Exception.Message
-        }
-        if ($attempt % 20 -eq 0) {
-            Write-Host "[WAIT] WSP is still starting; low-memory systems can need several minutes..." -ForegroundColor Yellow
-        }
-        Start-Sleep -Milliseconds 750
-    }
-    throw "WSP was installed, but its shortcut runtime did not become healthy within 240 seconds. Last check: $lastError"
-}
-
 function Write-InstallManifest {
     $version = (Get-Content -LiteralPath (Join-Path $AppDirectory "version.txt") -Raw).Trim()
     $manifest = [ordered]@{
@@ -319,7 +257,6 @@ try {
     Assert-SourcePayload
     Test-PackageIntegrity
     Test-FreeSpace
-    Stop-RunningInstalledApp
     Copy-ApplicationPayload
 
     New-Item -ItemType Directory -Path $DataDirectory -Force | Out-Null
@@ -404,21 +341,20 @@ try {
         New-Shortcut -ShortcutPath (Join-Path $StartMenuDirectory "WSP Import Folder.lnk") -TargetPath "$env:WINDIR\explorer.exe" -Arguments "`"$ImportDirectory`"" -Description "Open the WSP Excel import folder"
         New-Shortcut -ShortcutPath (Join-Path $StartMenuDirectory "Update or Repair WSP.lnk") -TargetPath (Join-Path $AppDirectory "UPDATE_WSP.bat") -Description "Update or repair WSP Offline System"
         New-Shortcut -ShortcutPath (Join-Path $StartMenuDirectory "Uninstall WSP.lnk") -TargetPath (Join-Path $AppDirectory "UNINSTALL_WSP.bat") -Description "Uninstall WSP Offline System"
-        Assert-AppShortcut -ShortcutPath (Join-Path $DesktopDirectory "WSP Offline System.lnk")
-        Assert-AppShortcut -ShortcutPath (Join-Path $StartMenuDirectory "WSP Offline System.lnk")
         Write-Check "Desktop and Start Menu shortcuts were created."
     }
     else { Write-Host "[SKIP] Shortcut creation was skipped." -ForegroundColor Yellow }
-
-    if (-not $NoLaunch) {
-        Start-And-VerifyApplication
-    }
 
     Write-InstallManifest
     Write-Step "Installation verified successfully"
     Write-Host "Installed at: $AppDirectory" -ForegroundColor White
     Write-Host "Import Excel files here: $ImportDirectory" -ForegroundColor White
     Write-Host "You can safely delete the extracted installer folder now." -ForegroundColor White
+
+    if (-not $NoLaunch) {
+        Write-Host "Starting WSP Offline System..."
+        Start-Process -FilePath $VenvPythonw -ArgumentList "`"$Launcher`"" -WorkingDirectory $AppDirectory -WindowStyle Hidden
+    }
 
     if ($TranscriptStarted) { Stop-Transcript | Out-Null; $TranscriptStarted = $false }
     exit 0

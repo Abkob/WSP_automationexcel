@@ -6,7 +6,7 @@ After the first installation, the application runs locally at `http://127.0.0.1:
 
 ## Quick start
 
-1. Download `WSP_Offline_System_v1.1.5.zip` from the [latest GitHub release](https://github.com/Abkob/WSP_automationexcel/releases/latest) and extract it completely.
+1. Download `WSP_Offline_System_v1.1.0.zip` from the [latest GitHub release](https://github.com/Abkob/WSP_automationexcel/releases/latest) and extract it completely.
 2. Double-click **`INSTALL WSP - ONE CLICK.bat`** at the top of a release package. If you are working directly inside the app folder, double-click **`INSTALL_WSP.bat`**.
 3. Leave the installer window open until it reports that installation is complete.
 4. After setup succeeds, the extracted installer folder can be deleted.

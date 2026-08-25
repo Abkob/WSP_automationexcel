@@ -18,53 +18,55 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_NAME = "mixedbread-ai/mxbai-embed-large-v1"
 
 
-def model_is_complete(path: Path) -> bool:
-    return (
-        (path / "config.json").is_file()
-        and any((path / name).is_file() for name in ("model.safetensors", "pytorch_model.bin"))
-        and any((path / name).is_file() for name in ("tokenizer.json", "tokenizer_config.json", "vocab.txt"))
-    )
-
-
-def find_model_source() -> Path:
+def find_hf_cache() -> Path:
     import os
     hf_home = os.environ.get("HF_HOME")
-    homes = [Path(hf_home)] if hf_home else []
-    homes.extend([
-        Path.home() / ".cache" / "huggingface",
-        Path("C:/Users") / Path.home().name / ".cache" / "huggingface",
-    ])
-    slug = MODEL_NAME.replace("/", "--")
-    for home in homes:
-        local_model = home / "local_models" / slug
-        if model_is_complete(local_model):
-            return local_model
-        snapshots = home / "hub" / f"models--{slug}" / "snapshots"
-        if snapshots.is_dir():
-            for snapshot in snapshots.iterdir():
-                if snapshot.is_dir() and model_is_complete(snapshot):
-                    return snapshot
+    if hf_home:
+        candidate = Path(hf_home) / "hub"
+        if candidate.exists():
+            return candidate
+    for candidate in [
+        Path.home() / ".cache" / "huggingface" / "hub",
+        Path("C:/Users") / Path.home().name / ".cache" / "huggingface" / "hub",
+    ]:
+        if candidate.exists():
+            return candidate
     raise FileNotFoundError(
-        "A complete Hugging Face model installation was not found. "
+        "HuggingFace hub cache not found. "
         "Run the app once (with internet) to download the model, then try again."
     )
 
 
 def bundle_model() -> None:
-    folder_name = MODEL_NAME.replace("/", "--")
-    dest = PROJECT_ROOT / ".models" / "local_models" / folder_name
-    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest_hub = PROJECT_ROOT / ".models" / "hub"
+    dest_hub.mkdir(parents=True, exist_ok=True)
+
+    folder_name = "models--" + MODEL_NAME.replace("/", "--")
 
     try:
-        src = find_model_source()
+        src_hub = find_hf_cache()
     except FileNotFoundError as exc:
         print(f"ERROR: {exc}")
         sys.exit(1)
 
+    src = src_hub / folder_name
+    if not src.exists():
+        print(f"ERROR: Model folder not found at {src}")
+        print(
+            "Make sure you have run the WSP app at least once with internet access "
+            "so the model is downloaded to the HuggingFace cache."
+        )
+        sys.exit(1)
+
+    dest = dest_hub / folder_name
+    if dest.exists():
+        print(f"Model already bundled at:\n  {dest}")
+        print("Nothing to do. Delete .models/ and re-run to force a fresh copy.")
+        return
+
     size_mb = sum(f.stat().st_size for f in src.rglob("*") if f.is_file()) / 1_048_576
-    action = "Repairing" if dest.exists() else "Copying"
-    print(f"{action} {MODEL_NAME} ({size_mb:.0f} MB) in .models/ ...")
-    shutil.copytree(str(src), str(dest), dirs_exist_ok=True)
+    print(f"Copying {MODEL_NAME} ({size_mb:.0f} MB) into .models/ ...")
+    shutil.copytree(str(src), str(dest))
     print(f"Done. Model bundled at:\n  {dest}")
     print()
     print("The app will now use the bundled model on any machine this folder is copied to.")

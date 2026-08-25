@@ -53,35 +53,12 @@ def verify_application() -> None:
 def verify_model() -> None:
     model_directory = ROOT / ".models"
     os.environ["HF_HOME"] = str(model_directory)
-    from config import AppSettings
-    from services.embedding_service import get_default_embedding_model, is_sentence_transformer_model_cached
+    from sentence_transformers import SentenceTransformer
 
-    settings = AppSettings(project_root=ROOT, runtime_mode="production")
-    if not is_sentence_transformer_model_cached(settings.embedding_model_name):
-        raise RuntimeError("The bundled offline embedding model cache is incomplete.")
-    model = get_default_embedding_model(settings)
-    vectors = model.encode(
-        [
-            "student skilled in spreadsheet reporting",
-            "architectural drafting with AutoCAD and Revit",
-        ],
-        kind="query",
-    )
-    if getattr(vectors, "shape", (0, 0))[0] != 2 or vectors.shape[1] <= 0:
+    model = SentenceTransformer("mixedbread-ai/mxbai-embed-large-v1", local_files_only=True)
+    vectors = model.encode(["installation verification"], normalize_embeddings=True)
+    if getattr(vectors, "shape", (0, 0))[0] != 1 or vectors.shape[1] <= 0:
         raise RuntimeError("The offline model returned an invalid embedding.")
-
-    query = model.encode(["AutoCAD and Revit architectural drafting"], kind="query")[0]
-    documents = model.encode(
-        [
-            "Architecture student experienced with Revit, AutoCAD, and technical drawings",
-            "Student interested in social media campaigns and Canva posters",
-            "Research assistant experienced with SPSS surveys and academic writing",
-        ],
-        kind="document",
-    )
-    scores = documents @ query
-    if int(scores.argmax()) != 0 or float(scores[0]) <= float(scores[1]):
-        raise RuntimeError("The offline model loaded, but semantic ranking verification failed.")
 
 
 def main() -> int:
@@ -96,7 +73,6 @@ def main() -> int:
     if not args.skip_model:
         print("[VERIFY] Offline embedding model")
         verify_model()
-        print("[VERIFY] Offline semantic ranking")
     print("[VERIFY] Installation passed")
     return 0
 

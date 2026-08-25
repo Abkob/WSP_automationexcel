@@ -157,7 +157,7 @@ def test_layout_status_reports_database_import_and_backup(tmp_path: Path) -> Non
 def test_status_chip_handles_windows_path_details_without_props_parser() -> None:
     fake_ui = FakeRenderUi()
 
-    render_status_chip(fake_ui, "storage", "Database ready", r"C:\Users\Salam\Documents\WSP\data\wsp.db")
+    render_status_chip(fake_ui, "storage", "Database ready", r"C:\Users\Example\Documents\WSP\data\wsp.db")
 
     assert fake_ui.icons == ["storage"]
     assert fake_ui.labels == ["Database ready"]

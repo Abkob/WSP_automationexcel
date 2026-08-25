@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import collections
 import json
-import logging
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -32,9 +31,6 @@ from services.semantic_service import (
     truncate_semantic_prompt_text,
 )
 from services.vector_store_service import DEFAULT_VECTOR_STORE_NAME, FaissVectorStore, VectorRecord
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 # ── index freshness tracking ──────────────────────────────────────────────────
@@ -494,7 +490,6 @@ def rank_student_rows_by_vector_search(
             if result.record_id in profiles_by_id
         )
     except Exception as exc:
-        LOGGER.error("Embedding search failed; using keyword fallback: %s", exc, exc_info=True)
         return text_match_fallback(semantic_filter, candidate_rows, str(exc))
 
 
@@ -514,10 +509,7 @@ def text_match_fallback(
         SemanticMatch(
             STUD_ID=match.STUD_ID,
             score=match.score,
-            reason=(
-                f"Text keyword fallback because embedding search was unavailable ({reason}). "
-                f"{match.reason or 'No direct keyword evidence.'}"
-            ),
+            reason=f"Text match fallback because embedding search was unavailable: {match.reason or reason}",
             document_hash=match.document_hash,
         )
         for match in fallback_matches

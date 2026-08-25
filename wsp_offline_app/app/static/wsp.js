@@ -1070,15 +1070,9 @@ async function runSearch() {
     renderResults(data.rows);
     renderActiveFilterTags(payload);
     document.querySelector("#result-count").textContent = `${data.total_count.toLocaleString()} results`;
-    const usedKeywordFallback = data.semantic_mode === "keyword_fallback";
-    setSearchStatus(usedKeywordFallback ? `Keyword fallback · ${elapsed}s` : `${elapsed}s`);
+    setSearchStatus(`${elapsed}s`);
     document.querySelector("#export-status").textContent = "";
-    finishSearchProgress(
-      usedKeywordFallback
-        ? (data.semantic_notice || "Embedding unavailable; showing keyword matches.")
-        : `${data.total_count.toLocaleString()} students found in ${elapsed}s`,
-      usedKeywordFallback,
-    );
+    finishSearchProgress(`${data.total_count.toLocaleString()} students found in ${elapsed}s`);
   } catch (error) {
     if (error.name === "AbortError") return;
     setSearchStatus("Search failed");

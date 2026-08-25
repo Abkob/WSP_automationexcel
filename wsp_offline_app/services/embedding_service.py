@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from threading import Lock
 from typing import Protocol, Sequence
 
 import numpy as np
@@ -27,7 +26,6 @@ class SentenceTransformerEmbeddingModel:
         self.local_files_only = local_files_only
         self._model = None
         self._load_error: EmbeddingModelUnavailable | None = None
-        self._load_lock = Lock()
 
     def encode(self, texts: Sequence[str], *, kind: str) -> np.ndarray:
         if kind not in {"document", "query"}:
@@ -46,24 +44,21 @@ class SentenceTransformerEmbeddingModel:
         if self._load_error is not None:
             raise self._load_error
         if self._model is None:
-            with self._load_lock:
-                if self._model is None:
-                    if self.local_files_only and not is_sentence_transformer_model_cached(self.model_name):
-                        raise EmbeddingModelUnavailable(
-                            f"Embedding model {self.model_name!r} is not fully cached locally. "
-                            "Cache it before offline semantic search, or the app will use text match fallback."
-                        )
-                    try:
-                        from sentence_transformers import SentenceTransformer
-                    except Exception as exc:  # pragma: no cover - covered by orchestration fallback tests.
-                        self._load_error = EmbeddingModelUnavailable("sentence-transformers is not installed or could not be imported.")
-                        raise self._load_error from exc
-                    try:
-                        model_source = resolve_sentence_transformer_source(self.model_name)
-                        self._model = SentenceTransformer(str(model_source), local_files_only=self.local_files_only)
-                    except Exception as exc:  # pragma: no cover - model cache/network availability is environment-specific.
-                        self._load_error = EmbeddingModelUnavailable(f"Could not load embedding model {self.model_name!r}: {exc}")
-                        raise self._load_error from exc
+            if self.local_files_only and not is_sentence_transformer_model_cached(self.model_name):
+                raise EmbeddingModelUnavailable(
+                    f"Embedding model {self.model_name!r} is not fully cached locally. "
+                    "Cache it before offline semantic search, or the app will use text match fallback."
+                )
+            try:
+                from sentence_transformers import SentenceTransformer
+            except Exception as exc:  # pragma: no cover - covered by orchestration fallback tests.
+                self._load_error = EmbeddingModelUnavailable("sentence-transformers is not installed or could not be imported.")
+                raise self._load_error from exc
+            try:
+                self._model = SentenceTransformer(self.model_name, local_files_only=self.local_files_only)
+            except Exception as exc:  # pragma: no cover - model cache/network availability is environment-specific.
+                self._load_error = EmbeddingModelUnavailable(f"Could not load embedding model {self.model_name!r}: {exc}")
+                raise self._load_error from exc
         return self._model
 
 
@@ -126,6 +121,7 @@ def is_sentence_transformer_model_cached(model_name: str) -> bool:
 
 
 def installed_local_model_path(model_name: str) -> Path:
+    """Return the installer-managed, symlink-free model location."""
     import os
 
     hf_home = Path(os.environ.get("HF_HOME", Path.home() / ".cache" / "huggingface"))
@@ -133,6 +129,7 @@ def installed_local_model_path(model_name: str) -> Path:
 
 
 def resolve_sentence_transformer_source(model_name: str) -> str | Path:
+    """Prefer an explicit or installer-managed local model before a Hub ID."""
     explicit_path = Path(model_name)
     if explicit_path.exists():
         return explicit_path

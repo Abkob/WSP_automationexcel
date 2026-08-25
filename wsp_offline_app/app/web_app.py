@@ -27,7 +27,6 @@ from services.backup_service import create_database_backup, verify_database_inte
 from services.dashboard_intelligence_service import build_dashboard_intelligence
 from services.excel_importer import (
     DuplicateExcelFileError,
-    GeneratedExportWorkbookError,
     MissingStudentIdError,
     NoValidStudentRowsError,
     ensure_file_not_previously_imported,
@@ -36,8 +35,6 @@ from services.excel_importer import (
     log_import_event,
     mark_missing_students,
     read_excel_workbook,
-    reject_generated_export_workbook,
-    is_generated_export_filename,
     upsert_student_row,
 )
 from services.excel_schema import SUPPORTED_EXCEL_EXTENSIONS, normalize_header
@@ -105,24 +102,11 @@ def create_web_app(settings: AppSettings) -> FastAPI:
     # and vector directory so a previous app/test instance cannot cause an
     # empty or stale index to be treated as current.
     mark_index_stale()
+    _prewarm_embedding_model(settings)
     preferred_work_grouper = get_default_preferred_work_grouper(settings)
     technical_skill_grouper = get_default_technical_skill_grouper(settings)
     app = FastAPI(title=settings.app_name)
     app.state.settings = settings
-
-    def start_embedding_warmup() -> None:
-        threading.Thread(
-            target=_prewarm_embedding_model,
-            args=(settings,),
-            daemon=True,
-            name="embedding-prewarm",
-        ).start()
-
-    if settings.runtime_mode != "testing":
-        # Bind the local web server immediately so the UI opens promptly on
-        # low-memory laptops. Model loading/index validation continues safely
-        # in one background thread; the embedding service serializes first load.
-        app.router.add_event_handler("startup", start_embedding_warmup)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     if settings.runtime_mode != "testing":
         configure_import_folder_background_refresher(app, settings)
@@ -706,13 +690,12 @@ def save_configured_import_folder(settings: AppSettings, folder_path: str | Path
 
 
 def run_excel_import_from_path(settings: AppSettings, source_path: str | Path, *, archive_dir: Path | None = None) -> dict[str, Any]:
+    mark_index_stale()
     ensure_data_directories(settings)
     engine = create_sqlite_engine(settings.database_path)
     initialize_database(engine)
     session_factory = create_session_factory(engine)
     intake = intake_excel_file(source_path, poll_interval_seconds=0.05, timeout_seconds=5.0)
-    reject_generated_export_workbook(intake.path)
-    mark_index_stale()
 
     with session_factory() as session:
         file_hash = ensure_file_not_previously_imported(session, intake.path)
@@ -922,15 +905,6 @@ def consume_import_folder(settings: AppSettings, *, folder: Path, archive_folder
                     "message": str(exc),
                 }
             )
-        except GeneratedExportWorkbookError as exc:
-            results.append(
-                {
-                    "path": str(candidate),
-                    "filename": candidate.name,
-                    "status": "skipped_generated_export",
-                    "message": str(exc),
-                }
-            )
         except Exception as exc:
             results.append(
                 {
@@ -951,7 +925,7 @@ def consume_import_folder(settings: AppSettings, *, folder: Path, archive_folder
         "active_file": str(accepted_current) if accepted_current else None,
         "checked": len(candidates),
         "imported": sum(1 for item in results if item["status"] == "imported"),
-        "skipped": sum(1 for item in results if item["status"] in {"skipped_duplicate", "skipped_generated_export"}),
+        "skipped": sum(1 for item in results if item["status"] == "skipped_duplicate"),
         "failed": sum(1 for item in results if item["status"] == "failed"),
         "busy": False,
         "automatic": automatic,
@@ -1327,20 +1301,8 @@ def run_single_diagnostic(key: str, settings: AppSettings, session) -> dict[str,
             encode_ms = int((_t2.perf_counter() - t2) * 1000)
             dims = vecs.shape[1]
             model_slug = settings.embedding_model_name.replace("/", "--")
-            import os as _os
-            cache_home = _Path(_os.environ.get("HF_HOME") or (_Path.home() / ".cache" / "huggingface"))
-            cache_dir = cache_home / "hub" / f"models--{model_slug}"
-            local_model_dir = cache_home / "local_models" / model_slug
-            if local_model_dir.exists():
-                cache_size = sum(path.stat().st_size for path in local_model_dir.rglob("*") if path.is_file())
-            else:
-                blobs_dir = cache_dir / "blobs"
-                if blobs_dir.exists() and any(path.is_file() for path in blobs_dir.iterdir()):
-                    cache_size = sum(path.stat().st_size for path in blobs_dir.iterdir() if path.is_file())
-                else:
-                    # On Windows without Developer Mode, Hugging Face may copy
-                    # files into snapshots instead of creating blob symlinks.
-                    cache_size = sum(path.stat().st_size for path in cache_dir.rglob("*") if path.is_file())
+            cache_dir = _Path.home() / ".cache" / "huggingface" / "hub" / f"models--{model_slug}"
+            cache_size = sum(f.stat().st_size for f in (cache_dir / "blobs").glob("*") if f.is_file()) if (cache_dir / "blobs").exists() else 0
             return {
                 "key": key, "name": "Embedding model", "status": "pass",
                 "value": f"{dims}-dim",
@@ -1368,23 +1330,8 @@ def run_single_diagnostic(key: str, settings: AppSettings, session) -> dict[str,
             t2 = _t2.perf_counter()
             matches = rank_student_rows_by_vector_search(settings, session, sf, rows)
             search_ms = int((_t2.perf_counter() - t2) * 1000)
-            fallback_matches = tuple(
-                match for match in matches
-                if match.reason.startswith(("Text keyword fallback", "Text match fallback"))
-            )
             top = matches[0] if matches else None
             top_row = next((r for r in rows if r.STUD_ID == top.STUD_ID), None) if top else None
-            if fallback_matches:
-                return {
-                    "key": key, "name": "Semantic search", "status": "fail",
-                    "value": "Keyword fallback",
-                    "detail": fallback_matches[0].reason,
-                    "ms": elapsed(),
-                    "details": {
-                        "Query": f'"{query}"', "Candidates": len(rows), "Matches": len(matches),
-                        "Retrieval mode": "Keyword fallback", "Search time": f"{search_ms}ms",
-                    },
-                }
             return {
                 "key": key, "name": "Semantic search", "status": "pass",
                 "value": f"{len(matches)} matches",
@@ -1512,7 +1459,6 @@ def find_excel_candidates(settings: AppSettings) -> tuple[Path, ...]:
             if path.is_file()
             and path.suffix.lower() in SUPPORTED_EXCEL_EXTENSIONS
             and not path.name.startswith("~$")
-            and not is_generated_export_filename(path)
         )
     unique = {str(path): path for path in candidates}
     return tuple(sorted(unique.values(), key=lambda path: path.stat().st_mtime, reverse=True)[:20])
@@ -1529,7 +1475,6 @@ def find_upload_folder_candidates(settings: AppSettings) -> tuple[Path, ...]:
                 if path.is_file()
                 and path.suffix.lower() in SUPPORTED_EXCEL_EXTENSIONS
                 and not path.name.startswith("~$")
-                and not is_generated_export_filename(path)
             ),
             key=lambda path: path.stat().st_mtime,
             reverse=True,
@@ -2157,12 +2102,6 @@ def build_text_filter(field_name: str, value: Any) -> TextFilter | None:
 
 
 def serialize_filter_response(result) -> dict[str, Any]:
-    reasons = tuple(result.semantic_reasons.values())
-    uses_keyword_fallback = any(
-        reason.startswith(("Text keyword fallback", "Text match fallback"))
-        for reason in reasons
-    )
-    semantic_mode = "keyword_fallback" if uses_keyword_fallback else ("embedding" if result.semantic_scores else "none")
     return {
         "total_count": result.total_count,
         "page": result.page,
@@ -2171,12 +2110,6 @@ def serialize_filter_response(result) -> dict[str, Any]:
         "rows": build_student_table_rows(result),
         "semantic_scores": result.semantic_scores,
         "semantic_reasons": result.semantic_reasons,
-        "semantic_mode": semantic_mode,
-        "semantic_notice": (
-            "The offline embedding model is unavailable. Results use keyword matching until the model is repaired."
-            if uses_keyword_fallback
-            else ""
-        ),
     }
 
 

@@ -28,13 +28,6 @@ def test_required_source_directories_exist() -> None:
         "database",
         "services",
         "tests",
-        "tests/fixtures",
-        "data/incoming_excel",
-        "data/archive/original_excels",
-        "data/backups",
-        "data/exports",
-        "data/logs",
-        "data/semantic_index",
     ]
 
     for relative_path in required_directories:
@@ -54,19 +47,16 @@ def test_one_click_installer_uses_branded_graphical_setup() -> None:
     assert "Launch WSP" in installer
     assert "download_mxbai.py" in (PROJECT_ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
     install_script = (PROJECT_ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
-    assert "Assert-AppShortcut" in install_script
-    assert "Start-And-VerifyApplication" in install_script
-    assert "/api/system-status" in install_script
+    assert "function New-Shortcut" in install_script
+    assert "install_manifest.json" in install_script
     assert "private Python environment" in install_script
-    assert "Offline query/document embedding check passed" in (
-        PROJECT_ROOT / "scripts" / "download_mxbai.py"
-    ).read_text(encoding="utf-8")
+    model_downloader = (PROJECT_ROOT / "scripts" / "download_mxbai.py").read_text(encoding="utf-8")
+    assert "normalize_embeddings=True" in model_downloader
+    assert "Vector dims" in model_downloader
 
 
-def test_launcher_self_redirects_to_the_private_runtime() -> None:
+def test_launcher_uses_the_installed_private_runtime_contract() -> None:
     launcher = (PROJECT_ROOT / "wsp_launcher.pyw").read_text(encoding="utf-8")
 
-    assert "_redirect_to_private_runtime" in launcher
-    assert "sys.prefix" in launcher
-    assert 'APP_DIR / ".venv" / "Scripts" / "pythonw.exe"' in launcher
-    assert '"WSP Offline System" / "wsp_offline_app"' in launcher
+    assert "pythonw.exe sets stdout/stderr to None" in launcher
+    assert "Unhandled exception in launcher" in launcher

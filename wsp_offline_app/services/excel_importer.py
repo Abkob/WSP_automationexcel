@@ -63,10 +63,13 @@ class NoValidStudentRowsError(ExcelIntakeError):
 
 
 def is_generated_export_filename(path: str | Path) -> bool:
-    return "filtered_students" in Path(path).stem.casefold() or "filtered_results" in Path(path).stem.casefold()
+    """Recognize filenames produced by WSP's own export workflow."""
+    stem = Path(path).stem.casefold()
+    return "filtered_students" in stem or "filtered_results" in stem
 
 
 def reject_generated_export_workbook(path: str | Path) -> None:
+    """Prevent an exported subset from replacing the master student workbook."""
     workbook_path = Path(path)
     if is_generated_export_filename(workbook_path):
         raise GeneratedExportWorkbookError(

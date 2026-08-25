@@ -1,6 +1,6 @@
 # WSP Offline System documentation
 
-This documentation set is the technical case study, administrator manual, operating guide, and source map for WSP Offline System v1.1.5.
+This documentation set is the technical case study, administrator manual, operating guide, and source map for WSP Offline System v1.1.0.
 
 ## Start here
 
@@ -53,7 +53,7 @@ The generator is documented like every other source file: [generate_code_documen
 
 ## Screenshots and presentation
 
-UI captures and the PowerPoint manual are kept outside the public repository until every image has been independently de-identified and stripped of local filesystem paths.
+Verified UI captures used by the PowerPoint manual are stored in [`assets/screenshots`](assets/screenshots/). The final deck is stored at [`WSP_Offline_System_Complete_Case_Study_and_User_Manual.pptx`](WSP_Offline_System_Complete_Case_Study_and_User_Manual.pptx).
 
 ## Source-of-truth rules
 

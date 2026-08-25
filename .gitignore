@@ -11,6 +11,8 @@ SectionPapers/
 # Temporary Office lock files
 ~$*
 
-# UI captures may contain applicant-style records or local paths
-wsp_offline_app/docs/assets/
-wsp_offline_app/docs/*.pptx
+# Public documentation uses the repository's deterministic synthetic testbench.
+# Operational screenshots and applicant data remain excluded elsewhere.
+!wsp_offline_app/docs/assets/
+!wsp_offline_app/docs/assets/**
+!wsp_offline_app/docs/*.pptx
